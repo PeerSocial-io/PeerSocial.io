@@ -119,6 +119,7 @@ define(function(require, exports, module) {
                             }
                         }
                         else {
+                            model.find("#pwfield").show();
                             model.find("#password_error").css("color", "red").text(res.err)
                         }
 

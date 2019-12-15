@@ -1,4 +1,4 @@
-var selfsigned = false; //require('selfsigned');
+var selfsigned = process.env.PORT ? false : require('selfsigned'); //require('selfsigned');
 
 
 var port = process.env.PORT || 8765;
