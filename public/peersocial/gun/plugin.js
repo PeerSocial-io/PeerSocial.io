@@ -5,7 +5,7 @@ define(function(require, exports, module) {
 
     //var gun = Gun(["https://10.0.0.165:8765/gun"]);
 
-    var gun = Gun(['https://10.0.0.165:8765/gun', 'https://gunjs.herokuapp.com/gun']);
+    var gun = Gun(['https://peersocial.herokuapp.com/gun', 'https://gunjs.herokuapp.com/gun']);
 
     window.gun = gun;
     
