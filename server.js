@@ -3,7 +3,7 @@ var selfsigned = require('selfsigned');
 
 
 console.log("If module not found, install express globally `npm i express -g`!");
-var port    = 8765;
+var port    = process.env.PORT || 8765;
 var https = require('https');
 var express = require('express');
 var Gun     = require('gun');
