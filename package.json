@@ -1,0 +1,22 @@
+{
+  "name": "peersocial",
+  "version": "0.0.1",
+  "description": "peersocial dapp",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "peersocial"
+  ],
+  "author": "peersocial",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "gun": "https://github.com/amark/gun",
+    "selfsigned": "^1.10.7"
+  },
+  "engines": {
+    "node": "8.x"
+  }
+}
