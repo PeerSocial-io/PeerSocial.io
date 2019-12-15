@@ -120,6 +120,7 @@ define(function(require, exports, module) {
                         }
                         else {
                             if(!model.find("#pwfield").is(":visible")){
+                                model.find("#pwfield").val("");
                                 model.find("#pwfield").show();
                                 return model.find("#login").click();
                             }
