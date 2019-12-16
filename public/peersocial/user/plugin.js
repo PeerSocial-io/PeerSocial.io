@@ -88,7 +88,7 @@ define(function(require, exports, module) {
                         if (pub) {
                             gun.get(pub).once((data) => {
 
-                                console.log(data)
+                                //console.log(data)
                                 if (usr == data.alias) {
                                     model.find("#username").attr("disabled", "disabled")
                                     model.find("#pwfield").show();
@@ -110,7 +110,7 @@ define(function(require, exports, module) {
                                 model.modal("hide")
                                 prepLogout();
                                 me((err, $me, $user) => {
-                                    console.log("check prove number")
+                                    //console.log("check prove number")
                                     var uid32 = generateUID32("~" + $me.pub);
                                     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32)
                                     imports.app.emit("login", $me, $user)
