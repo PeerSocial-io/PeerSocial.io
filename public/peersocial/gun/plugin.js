@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
 
-    //appPlugin.consumes = ["start"];
+    appPlugin.consumes = ["app"];
     appPlugin.provides = ["gun"];
 
     //var gun = Gun(["https://10.0.0.165:8765/gun"]);
