@@ -1,14 +1,27 @@
 require.config({
     baseUrl: '/peersocial',
     paths: {
-        ejs: 'lib/ejs'
+        ejs: 'lib/ejs',
+        events: 'lib/events',
+        text: 'lib/text'
+        
     }
 });
 
 require(["lib/architect", "events"],
     function(architect, events) {
         architect.resolveConfig([
-            "start/start", "state/plugin", "layout/plugin", "gun/plugin", "user/plugin" , "profile/plugin", "welcome/plugin", "peers/plugin", "peerapp/plugin"
+            "welcome/plugin",
+            
+            //"start/start",
+            
+            "state/plugin",
+            "layout/plugin",
+            "gun/plugin",
+            "user/plugin",
+            "profile/plugin",
+            "peers/plugin",
+            "peerapp/plugin"
         ], function(err, config) {
             config.push({
                 packagePath: "app",

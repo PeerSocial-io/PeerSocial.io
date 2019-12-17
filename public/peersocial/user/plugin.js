@@ -30,7 +30,7 @@ define(function(require, exports, module) {
 
 
             $("#navbar-nav-right").find("#logout_btn").remove();
-            imports.app.layout.get("#navbar-nav-right").html(
+            $("#navbar-nav-right").html(
                 imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="#login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" })
             )
             imports.app.emit("logout")
@@ -39,7 +39,7 @@ define(function(require, exports, module) {
         function prepLogout() {
             $("#navbar-nav-right").find("#login_btn").remove();
 
-            imports.app.layout.get("#navbar-nav-right").html(
+            $("#navbar-nav-right").html(
                 imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="#logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" })
             )
         }
@@ -208,13 +208,12 @@ define(function(require, exports, module) {
                             userLogout();
                         })
 
-                        imports.app.layout.get("#navbar-nav-right").append(
+                        $("#navbar-nav-right").append(
                             imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="#login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" })
                         )
 
                         if (gun.user().is)
-                            prepLogout()
-
+                            prepLogout
 
                         imports.app.on("start", () => {
                             if (sessionRestored)
