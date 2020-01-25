@@ -2,7 +2,7 @@
   "name": "peersocial",
   "version": "0.0.1",
   "description": "peersocial dapp",
-  "main": "server.js",
+  "main": "PeerSocial.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

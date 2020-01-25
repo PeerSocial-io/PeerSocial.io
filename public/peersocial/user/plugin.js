@@ -81,9 +81,15 @@ define(function(require, exports, module) {
             model.find("#login").click(async() => {
                 var usr = model.find("#username").val();
                 var pas = model.find("#password").val();
-
+                var uid = false
+                if(usr.indexOf("#") > -1){
+                    usr = usr.split("#");
+                    uid = usr[1];
+                    usr = usr[0];
+                }
+                
                 if (usr && !pas) {
-                    gun.aliasToPub("@" + usr, (pub) => {
+                    gun.aliasToPub("@" + usr, uid,  (pub) => {
                         model.find("#username_error").text("");
                         if (pub) {
                             gun.get(pub).once((data) => {
@@ -97,7 +103,7 @@ define(function(require, exports, module) {
                             });
                         }
                         else {
-                            model.find("#username_error").css("color", "red").text("User Not Found")
+                            model.find("#username_error").css("color", "red").text("User Not Found");
                         }
                     })
 
@@ -213,7 +219,7 @@ define(function(require, exports, module) {
                         )
 
                         if (gun.user().is)
-                            prepLogout
+                            prepLogout();
 
                         imports.app.on("start", () => {
                             if (sessionRestored)

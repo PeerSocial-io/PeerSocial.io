@@ -3,10 +3,18 @@ define(function(require, exports, module) {
     appPlugin.consumes = ["app"];
     appPlugin.provides = ["gun"];
 
-    //var gun = Gun(["https://10.0.0.165:8765/gun"]);
+    /* global Gun */
+    var gun = Gun("https://"+window.location.host+"/gun");
+    
+    // FOR AXE
+    //var mesh = gun.back('opt.mesh'); // DAM;
+    // Ask local peer to connect to another peer.
+    //mesh.say({dam: 'opt', opt: {peers: 'https://www.peersocial.io/gun'}});
+    //mesh.say({dam: 'opt', opt: {peers: 'https://gunjs.herokuapp.com/gun'}});
 
-    var gun = Gun(['https://peersocial.herokuapp.com/gun', 'https://gunjs.herokuapp.com/gun']);
-
+    gun.opt({peers: ["https://www.peersocial.io/gun"]})
+    gun.opt({peers: ["https://gunjs.herokuapp.com/gun"]})
+    
     window.gun = gun;
     
     function getPubData(pub) {
@@ -46,5 +54,5 @@ define(function(require, exports, module) {
         });
 
     }
-
-});
+ 
+}); 
