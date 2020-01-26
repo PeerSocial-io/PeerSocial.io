@@ -12,8 +12,8 @@ define(function(require, exports, module) {
     //mesh.say({dam: 'opt', opt: {peers: 'https://www.peersocial.io/gun'}});
     //mesh.say({dam: 'opt', opt: {peers: 'https://gunjs.herokuapp.com/gun'}});
 
-    gun.opt({peers: ["https://www.peersocial.io/gun"]})
-    gun.opt({peers: ["https://gunjs.herokuapp.com/gun"]})
+    // gun.opt({peers: ["https://www.peersocial.io/gun"]})
+    // gun.opt({peers: ["https://gunjs.herokuapp.com/gun"]})
     
     window.gun = gun;
     

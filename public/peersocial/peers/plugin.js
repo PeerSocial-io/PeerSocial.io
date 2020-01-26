@@ -62,7 +62,7 @@ define(function(require, exports, module) {
                                     for (var i in data) {
                                         if (i.indexOf("~") == 0) {
                                             var peerData = await getPeerData(i);
-                                            if (peerData.uid32 && peerData.uid32 == model.find("#usercode").val()) {
+                                            if (peerData && peerData.uid32 && peerData.uid32 == model.find("#usercode").val()) {
                                                 $$peer = peerData;
                                                 break;
                                             }
