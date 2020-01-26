@@ -110,9 +110,11 @@ define(function(require, exports, module) {
             imports.user.getUser(query[1], query[0], async function(err, $user, user) {
 
                 $user.profile = await user.get('profile');
+                $user.peer_apps_dev = await user.get('profile').get("peerappsDev");
 
                 var profileLayout = await imports.app.layout.ejs.render(require("text!./viewPeer.html"), {
                     user: $user,
+                    $user: user
                 }, { async: true })
 
 

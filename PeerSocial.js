@@ -25,7 +25,7 @@ var server = http.createServer(app).listen(port);
 var gun = Gun({ file: 'data', web: server , super:false});
 
 
-gun.opt({peers: ["https://www.peersocial.io/gun"]})
+gun.opt({peers: ["https://www.peersocial.io/gun"]});
 //gun.opt({peers: ["https://gunjs.herokuapp.com/gun"]})
 
 console.log('Server started on port ' + port + ' with /gun');

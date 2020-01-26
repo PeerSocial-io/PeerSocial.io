@@ -22,6 +22,60 @@ define(function(require, exports, module) {
             peerapp: {
                 init: function() {
 
+
+                    imports.state.$hash.on("peerapp-run", async(query) => {
+                        query = query.split("@");
+                        var id = query[1].split("~");
+                        query[1] = id[0];
+                        id = id[1];
+
+                        imports.user.getUser(query[1], query[0], async function(err, $user, user) {
+
+                            var appSource = await user.get('profile').get("peerappsDev").get(id).get("appSource");
+                            try {
+                                eval(appSource)
+                            }
+                            catch (e) {
+                                console.log(e)
+                            }
+                        })
+
+                    });
+
+
+                    imports.state.$hash.on("peerapp-view", async(query) => {
+                        query = query.split("@");
+                        var id = query[1].split("~");
+                        query[1] = id[0];
+                        id = id[1];
+                        imports.user.getUser(query[1], query[0], async function(err, $user, user) {
+                            if (err) return alert(err);
+
+                            var layout = $(await imports.app.layout.ejs.render(require("text!./appView.html"), { appSource: await user.get('profile').get("peerappsDev").get(id).get("appSource") }, { async: true }))
+
+                            $("#main-container").html(layout)
+
+                            layout.find("#runApp").click(() => {
+                                imports.state.hash = "peerapp-run~" + query[0] + "@" + query[1] + "~" + id;
+                            });
+
+                            /* global ace */
+                            var editor = ace.edit("editor");
+
+                            editor.session.setMode("ace/mode/javascript");
+
+                            editor.commands.addCommand({
+                                name: 'run',
+                                bindKey: { win: 'F5', mac: 'F5' },
+                                exec: function(editor) {
+                                    layout.find("#runApp").click();
+                                },
+                                readOnly: false // false if this command should not apply in readOnly mode
+                            });
+                        })
+                    });
+
+
                     imports.state.$hash.on("peerapp-test", async(id) => {
 
                         if (imports.gun.user().is) {

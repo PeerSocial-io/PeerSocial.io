@@ -5,6 +5,7 @@
         for(var i in peerappsDev){
         if(i == "_" || !peerappsDev[i]) continue;
             var peerapp = await user.get("profile").get("peerappsDev").get(i);
+            if(peerapp){
             
     %>
         
@@ -15,5 +16,5 @@
                 <a href="#peerapp-edit~<%= i %>">Edit</a></div>
             <h1><%= peerapp.title %></h1>
         </div>
-    <% }} %>
+    <% }}} %>
 </div>
