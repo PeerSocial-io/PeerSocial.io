@@ -16,7 +16,7 @@ define(function(require, exports, module) {
                         if(!imports.gun.user().is){
                             $("#main-container").html(require("text!./welcome.html"))
                         }else{
-                            $("#main-container").html(require("text!./welcome.html"))
+                            $("#main-container").html(require("text!./welcome-user.html"))
                         }
                     })
                     

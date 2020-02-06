@@ -1,5 +1,12 @@
 node_modules/
 data/
 data*
+*data
+core
+radata/
+radata*
+*radata
 
 package-lock.json
+
+public/fido2-onlykey/

@@ -12,8 +12,9 @@ define(function(require, exports, module) {
     //mesh.say({dam: 'opt', opt: {peers: 'https://www.peersocial.io/gun'}});
     //mesh.say({dam: 'opt', opt: {peers: 'https://gunjs.herokuapp.com/gun'}});
 
-    // gun.opt({peers: ["https://www.peersocial.io/gun"]})
+    gun.opt({peers: ["https://www.peersocial.io/gun"]})
     // gun.opt({peers: ["https://gunjs.herokuapp.com/gun"]})
+    // gun.opt({peers: ["https://gun-us.herokuapp.com/gun"]})
     
     window.gun = gun;
     
@@ -30,7 +31,7 @@ define(function(require, exports, module) {
     gun.aliasToPub = function(alias, $uid32,  next) {
         if(typeof $uid32 == "function"){ next = $uid32; $uid32 = false}
         
-        gun.user(alias).once(async (data) => {
+        gun.user(alias).once((data,a,b,c) => {
             for (var i in data) {
                 if (i.indexOf("~") == 0) {
                     

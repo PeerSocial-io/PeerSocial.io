@@ -1,0 +1,20 @@
+<div class="container">
+    <a href="javascript:undefined;" class="btn btn-primary" id="createApp">Create App</a>
+    <hr/>
+    <% if(peerappsDev){ 
+        for(var i in peerappsDev){
+        if(i == "_" || !peerappsDev[i]) continue;
+            var peerapp = await user.get("profile").get("peerappsDev").get(i);
+            if(peerapp){
+            
+    %>
+        
+        <div class="shadow-lg p-3 mb-5 bg-white rounded">
+            <div class="float-right">
+                <a href="javascript:undefined;" id="delete" data-id="<%= i %>">Delete</a>
+                <br/>
+                <a href="#peerapp-edit~<%= i %>">Edit</a></div>
+            <h1><%= peerapp.title %></h1>
+        </div>
+    <% }}} %>
+</div>

@@ -1,48 +1,33 @@
 <div class="container bootstrap snippet">
-    <div class="row">
-        <div class="col-sm-10">
-            <h1 style="display: inline;">
-                <%= me.alias %>
-            </h1>
-            #
-            <%= me.uid32 %>
-        </div>
+    <div class="row" style="padding-bottom:1px;">
+        <div class="col-sm-10"><div style="border: 1px solid #ddd;display:inline-block;"><h1 style="display: inline;"><%= me.alias %></h1>#<%= me.uid32 %></div></div>
     </div>
     <div class="row">
         <div class="col-sm-3">
-            <!--left col-->
-
-
             <div class="text-center">
-                <img src="<%- (await user.get('profileImage') || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" class="avatar img-circle img-thumbnail" alt="avatar">
+                <img src="<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" class="avatar img-circle img-thumbnail" alt="avatar">
                 <h6>Upload a different photo...</h6>
                 <input type="file" class="text-center center-block file-upload">
             </div>
             </hr><br>
 
-
             <div>
-                <a class="btn btn-secondary btn-block" href="#peerapp">PeerApps</a>
-            </div>
-
-
-            <!--<ul class="list-group">
-                <li class="list-group-item text-muted">Activity <i class="bi bi-chevron-right"></i></li>
-                <li class="list-group-item text-right"><span class="pull-left"><strong>Shares</strong></span></li>
-                <li class="list-group-item text-right"><span class="pull-left"><strong>Likes</strong></span></li>
-                <li class="list-group-item text-right"><span class="pull-left"><strong>Posts</strong></span></li>
-                <li class="list-group-item text-right"><span class="pull-left"><strong>Followers</strong></span></li>
-            </ul>-->
-
-
+                <a class="btn btn-secondary btn-block" href="/peer~<%= me.uid32 %>@<%= me.alias %>">View Public Profile</a>
+            </div><br>
+            
         </div>
-        <!--/col-3-->
         <style>
             .tab-content {
                 border-left: 1px solid #ddd;
                 border-right: 1px solid #ddd;
                 border-bottom: 1px solid #ddd;
                 padding: 10px;
+            }
+            
+            .nav-tabs > .nav-item > .nav-link {
+                border-top: 1px solid #ddd;
+                border-left: 1px solid #ddd;
+                border-right: 1px solid #ddd;
             }
 
             .nav-tabs {
@@ -51,77 +36,17 @@
         </style>
         <div class="col-sm-9">
             
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#profile-main1" role="tab" aria-controls="home" aria-selected="true">Profile</a>
-                </li>
+            <ul class="nav nav-tabs" id="profileTabs">
                 <!--<li class="nav-item">-->
-                <!--    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile-main2" role="tab" aria-controls="profile" aria-selected="false">Profile2</a>-->
-                <!--</li>-->
-                <!--<li class="nav-item">-->
-                <!--    <a class="nav-link" id="messages-tab" data-toggle="tab" href="#profile-main3" role="tab" aria-controls="messages" aria-selected="false">Profile3</a>-->
+                <!--    <a class="nav-link" href="/profile">Profile</a>-->
                 <!--</li>-->
             </ul>
 
             <div class="tab-content">
-                <div class="tab-pane active" role="tabpanel" id="profile-main1">
-                    <form class="form" action="##" method="post" id="registrationForm">
-                        <div class="form-group">
-
-                            <div class="col-xs-6">
-                                <label for="first_name"><h4>First name</h4></label>
-                                <input type="text" class="form-control" name="first_name" id="first_name" placeholder="first name" title="enter your first name if any." value="<%- (profile && profile.first_name ? profile.first_name :'') %>">
-                            </div>
-                        </div>
-                        <div class="form-group">
-
-                            <div class="col-xs-6">
-                                <label for="last_name"><h4>Last name</h4></label>
-                                <input type="text" class="form-control" name="last_name" id="last_name" placeholder="last name" title="enter your last name if any." value="<%- (profile && profile.last_name ? profile.last_name :'') %>">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-
-                            <div class="col-xs-6">
-                                <label for="phone"><h4>Phone</h4></label>
-                                <input type="text" class="form-control" name="phone" id="phone" placeholder="enter phone" title="enter your phone number if any." value="<%- (profile && profile.phone ? profile.phone :'') %>">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="col-xs-6">
-                                <label for="mobile"><h4>Mobile</h4></label>
-                                <input type="text" class="form-control" name="mobile" id="mobile" placeholder="enter mobile number" title="enter your mobile number if any." value="<%- (profile && profile.mobile ? profile.mobile :'') %>">
-                            </div>
-                        </div>
-                        <div class="form-group">
-
-                            <div class="col-xs-6">
-                                <label for="email"><h4>Email</h4></label>
-                                <input type="email" class="form-control" name="email" id="email" placeholder="you@email.com" title="enter your email." value="<%- (profile && profile.email ? profile.email :'') %>">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-xs-6">
-                                <label for="email"><h4>Location</h4></label>
-                                <input type="email" class="form-control" id="location" placeholder="somewhere" title="enter a location" value="<%- (profile && profile.location ? profile.location :'') %>">
-                            </div>
-                        </div>
-                    </form>
-
-                </div>
                 <!--/tab-pane-->
-                <div class="tab-pane" role="tabpanel" id="profile-main2">page2</div>
-                <!--/tab-pane-->
-                <div class="tab-pane" role="tabpanel" id="profile-main3">page3</div>
-
+                <!--<div class="tab-pane" role="tabpanel" id="profile-main2">page2</div>-->
+                
             </div>
-            <!--/tab-pane-->
         </div>
-        <!--/tab-content-->
-
     </div>
-    <!--/col-9-->
 </div>
-<!--/row-->

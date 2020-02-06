@@ -1,0 +1,137 @@
+<div class="container">
+    <div class="modal fade" id="createFileModel" tabindex="-1" role="dialog" aria-labelledby="createFileModelLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Create File</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">File Name:</label>
+                        <input type="text" class="form-control" id="filename">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="create">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="createFolderModel" tabindex="-1" role="dialog" aria-labelledby="createFolderModelLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Create Folder</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">Folder Name:</label>
+                        <input type="text" class="form-control" id="foldername">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="create">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+  <!--<i class="fas fa-file"></i>-->
+  <!--<i class="fas fa-folder"></i>-->
+    
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+        <%
+            var lioop= query.query.split("/").filter(function (el) { return el != ""; });
+            var linkUp = "/peerapp2-open~"
+            for (var i = 0; i < lioop.length; i++) { 
+                var isActive = (lioop.length-1 == i ? true : false)
+                
+                linkUp += lioop[i]+"/"
+                
+                if(!isActive){
+            %>
+                <li class="breadcrumb-item"><a href="<%= linkUp %>"><%= lioop[i] %></a></li>    
+            
+            <% }else{ %>
+                <li class="breadcrumb-item active"><%= lioop[i] %></li>    
+            <% }} %>
+            <!--<li class="breadcrumb-item"><a href="#">Home</a></li>-->
+            <!--<li class="breadcrumb-item active">Library</li>-->
+        </ol>
+    </nav>
+    
+    <% if(isMe){ %>
+    
+    <div class="float-right">
+        <a href="javascript:undefined;" class="btn btn-primary" id="createFile"><i class="fas fa-file"></i> New File</a><!-- <a href="javascript:undefined;" class="btn btn-primary" id="runApp">Run</a>-->
+        <a href="javascript:undefined;" class="btn btn-primary" id="createFolder"><i class="fas fa-folder"> New Folder</i></a><!-- <a href="javascript:undefined;" class="btn btn-primary" id="runApp">Run</a>-->
+    </div>
+    
+        
+    <br/><br/>
+    <% 
+    }
+        var readme_file;
+        var package_json_file;
+        var emptyFolder = true;
+        
+        var $list = [];
+        for(var i in list){ 
+            $list.push(list[i]);
+        }
+        list = $list;
+        
+        list.sort(function(a, b){return a.type=="folder"});
+        
+    %>
+    <table class="table">
+        <% for(var i in $list){ 
+        emptyFolder = false;
+        if(list[i].name.toLowerCase() == "readme.md") readme_file = list[i];
+        if(list[i].name.toLowerCase() == "package.json") package_json_file = list[i];
+        
+        %>
+        <tr>
+            <td><a href="/peerapp2-open~<%= (query.query.charAt(query.query.length-1) == '/' ? query.query : query.query+'/')  + list[i].name + (list[i].type == 'folder' ? '/' : '') %>"><%= list[i].name+(list[i].type != "folder" ? "" : "/") %></a></td>
+            <td><%= (new Date(list[i].mt)) %></td>
+            <!--<td><%= list[i].size %></td>-->
+            <% if(isMe){ %><td style="text-align:right;"><% if(list[i].type != "folder"){ %><a href="javascript:undefined;" id="deleteFile" class="btn btn-danger" data-file="<%= list[i].name %>"><i class="fas fa-trash"></i></a> <% } %></td><% } %>
+        </tr>
+        <% }
+            if(emptyFolder){
+        %>
+        <tr>
+            <td>Folder Empty!</td>
+            <% if(query.url != "/"){%>
+                <td style="text-align:right;"><a href="javascript:undefined;" id="deleteFolder" class="btn btn-danger"><i class="fas fa-trash"></i></a></td>
+            <% } %>
+        </tr>
+        <%
+            }
+        %>
+    </table>
+    <% if(readme_file){ %>
+        <hr/>
+        <%- showdown.makeHtml(readme_file.value) %>
+    <% } %>
+    <% if(package_json_file && readme_file){ 
+        var packageData;
+        try{
+            packageData = JSON.parse(package_json_file.value);
+        }catch(e){}
+        if(packageData && packageData.main){
+        
+        
+        
+    
+    %>
+        <hr/>
+        <a href="javascript:undefined;" class="btn btn-warning" id="runApp" data-file="<%= packageData.main %>"><i class="fas fa-play"> Run (<%= packageData.main %>)</i></a><!-- <a href="javascript:undefined;" class="btn btn-primary" id="runApp">Run</a>-->
+    <% }} %>
+</div>

@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
 
-    appPlugin.consumes = ["app"];
+    appPlugin.consumes = ["app","state"];
     appPlugin.provides = ["layout"];
     
     var ejs = require("ejs");
@@ -14,6 +14,17 @@ define(function(require, exports, module) {
                 ejs:ejs,
                 
                 init: function() {
+                    
+                    imports.state.$hash.on("404", function(currentHash, lastHash) {
+                        ejs.render(require("text!./404-page_not_found.html"), {
+                            /* options */
+                        }, { async: true }).then(function(pageOutput) {
+                            $("#main-container").html(pageOutput);
+                        });
+                    });
+                    imports.state.$hash.on("200", function(currentHash, lastHash) {
+                        $("#main-container").html(ejs.render(require("text!./loading.html")));
+                    });
                     
                 },
                 get: function($selector){

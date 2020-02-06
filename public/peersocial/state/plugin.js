@@ -1,32 +1,46 @@
 define(function(require, exports, module) {
 
-    // var location = window.document.location;
-
-    // var preventNavigation = function() {
-    //     var originalHashValue = location.hash;
-
-    //     window.setTimeout(function() {
-    //         location.hash = 'preventNavigation' + ~~(9999 * Math.random());
-    //         location.hash = originalHashValue;
-    //     }, 0);
-    // };
-
-    // window.addEventListener('beforeunload', preventNavigation, false);
-    // window.addEventListener('unload', preventNavigation, false);
-
-
-
     var EventEmitter = require("events").EventEmitter;
 
     function AppState() {
+        
+        var _self = this;
         this.currentState = History.getState();
-        this.currentHash = History.getHash();
-        if (this.currentHash == '') {
-            History.setHash("home");
-            this.currentHash = History.getHash();
+        this.lastState = false;
+        
+        if (this.currentState.hash == '/') {
+            _self.pushState("/home","Home");
+            this.currentState = History.getState();
         }
-        this.lastHash = false;
+        
+        History.Adapter.bind(window,'statechange',function(){ // Note: We are using statechange instead of popstate
+    		_self.currentState = History.getState(); // Note: We are using History.getState() instead of event.state
+    		_self.emitCurrentState();
+    	});
+    	
+    	$(document).on('DOMNodeInserted',function(e) {
+    	    $(e.target).find("a").click(function(){
+                var urlPath = $(this).attr('href');
+                    var title = $(this).text();
+                if(urlPath.indexOf("/") == 0){
+                    _self.pushState(urlPath, title, urlPath);
+                    e.preventDefault();
+                    return false; // prevents default click action of <a ...>
+                }else if(urlPath.indexOf("#") > -1){
+                    //urlPath = "/"+urlPath.substring(urlPath.indexOf("#")+1);
+                    //_self.pushState(urlPath, title, urlPath);
+                }
+            })
+        });
 
+    // 	$("body").on('click', 'a', function(e) {
+    //       var urlPath = $(this).attr('href');
+    //       var title = $(this).text();
+    //       _self.pushState({urlPath: urlPath}, title, urlPath);
+    //       e.preventDefault();
+    //       return false; // prevents default click action of <a ...>
+    //   });
+    	
     }
 
     AppState.prototype = new EventEmitter();
@@ -34,52 +48,53 @@ define(function(require, exports, module) {
     AppState.prototype.$hash = new EventEmitter();
 
     AppState.prototype.init = function() {
-        //conso
+        
         var _self = this;
-        // Bind to StateChange Event
-        History.Adapter.bind(window, 'statechange', function(err, e) { // Note: We are using statechange instead of popstate
+		//console.log("state",_self.currentState);
+	
+    
+    	// Change our States
+        // 	History.pushState({state:1}, "State 1", "?state=1"); // logs {state:1}, "State 1", "?state=1"
+        // 	History.pushState({state:2}, "State 2", "?state=2"); // logs {state:2}, "State 2", "?state=2"
+        // 	History.replaceState({state:3}, "State 3", "?state=3"); // logs {state:3}, "State 3", "?state=3"
+        // 	History.pushState(null, null, "?state=4"); // logs {}, '', "?state=4"
+        // 	History.back(); // logs {state:3}, "State 3", "?state=3"
+        // 	History.back(); // logs {state:1}, "State 1", "?state=1"
+        // 	History.back(); // logs {}, "Home Page", "?"
+        // 	History.go(2); // logs {state:3}, "State 3", "?state=3"
 
-            _self.currentState = History.getState();
-            _self.currentHash = History.getHash();
-            _self.emit("statechange", _self.currentHash, _self.currentState);
-            //console.log("statechange", _self.currentHash, _self.currentState)
-        });
+    };
+    
+    
+    
+    AppState.prototype.pushState = function (urlPath, title) {
+        title = "PeerSocial " + title || "PeerSocial";
+        $("title").text(title);
+        History.pushState({urlPath: urlPath}, title || "PeerSocial", urlPath);
+    };
+    AppState.prototype.replaceState = function (urlPath, title) {
+        History.replaceState({urlPath: urlPath}, "PeerSocial " + title || "PeerSocial", urlPath);
+    };
+    
+    AppState.prototype.emitCurrentState = function () {
 
-        History.Adapter.bind(window, 'anchorchange', function(err, e) { // Note: We are using statechange instead of popstate
-            _self.currentState = History.getState();
-
-            var newHash = History.getHash();
+        var _self = this;
+        
+        appState.$hash.emit('200', appState.currentHash, appState.lastHash);
+        setTimeout(function(){
             
-            //console.log("anchorchange", newHash, _self.currentState)
-            if (newHash != _self.currentHash) {
-                _self.lastHash = _self.currentHash;
-                _self.currentHash = History.getHash();
-                _self.emit("anchorchange", _self.currentHash, _self.currentState);
-                _self.emitCurrentHashHash();
-                //AppState.prototype.$hash.emit(_self.currentHash, _self.currentState, _self.lastHash)
-            }
-        });
-
-        /*
-            // Change our States
-            History.pushState({ state: 1 }, "State 1", "?state=1"); // logs {state:1}, "State 1", "?state=1"
-            History.pushState({ state: 2 }, "State 2", "?state=2"); // logs {state:2}, "State 2", "?state=2"
-            History.replaceState({ state: 3 }, "State 3", "?state=3"); // logs {state:3}, "State 3", "?state=3"
-            History.pushState(null, null, "?state=4"); // logs {}, '', "?state=4"
-            History.back(); // logs {state:3}, "State 3", "?state=3"
-            History.back(); // logs {state:1}, "State 1", "?state=1"
-            History.back(); // logs {}, "Home Page", "?"
-            History.go(2); // logs {state:3}, "State 3", "?state=3"
-        */
-    }
-    
-    
-    AppState.prototype.emitCurrentHashHash = function () {
-
-        var hashSplit = appState.currentHash.split("~")
-        var _hash = hashSplit.shift();
+        
+        var hashSplit = _self.currentState.hash.split("?")[0].split("~")
+        var _hash = hashSplit.shift().substring(1);
         hashSplit = hashSplit.join("~")
-        appState.$hash.emit(_hash, hashSplit, appState.currentState, appState.lastHash);
+        if(appState.$hash._events[_hash]){
+            appState.$hash.emit(_hash, hashSplit, appState.currentState, appState.lastHash);
+        }
+        else{
+            appState.$hash.emit('404', appState.currentHash, appState.lastHash);
+        }
+        
+        },1)
     }
 
     Object.defineProperty(
@@ -90,7 +105,7 @@ define(function(require, exports, module) {
             },
             set: function(hash) {
                 if(hash == this.currentHash)
-                    this.emitCurrentHashHash()
+                    this.emitCurrentState()
                 else
                     this.history.setHash(hash);
             }
@@ -99,7 +114,11 @@ define(function(require, exports, module) {
 
 
     AppState.prototype.history = History;
-
+    
+    AppState.prototype.reload = function(){
+        this.emitCurrentState()
+    }
+    
 
     var appState = new AppState();
 
@@ -112,8 +131,11 @@ define(function(require, exports, module) {
 
     function appPlugin(options, imports, register) {
         imports.app.on("start", () => {
-
-            appState.emitCurrentHashHash();
+            setTimeout(function(){
+                
+            appState.emitCurrentState();
+            
+            },100)
         });
 
         register(null, {

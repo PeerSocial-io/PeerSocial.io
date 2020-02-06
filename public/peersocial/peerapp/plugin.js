@@ -38,6 +38,7 @@ define(function(require, exports, module) {
                             catch (e) {
                                 console.log(e)
                             }
+                            
                         })
 
                     });
@@ -56,12 +57,12 @@ define(function(require, exports, module) {
                             $("#main-container").html(layout)
 
                             layout.find("#runApp").click(() => {
-                                imports.state.hash = "peerapp-run~" + query[0] + "@" + query[1] + "~" + id;
+                                imports.state.pushState("/peerapp-run~" + query[0] + "@" + query[1] + "~" + id);
                             });
 
                             /* global ace */
                             var editor = ace.edit("editor");
-
+                            editor.setReadOnly(true);
                             editor.session.setMode("ace/mode/javascript");
 
                             editor.commands.addCommand({
@@ -75,6 +76,59 @@ define(function(require, exports, module) {
                         })
                     });
 
+                    imports.state.$hash.on("peerapp-edit", async(query) => {
+                        query = query.split("@");
+                        var id = query[1].split("~");
+                        query[1] = id[0];
+                        id = id[1];
+                        imports.user.getUser(query[1], query[0], async function(err, $user, user) {
+                            if (err) return alert(err);
+
+                            var layout = $(await imports.app.layout.ejs.render(require("text!./appEdit.html"), { appSource: await user.get('profile').get("peerappsDev").get(id).get("appSource") }, { async: true }))
+
+                            $("#main-container").html(layout)
+
+
+                            layout.find("#editor").addClass("border").addClass("border-primary");
+                            layout.find("#runApp").click(() => {
+                                imports.state.pushState("/peerapp-run~"+query[0]+"@"+query[1]+"~" + id);
+                            });
+                            layout.find("#saveApp").click(() => {
+                                saveApp(id, editor.getValue());
+                                hasChangedAfterSave = false;
+                                layout.find("#editor").removeClass("border-danger").addClass("border-primary");
+                            })
+                            var hasChangedAfterSave = false;
+                            var editor = ace.edit("editor");
+                            editor.session.on('change', function(delta) {
+                                hasChangedAfterSave = true;
+
+                                layout.find("#editor").removeClass("border-primary").addClass("border-danger");
+                            });
+                            // editor.setTheme("ace/theme/twilight");
+                            editor.session.setMode("ace/mode/javascript");
+                            editor.commands.addCommand({
+                                name: 'save',
+                                bindKey: { win: 'Ctrl-S', mac: 'Command-S' },
+                                exec: function(editor) {
+                                    saveApp(id, editor.getValue());
+                                    hasChangedAfterSave = false;
+                                    layout.find("#editor").removeClass("border-danger").addClass("border-primary");
+                                },
+                                readOnly: false // false if this command should not apply in readOnly mode
+                            });
+                            editor.commands.addCommand({
+                                name: 'run',
+                                bindKey: { win: 'F5', mac: 'F5' },
+                                exec: function(editor) {
+                                    imports.state.pushState("/peerapp-test~" + id);
+                                },
+                                readOnly: false // false if this command should not apply in readOnly mode
+                            });
+                        });
+                    });
+
+                    /*  
 
                     imports.state.$hash.on("peerapp-test", async(id) => {
 
@@ -90,7 +144,10 @@ define(function(require, exports, module) {
                             })
                         }
                     });
-
+                    
+                    */
+                    /*
+                    
                     imports.state.$hash.on("peerapp-edit", async(id) => {
 
                         if (imports.gun.user().is) {
@@ -143,6 +200,9 @@ define(function(require, exports, module) {
                         }
                     })
 
+                    */
+
+                    /*
                     imports.state.$hash.on("peerapp", function() {
                         if (imports.gun.user().is) {
                             imports.user.me(async function(err, me, user) {
@@ -192,6 +252,7 @@ define(function(require, exports, module) {
                             })
                         }
                     })
+*/
                     imports.app.on("start", function() {});
                 }
             }
