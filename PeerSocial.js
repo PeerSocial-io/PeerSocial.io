@@ -7,7 +7,7 @@ var http = require('http');
 var express = require('express');
 var Gun = require('gun');
 
-require('gun/axe');// is there a GUN BUG with this?
+//require('gun/axe');// is there a GUN BUG with this?
 
 var app = express();
 
@@ -34,7 +34,7 @@ app.use(function(req,res,next){
 
 var server = http.createServer(app).listen(port);
 
-var gun = Gun({ file: 'radata', web: server , super:false, stats:true});
+var gun = Gun({ file: 'radata', web: server , super:true, stats:true});
 
 // require('gun/lib/stats');
 gun.opt({peers: ["https://www.peersocial.io/gun"]});

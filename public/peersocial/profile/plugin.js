@@ -156,12 +156,12 @@ define(function(require, exports, module) {
                     profile: profile
                 }));
                 
-                $("#main-container").find("#display_name").on('change', function() {
+                basicInfo.find("#display_name").on('change', function() {
                     user.get("profile").get("display_name").put($(this).val(), function() {
                         console.log("saved profile display_name");
                     });
                 });
-                $("#main-container").find("#tagline").on('change', function() {
+                basicInfo.find("#tagline").on('change', function() {
                     user.get("profile").get("tagline").put($(this).val(), function() {
                         console.log("saved profile tagline");
                     });
