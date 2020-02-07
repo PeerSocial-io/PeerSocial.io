@@ -26,7 +26,8 @@
             <!--    </div>-->
             <!--</div>-->
 
-            <% if(!isMyPeer){ %>
+            <% if(!notLoggedIn)
+                if(!isMyPeer){ %>
                 <a href="javascript:undefined;" class="btn btn-block btn-primary" id="addPeer">Add Peer</a>
             <% }else{ %>
                 <a href="javascript:undefined;" class="btn btn-block btn-danger" id="removePeer">Remove Peer</a>

@@ -137,6 +137,7 @@ define(function(require, exports, module) {
         
         function peerIsAdded(pub,done){
             imports.profile.me(async function(err, me, user) {
+                if(err) return done(false, true); 
                 user.get("profile").get("peers").once(function(peersL) {
                     for(var i in peersL){
                         if(i == "~"+pub && peersL[i])
@@ -153,7 +154,7 @@ define(function(require, exports, module) {
                 if(err){
                     console.log(err)
                 }else{
-                    peerIsAdded($user.pub,async function(isMyPeer){
+                    peerIsAdded($user.pub,async function(isMyPeer, notLoggedIn){
                         
                         
                         $user.profile = await user.get('profile');
@@ -163,7 +164,8 @@ define(function(require, exports, module) {
                         var profileLayout = $(await imports.app.layout.ejs.render(require("text!./viewPeer.html"), {
                             user: $user,
                             $user: user,
-                            isMyPeer:isMyPeer
+                            isMyPeer:isMyPeer,
+                            notLoggedIn:notLoggedIn
                         }, { async: true }));
                         
                         

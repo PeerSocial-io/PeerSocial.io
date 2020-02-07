@@ -209,6 +209,7 @@ define(function(require, exports, module) {
                                profile_app_list.find(".deleteApp2").click((e) => {
                                     var val = $(e.target).data("id");
                                     deleteConfirm("Are you sure you want to delete this app '" + val + "'", function(yes){
+                                        if(yes)
                                         user.get(peer_profile_key).get(peerApps_v2_key).get(val).put(null, function() {
                                             imports.state.pushState("/profile~peerapp2");
                                         });
