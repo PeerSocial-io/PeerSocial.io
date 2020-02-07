@@ -467,7 +467,7 @@ define(function(require, exports, module) {
                 count += 1;
             }
             if(count == 0){
-                timOut = 100;
+                timOut = 1000;
             }
             count=0;
             setTimeout(function(){
