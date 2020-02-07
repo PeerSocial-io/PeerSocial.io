@@ -67,6 +67,10 @@ define(function(require, exports, module) {
 
         function load_aceWindow(query, $editor_options, value, readOnly) {
             reload = true;
+            if (ace_editor_window) {
+                // ace_editor_$editor.destroy();
+                // ace_editor_window = false;
+            }
             if (!ace_editor_window) {
                 ace_editor_window = $(imports.app.layout.ejs.render(require("text!./ace_editor.html"), {}));
 
@@ -103,6 +107,42 @@ define(function(require, exports, module) {
                     },
                     readOnly: false // false if this command should not apply in readOnly mode
                 });
+                
+                ace_editor_$editor.commands.addCommand(ace.require("ace/ext/beautify").commands[0]);
+                
+                if(!readOnly){
+                    var bottomBar = $("<div/>");
+                    $("#main-container").find("#editor").parent().append(bottomBar)
+                    
+                    var SettingsMenu = new ace.require("ace/ext/settings_menu")
+                    
+                    SettingsMenu.init();
+                    
+                    var KeyBindingMenu = new ace.require("ace/ext/keybinding_menu")
+                    
+                    KeyBindingMenu.init(ace_editor_$editor);
+                    
+                    //ace_editor_$editor.showKeyboardShortcuts()
+                    
+                    //var optionsPanel = new OptionPanel(ace_editor_$editor)
+                    //bottomBar.append(optionsPanel.container)
+                    //optionsPanel.render()
+                    
+                    bottomBar.append((function(){
+                        var $openSettings = $(" <a href='#'>&nbsp;Editor Settings&nbsp;</a> ")
+                        $openSettings.click(() => ace_editor_$editor.showSettingsMenu());
+                        return $openSettings;
+                    })())
+                    
+                    bottomBar.append((function(){
+                        var $openSettings = $(" <a href='#'>&nbsp;Keyboad-Shortcuts&nbsp;</a> ")
+                        $openSettings.click(() => ace_editor_$editor.showKeyboardShortcuts());
+                        return $openSettings;
+                    })())
+                    new ace.require("ace/ext/statusbar").StatusBar(ace_editor_$editor,bottomBar[0])
+                    
+                }
+                window.myAce = ace_editor_$editor;
             }
             else {
                 $("#main-container").html(ace_editor_window);
@@ -298,7 +338,13 @@ define(function(require, exports, module) {
                     });
 
 
-                    imports.state.$hash.on("peerapp2-open", async(query) => {
+                    imports.state.$hash.on("peerapp2-open", async(query, currentState, lastHash, onDestroy ) => {
+                        onDestroy(()=>{
+                            if (ace_editor_window) {
+                                ace_editor_$editor.destroy();
+                                ace_editor_window = false;
+                            }
+                        });
                         var $query = parse_app_query(query);
 
                         imports.user.getUser($query.alias, $query.uid, async function(err, $user, user, isMe) {

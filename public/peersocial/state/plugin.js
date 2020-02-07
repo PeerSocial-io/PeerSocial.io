@@ -76,11 +76,17 @@ define(function(require, exports, module) {
         History.replaceState({urlPath: urlPath}, "PeerSocial " + title || "PeerSocial", urlPath);
     };
     
+    AppState.prototype.currentState_destructors = [];
+    
     AppState.prototype.emitCurrentState = function () {
 
         var _self = this;
         
         appState.$hash.emit('200', appState.currentHash, appState.lastHash);
+        while(_self.currentState_destructors.length){
+            _self.currentState_destructors.pop()();
+        }
+        
         setTimeout(function(){
             
         
@@ -88,7 +94,9 @@ define(function(require, exports, module) {
         var _hash = hashSplit.shift().substring(1);
         hashSplit = hashSplit.join("~")
         if(appState.$hash._events[_hash]){
-            appState.$hash.emit(_hash, hashSplit, appState.currentState, appState.lastHash);
+            appState.$hash.emit(_hash, hashSplit, appState.currentState, appState.lastHash, function onDestroy(fn){
+                if(typeof fn == "function") _self.currentState_destructors.push(fn);
+            });
         }
         else{
             appState.$hash.emit('404', appState.currentHash, appState.lastHash);

@@ -4,21 +4,7 @@ var dom = require("../lib/dom");
 var lang = require("../lib/lang");
 
 var StatusBar = function(editor, parentNode) {
-    this.element = dom.createElement("div");
-    this.element.className = "ace_status-indicator";
-    this.element.style.cssText = "display: inline-block;";
-    parentNode.appendChild(this.element);
-
-    var statusUpdate = lang.delayedCall(function(){
-        this.updateStatus(editor);
-    }.bind(this)).schedule.bind(null, 100);
-    
-    editor.on("changeStatus", statusUpdate);
-    editor.on("changeSelection", statusUpdate);
-    editor.on("keyboardActivity", statusUpdate);
-};
-
-(function(){
+    var _self = this;
     this.updateStatus = function(editor) {
         var status = [];
         function add(str, separator) {
@@ -42,6 +28,23 @@ var StatusBar = function(editor, parentNode) {
         status.pop();
         this.element.textContent = status.join("");
     };
+    
+    this.element = dom.createElement("div");
+    this.element.className = "ace_status-indicator";
+    this.element.style.cssText = "display: inline-block;";
+    parentNode.appendChild(this.element);
+
+    var statusUpdate = lang.delayedCall(function(){
+        _self.updateStatus(editor);
+    }.bind(this)).schedule.bind(null, 100);
+    
+    editor.on("changeStatus", statusUpdate);
+    editor.on("changeSelection", statusUpdate);
+    editor.on("keyboardActivity", statusUpdate);
+};
+
+(function(){
+    
 }).call(StatusBar.prototype);
 
 exports.StatusBar = StatusBar;

@@ -460,26 +460,39 @@ define(function(require, exports, module) {
         var ended = false;
         var list = [];
         var count = 0;
-        contence.once(function(a, b, c, d) {
+        contence.once(function(a,b) {
+            var timOut = 0;
             for (var i in a) {
                 if (i.indexOf("_") == 0) continue;
                 count += 1;
             }
-            if (count == 0) {
-                return callback(null, listArrToObj(list), listSet, contence);
+            if(count == 0){
+                timOut = 100;
             }
-            
-            contence.map(function(item) {
-                return !!item ? item : null;
-            }).once(function(a, b, c, d) {
-                if (a == null) count -= 1;
-                if (a) list.push({ a: a, b: b });
-                if (count == list.length) {
-                    if(ended) return;
-                    ended = true;
-                    return callback(null, listArrToObj(list), listSet, contence);
-                }
-            });
+            count=0;
+            setTimeout(function(){
+                contence.back().get(b).once(function(a, b, c, d) {
+                    for (var i in a) {
+                        if (i.indexOf("_") == 0) continue;
+                        count += 1;
+                    }
+                    if (count == 0) {
+                        return callback(null, listArrToObj(list), listSet, contence);
+                    }
+                    
+                    contence.map(function(item) {
+                        return !!item ? item : null;
+                    }).once(function(a, b, c, d) {
+                        if (a == null) count -= 1;
+                        if (a) list.push({ a: a, b: b });
+                        if (count == list.length) {
+                            if(ended) return;
+                            ended = true;
+                            return callback(null, listArrToObj(list), listSet, contence);
+                        }
+                    });
+                });
+            },timOut)
         });
         
         function listArrToObj(arr) {
