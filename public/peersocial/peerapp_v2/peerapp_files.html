@@ -118,12 +118,12 @@
     </table>
     <% if(readme_file){ %>
         <hr/>
-        <%- showdown.makeHtml(readme_file.value) %>
+        <%- showdown.makeHtml(window.atob(readme_file.value)) %>
     <% } %>
     <% if(package_json_file && readme_file){ 
         var packageData;
         try{
-            packageData = JSON.parse(package_json_file.value);
+            packageData = JSON.parse(window.atob(package_json_file.value));
         }catch(e){}
         if(packageData && packageData.main){
         

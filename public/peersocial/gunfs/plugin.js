@@ -499,8 +499,8 @@ define(function(require, exports, module) {
             var obj = {};
             for (var i in arr) {
                 var item = arr[i].a;
-                if(item.value){
-                    item.value = GunFS.prototype._decode(item.value);
+                if(item.value && !item._decoded){
+                     item._decoded = GunFS.prototype._decode(item.value);
                 }
                 obj[arr[i].b] = item;
                 

@@ -16,14 +16,17 @@ define(function(require, exports, module) {
             module = {};
             module.exports = exports = {};
             define = function(fn) {
-
-                fn(require, exports, module);
+                try{
+                    fn(require, exports, module);
+                }catch(e){
+                    console.log(e);
+                }
             };
         }
         try {
 
-            var defineWrap_top = `define(function(require, exports, module){\n`;
-            var defineWrap_bottom = `\n});\n`;
+            var defineWrap_top = `(function(){define(function(require, exports, module){\n`;
+            var defineWrap_bottom = `\n})})();\n`;
 
             eval(defineWrap_top + appSource + defineWrap_bottom);
             if (module && module.exports)
@@ -39,7 +42,13 @@ define(function(require, exports, module) {
 
     async function peerapp(gunfs, url, $query, $resolve) {
         return new Promise(function(resolve) {
-
+            var isText = false;
+            
+            if(url.split("!")[0] == "text"){
+                isText = true;
+                url = url.split("!")[1]
+            }
+            
             var __self = function() {
                 gunfs.stat(url, function(err, stat) {
                     if (err == 404) return console.log("File Not Found");
@@ -91,7 +100,10 @@ define(function(require, exports, module) {
                             var appSource = file;
 
                             try {
-                                var execEnd = exec(appSource, gunfs, $query);
+                                var execEnd;
+                                if(isText){
+                                    execEnd = appSource;;
+                                }else execEnd = exec(appSource, gunfs, $query);
                                 ($resolve ? $resolve : resolve)(execEnd);
                             }
                             catch (e) {

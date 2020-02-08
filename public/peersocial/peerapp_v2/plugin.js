@@ -40,6 +40,8 @@ define(function(require, exports, module) {
                     return prefix + "json";
                 case "md":
                     return prefix + "markdown";
+                case "html":
+                    return prefix + "html";
             }
         }
         
@@ -72,7 +74,9 @@ define(function(require, exports, module) {
                 // ace_editor_window = false;
             }
             if (!ace_editor_window) {
-                ace_editor_window = $(imports.app.layout.ejs.render(require("text!./ace_editor.html"), {}));
+                ace_editor_window = $(imports.app.layout.ejs.render(require("text!./ace_editor.html"), {
+                    editorBody:value
+                }));
 
                 $("#main-container").html(ace_editor_window);
 
@@ -146,6 +150,7 @@ define(function(require, exports, module) {
             }
             else {
                 $("#main-container").html(ace_editor_window);
+                //ace_editor_$editor.setValue(value);
             }
 
             ace_editor_window.find("#runApp").unbind();
@@ -173,8 +178,7 @@ define(function(require, exports, module) {
             //else editor_options.run = noop;
 
             //if(value)
-            ace_editor_$editor.setValue(value);
-
+            
             setTimeout(function() {
                 reload = false;
             }, 100)
