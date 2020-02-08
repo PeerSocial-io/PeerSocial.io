@@ -201,10 +201,21 @@ define(function(require, exports, module) {
             
             ace_editor_window.find("#navmenu").html("")
             var lioop= query.query.split("/").filter(function (el) { return el != ""; });
-            var linkUp = "/peerapp2-open~";
+            var id = lioop[0].split("~")[0];
+            lioop[0] = lioop[0].split("~")[1];
+            lioop = [id].concat(lioop)
+            var linkUp;
             for (var i = 0; i < lioop.length; i++) { 
-                var isActive = (lioop.length-1 == i ? true : false);
-                linkUp += lioop[i]+"/";
+                var isActive = (lioop.length-1 == i ? true : false)
+                
+                if(i == 0){
+                    linkUp = "/peer~"
+                }else if(i == 1){
+                    linkUp = "/peerapp2-open~"+lioop[0]+"~"
+                }
+                
+                linkUp += lioop[i]+(i == 0 ? "" : "/")
+                
                 if(!isActive){
                     $(`<li class="breadcrumb-item"><a href="${linkUp}">${lioop[i]}</a></li>`).appendTo(ace_editor_window.find("#navmenu"));
                 }else{ 
