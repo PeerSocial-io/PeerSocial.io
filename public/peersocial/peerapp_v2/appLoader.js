@@ -25,9 +25,17 @@ define(function(require, exports, module) {
         }
         try {
 
-            var defineWrap_top = `(function(){define(function(require, exports, module){\n`;
-            var defineWrap_bottom = `\n})})();\n`;
-
+            var defineWrap_top = `try{\n(function(){define(async function(require, exports, module){\n`;
+            var defineWrap_bottom = `\n})})();\n}catch(e){console.error(e);throw e;}\n`;
+            
+            var cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g;
+            var deps = [];
+            appSource.toString().replace(cjsRequireRegExp, function (match, dep) {
+                        deps.push(dep);
+                    });
+            
+            console.log(deps)
+            
             eval(defineWrap_top + appSource + defineWrap_bottom);
             if (module && module.exports)
                 return module.exports;
