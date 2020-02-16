@@ -48,6 +48,7 @@
         <ol class="breadcrumb">
         <%
             var lioop= query.query.split("/").filter(function (el) { return el != ""; });
+            
             var id = lioop[0].split("~")[0];
             lioop[0] = lioop[0].split("~")[1];
             lioop = [id].concat(lioop)
@@ -57,11 +58,14 @@
                 
                 if(i == 0){
                     linkUp = "/peer~"
-                }else if(i == 0){
-                    linkUp = "/peerapp2-open~"
+                    linkUp += lioop[i]
+                }else if(i == 1){
+                    linkUp = "/peerapp2-open~"+id+"~"
+                    linkUp += lioop[i]+"/"
+                }else{
+                    linkUp += lioop[i]
                 }
                 
-                linkUp += lioop[i]
                 
                 if(!isActive){
             %>

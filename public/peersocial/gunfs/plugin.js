@@ -300,7 +300,7 @@ define(function(require, exports, module) {
                 }
                 var pathID = _self.dbRoot().back(-1).opt()._.opt.uuid();
                 var dir = item.get(pathID);
-                dir.put({ name: folder_name, id: pathID, ct: Date.now(), mt: Date.now(), type: "folder" }, () => {
+                dir.put({ name: folder_name, id: pathID, ct: Date.now(), mt: Date.now(), type: "folder" , contence: null}, () => {
                     _self.notify.put({ path: path, to: null, t: Date.now(), event: "change", type: "folder" });
                     contence.set(dir, (res) => {
                         callback(null);
@@ -471,7 +471,7 @@ define(function(require, exports, module) {
             }
             count=0;
             setTimeout(function(){
-                contence.back().get(b).once(function(a, b, c, d) {
+                listSet.get(b).once(function(a, b, c, d) {
                     for (var i in a) {
                         if (i.indexOf("_") == 0) continue;
                         count += 1;

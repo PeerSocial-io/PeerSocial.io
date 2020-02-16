@@ -57,6 +57,8 @@ define(function(require, exports, module) {
                 url = url.split("!")[1]
             }
             
+            url = url.split("#")[0];
+            
             var __self = function() {
                 gunfs.stat(url, function(err, stat) {
                     if (err == 404) return console.log("File Not Found");

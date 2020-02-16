@@ -23,8 +23,11 @@ define(function(require, exports, module) {
                 var urlPath = $(this).attr('href');
                     var title = $(this).text();
                 if(urlPath.indexOf("/") == 0){
-                    _self.pushState(urlPath, title, urlPath);
-                    e.preventDefault();
+                    var _hash = urlPath.split("?")[0].split("~").shift().substring(1);
+                    if(appState.$hash._events[_hash]){
+                        _self.pushState(urlPath, title, urlPath);
+                        e.preventDefault();
+                    }
                     return false; // prevents default click action of <a ...>
                 }else if(urlPath.indexOf("#") > -1){
                     //urlPath = "/"+urlPath.substring(urlPath.indexOf("#")+1);
@@ -65,10 +68,8 @@ define(function(require, exports, module) {
 
     };
     
-    
-    
     AppState.prototype.pushState = function (urlPath, title) {
-        title = "PeerSocial " + title || "PeerSocial";
+        title = "PeerSocial " + (typeof title == "string" && title != "undefined" ? title : false) || "PeerSocial";
         $("title").text(title);
         History.pushState({urlPath: urlPath}, title || "PeerSocial", urlPath);
     };
