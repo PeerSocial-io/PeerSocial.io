@@ -19,7 +19,7 @@ var server = http.createServer(app).listen(port);
 
 var gun_peers = ["https://www.peersocial.io/gun"];
 
-if(process.env.isMaster)
+if(process.env.ISMASTERPEER)
     gun_peers = [];
     
 var gun = Gun({ 
