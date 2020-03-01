@@ -1,5 +1,5 @@
 
-var casheControl = 0;//1000 * 60 * 60;
+var casheControl = process.env.HTTP_MAXAGE || 0;//1000 * 60 * 60;
 
 var port = process.env.PORT || 8765;
 //var https = require('https');
