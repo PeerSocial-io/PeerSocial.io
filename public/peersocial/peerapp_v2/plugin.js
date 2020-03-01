@@ -293,14 +293,19 @@ define(function(require, exports, module) {
                                     model.find("#create").click(async() => {
                                         creating = true;
                                         var name = model.find("#appname").val();
-                                        user.get(peer_profile_key).get(peerApps_v2_key).get(name).put({
+                                        var chain = user.get(peer_profile_key).get(peerApps_v2_key);
+                                        
+                                        await chain.get(name).put(null);
+                                        
+                                        await chain.get(name).put({
                                             title: name
-                                        }, function() {
+                                        });
+                                        //, function() {
 
                                             createdApp = name;
                                             model.modal("hide");
 
-                                        });
+                                        //});
                                     });
                                 });
                                 

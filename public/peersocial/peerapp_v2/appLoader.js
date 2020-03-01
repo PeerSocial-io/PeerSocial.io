@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
 
-    var exec = function(appSource, gunfs, $query) {
+    var exec = function(appSource, gunfs, $query, url) {
 
         var require = undefined,
             exports = undefined,
@@ -25,7 +25,7 @@ define(function(require, exports, module) {
         }
         try {
 
-            var defineWrap_top = `try{\n(function(){define(async function(require, exports, module){\n`;
+            var defineWrap_top = `console.log("${url}");try{\n(function(){define(async function(require, exports, module){\n`;
             var defineWrap_bottom = `\n})})();\n}catch(e){console.error(e);throw e;}\n`;
             
             var cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g;
@@ -113,7 +113,7 @@ define(function(require, exports, module) {
                                 var execEnd;
                                 if(isText){
                                     execEnd = appSource;;
-                                }else execEnd = exec(appSource, gunfs, $query);
+                                }else execEnd = exec(appSource, gunfs, $query, url);
                                 ($resolve ? $resolve : resolve)(execEnd);
                             }
                             catch (e) {

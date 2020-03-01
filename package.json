@@ -12,9 +12,8 @@
   "author": "peersocial",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.17.1",
-    "gun": "https://github.com/amark/gun",
-    "selfsigned": "^1.10.7"
+    "express": "*",
+    "gun": "https://github.com/amark/gun/archive/master.tar.gz"
   },
   "engines": {
     "node": "8.x"

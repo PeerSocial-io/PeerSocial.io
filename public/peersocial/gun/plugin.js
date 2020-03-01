@@ -4,18 +4,22 @@ define(function(require, exports, module) {
     appPlugin.provides = ["gun"];
 
     /* global Gun */
-    var gun = Gun(); //"https://"+window.location.host+"/gun");
-
+    
+    if(!Gun.log.once)
+        Gun.log.once = function(){};
+    
+    var gun = Gun({super:false}); //"https://"+window.location.host+"/gun");
+        
     var thisHost = window.location.host;
 
     var peers = [];
 
-    if (thisHost != "www.peersocial.io")
+    // if (thisHost != "www.peersocial.io")
         peers.push("https://" + window.location.host + "/gun")
+    // else
+    //     peers.push("https://www.peersocial.io/gun");
 
-    peers.push("https://www.peersocial.io/gun");
-
-    setTimeout(function() {
+    // setTimeout(function() {
 
         gun.opt({ peers: peers });
         
@@ -24,7 +28,7 @@ define(function(require, exports, module) {
             mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
         }
         
-    }, 100)
+    // }, 1)
 
     window.gun = gun;
 

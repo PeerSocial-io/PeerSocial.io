@@ -109,6 +109,7 @@
         if(list[i].name.toLowerCase() == "readme.md") readme_file = list[i];
         if(list[i].name.toLowerCase() == "package.json") package_json_file = list[i];
         
+        if(list[i].name.toLowerCase() == "") continue;
         %>
         <tr>
             <td><a href="/peerapp2-open~<%= (query.query.charAt(query.query.length-1) == '/' ? query.query : query.query+'/')  + list[i].name + (list[i].type == 'folder' ? '/' : '') %>"><%= list[i].name+(list[i].type != "folder" ? "" : "/") %></a></td>

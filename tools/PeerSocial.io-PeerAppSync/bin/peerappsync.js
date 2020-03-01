@@ -1,6 +1,7 @@
 #!/usr/bin/env node
+var PEER = "https://www.peersocial.io/gun";
 
-var DISABLE_REMOTE_DELETE = true;
+var DISABLE_REMOTE_DELETE = false;
 
 var rimraf = require("rimraf");
 var path = require('path');
@@ -21,39 +22,50 @@ if (!config.peerappssync) {
 }
 
 var Gun = require("gun");
+Gun.log.once = function(){};
 require("gun/lib/unset");
 
-var gun = Gun({ peers: ["http://localhost:8000/gun"], radisk: false, super: false });
+var gun;
 
 setTimeout(function() {
-
-    var act = {};
-
-    act.a = function() {
-        gun.user().auth(config.peer_user.username.split("@")[1], config.peer_user.password, function(res) {
-            if (res.err) {
-                console.log(res.err);
-            }
-            act.b();
-        });
-    };
-
-    act.b = function() {
-
-        for (var i in config.peerappssync) {
-            setupApp(config.peerappssync[i], config.peer_user);
-        }
         
-    };
+    gun = Gun({ peers: [PEER], radisk: false, super: false });
+    global.gun = gun;
+    
+    setTimeout(function() {
+    
+        var act = {};
+    
+        act.a = function() {
+            gun.user().auth(config.peer_user.username.split("@")[1], config.peer_user.password, function(res) {
+                if (res.err) {
+                    console.log(res.err);
+                }else{
+                    gun.user().get("profile").once(function(res){
+                        console.log("loggedIn", config.peer_user.username.split("@")[1], res.display_name, res.tagline);    
+                    });
+                }
+                act.b();
+            });
+        };
+    
+        act.b = function() {
+    
+            for (var i in config.peerappssync) {
+                setupApp(config.peerappssync[i], config.peer_user);
+            }
+            
+        };
+        
+        if (config.peer_user && !gun.user().is) {
+            act.a();
+        }
+        else act.b();
+    
+    
+    }, 3000);
 
-
-    if (config.peer_user && !gun.user().is) {
-        act.a();
-    }
-    else act.b();
-
-
-}, 1000);
+},3000);
 
 function setupApp(app) {
     var peer_app_query = app + "/";
@@ -72,7 +84,8 @@ function setupApp(app) {
             global.gunfs = gunfs; //------------------------------------------------------------------------------------------------------
 
             gunfs.on("*", function(e) {
-                gunfs.stat(e.path, function(err, stat) {
+                setTimeout(function(){
+                    gunfs.stat(e.path, function(err, stat) {
                     if (!err && stat.mime == '') {
                         gunfs.readfile(e.path, function(err, data) {
                             if (!err) {
@@ -81,7 +94,7 @@ function setupApp(app) {
                                 if(fs.existsSync(local_filePath))
                                     oldData = fs.readFileSync(local_filePath).toString("utf8");
                                     
-                                if (data != oldData) {
+                                if (data !== oldData) {
                                     ensureDirectoryExistence(local_filePath);
                                     fs.writeFileSync(local_filePath, data);
                                     fs.utimesSync(local_filePath, new Date(), new Date(stat.mtime));
@@ -105,6 +118,7 @@ function setupApp(app) {
                             console.log(e);
                     }
                 });
+                },1000);
             });
 
             if (stat.mime == "folder") {
@@ -171,7 +185,7 @@ function sync_GunFS_to_Local(gunfs, filePath, localPath) {
                                 ensureDirectoryExistence(local_filePath);
                                 fs.writeFileSync(local_filePath, data);
                                 fs.utimesSync(local_filePath, new Date(), new Date(gunfs_stats.mtime));
-                                console.log("saved to local", local_filePath);
+                                console.log("saved to existing local", local_filePath);
                             }
                         });
                         console.log(filePath, gunMtime.getTime(), local_stats.mtime.getTime());
@@ -236,7 +250,12 @@ function sync_Local_to_GunFS(gunfs, localPath) {
                                 var newData = fs.readFileSync(localPath + appFile).toString("utf8");
                                 gunfs.mkfile(appFile, { value: newData , mtime: local_stats.mtime.getTime()}, function(err) {
                                     if (err) throw err;
-                                    console.log("Saved-add file to gun", appFile);
+                                        gunfs.stat(appFile, function(err, gunfs_stats) {
+                                            if (!err) {
+                                                fs.utimesSync(localPath + appFile, new Date(), new Date(gunfs_stats.mtime));
+                                                console.log("Saved-add file to gun (mtime "+(new Date(gunfs_stats.mtime))+")", appFile);
+                                            }
+                                        });
                                 });
                             }
                         })
@@ -247,16 +266,36 @@ function sync_Local_to_GunFS(gunfs, localPath) {
                         gunfs.readfile(appFile, function(err, data) {
                             if (!err) {
                                 var newData = fs.readFileSync(localPath + appFile).toString("utf8");
-                                if (data != newData) {
+                                if (data !== newData) {
                                     gunfs.mkfile(appFile, newData, function(err) {
                                         if (err) throw err;
-                                        console.log("Saved file to gun", appFile);
+                                        gunfs.stat(appFile, function(err, gunfs_stats) {
+                                            if (!err) {
+                                                fs.utimesSync(localPath + appFile, new Date(), new Date(gunfs_stats.mtime));
+                                                console.log("Saved file to gun (mtime "+(new Date(gunfs_stats.mtime))+")", appFile);
+                                            }
+                                        });
                                     });
                                 }
                             }
                             else {
-                                //file prolly not exist
-
+                                console.log("file prolly not exist")
+                                if(err == 404){
+                                    fs.stat(localPath + appFile, function(err, local_stats) {
+                                        if(!err){
+                                            var newData = fs.readFileSync(localPath + appFile).toString("utf8");
+                                            gunfs.mkfile(appFile, { value: newData , mtime: local_stats.mtime.getTime()}, function(err) {
+                                                if (err) throw err;
+                                                    gunfs.stat(appFile, function(err, gunfs_stats) {
+                                                        if (!err) {
+                                                            fs.utimesSync(localPath + appFile, new Date(), new Date(gunfs_stats.mtime));
+                                                            console.log("Saved-add file to gun (mtime "+(new Date(gunfs_stats.mtime))+")", appFile);
+                                                        }
+                                                    });
+                                            });
+                                        }
+                                    })
+                                }
                             }
                         });
 
@@ -305,13 +344,14 @@ function getUser(alias, $uid32, callback) {
         if (pub) {
             gun.get(pub).once((data) => {
                 try {
-                    if (alias == data.alias) {
-                        callback(null, data, gun.get(pub));
+                    if (data && alias == data.alias) {
+                        return callback(null, data, gun.get(pub));
                     }
                 }
                 catch (e) {
-                    callback(e);
+                    return callback(e);
                 }
+                return callback("fail to find pubkey alias");
             });
         }
         else {
@@ -828,21 +868,29 @@ GunFS.prototype._decode = function(value, cb) {
 };
 
 async function getSet(listSet, contence, callback) {
+        
     var ended = false;
     var list = [];
     var count = 0;
-    contence.once(function(a, b) {
+    contence.once(function(a,b) {
+        if(!a){
+            (async ()=>{
+                await contence.put({init:"init"});
+                getSet(listSet, contence, callback);
+            })();
+            return;
+        }
         var timOut = 0;
         for (var i in a) {
             if (i.indexOf("_") == 0) continue;
             count += 1;
         }
-        if (count == 0) {
+        if(count == 0){
             timOut = 1000;
         }
-        count = 0;
-        setTimeout(function() {
-            contence.back().get(b).once(function(a, b, c, d) {
+        count=0;
+        setTimeout(function(){
+            listSet.get(b).once(function(a, b, c, d) {
                 for (var i in a) {
                     if (i.indexOf("_") == 0) continue;
                     count += 1;
@@ -850,36 +898,37 @@ async function getSet(listSet, contence, callback) {
                 if (count == 0) {
                     return callback(null, listArrToObj(list), listSet, contence);
                 }
-
+                
                 contence.map(function(item) {
                     return !!item ? item : null;
                 }).once(function(a, b, c, d) {
+                    if(a == "init")
+                        a = null;
                     if (a == null) count -= 1;
                     if (a) list.push({ a: a, b: b });
                     if (count == list.length) {
-                        if (ended) return;
+                        if(ended) return;
                         ended = true;
                         return callback(null, listArrToObj(list), listSet, contence);
                     }
                 });
             });
-        }, timOut);
+        },timOut)
     });
-
+    
     function listArrToObj(arr) {
         var obj = {};
         for (var i in arr) {
             var item = arr[i].a;
-            if (item.value && !item._decoded) {
-                item._decoded = GunFS.prototype._decode(item.value);
+            if(item.value && !item._decoded){
+                 item._decoded = GunFS.prototype._decode(item.value);
             }
             obj[arr[i].b] = item;
-
+            
         }
         return obj;
     }
 }
-
 function lengthInUtf8Bytes(str) {
     // Matches only the 10.. bytes that are non-initial characters in a multi-byte sequence.
     var m = encodeURIComponent(str).match(/%[89ABab]/g);
@@ -887,4 +936,5 @@ function lengthInUtf8Bytes(str) {
 }
 
 return new GunFS($appQuery);
-};
+}
+

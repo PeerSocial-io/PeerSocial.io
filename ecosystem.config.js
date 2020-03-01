@@ -7,7 +7,7 @@ module.exports = {
     //args: './NORMAL',
     instances: 1,
     autorestart: true,
-    watch: false
+    watch: ["PeerSocial.js"]
     
   }]
 };

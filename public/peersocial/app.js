@@ -4,7 +4,8 @@ require.config({
         ejs: 'lib/ejs',
         events: 'lib/events',
         text: 'lib/text',
-        showdown: 'lib/showdown.min'
+        showdown: 'lib/showdown.min',
+        gunfs: 'lib/gunfs'
     }
 });
 
@@ -23,7 +24,7 @@ require(["lib/architect", "events"],
             "peers/plugin",
             //"peerapp/plugin",
             "peerapp_v2/plugin",
-            "gunfs/plugin"
+            "gun-fs/plugin"
         ], function(err, config) {
             config.push({
                 packagePath: "app",
