@@ -493,11 +493,14 @@
             var count = 0;
             contence.once(function(a, b) {
                 if (!a) {
+                    a = {};
+                    /*
                     (async() => {
                         await contence.put({ init: "init" });
                         getSet(listSet, contence, callback);
                     })();
                     return;
+                    */
                 }
                 var timOut = 0;
                 for (var i in a) {
@@ -510,6 +513,9 @@
                 count = 0;
                 setTimeout(function() {
                     listSet.get(b).once(function(a, b, c, d) {
+                        if (!a)
+                            a = {};
+                            
                         for (var i in a) {
                             if (i.indexOf("_") == 0) continue;
                             count += 1;
@@ -521,8 +527,7 @@
                         contence.map(function(item) {
                             return !!item ? item : null;
                         }).once(function(a, b, c, d) {
-                            if (a == "init")
-                                a = null;
+                            if (a == "init") a = null;
                             if (a == null) count -= 1;
                             if (a) list.push({ a: a, b: b });
                             if (count == list.length) {
