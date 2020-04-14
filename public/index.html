@@ -12,6 +12,17 @@
     <!--<link href="/fontawesome/webfonts/fa-solid-900.woff"/>-->
     <!--<link href="/fontawesome/webfonts/fa-solid-900.ttf"/>-->
 
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JLE313HJX5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-JLE313HJX5');
+    </script>
+
     <style>
         body {
             padding-top: 5rem;
@@ -42,7 +53,7 @@
 
     <div style="text-align: center;">
         <hr/>
-        <a href="/">© PeerSocial.io</a> | <a href="/gun/examples/stats.html">GUN-STATS</a> 
+        <a href="/">© PeerSocial.io</a> | <a href="/gun/examples/stats.html">GUN-STATS</a>
     </div>
 
     <script src="/peersocial/provable.min.js"></script>
@@ -51,10 +62,10 @@
     <script src="/peersocial/lib/timeago.jquery.js"></script>
 
     <script src="/gun/gun.js"></script>
-    <script src="/gun/axe.js"></script>
+    <!--<script src="/gun/axe.js"></script>-->
     <script src="/gun/lib/radix.js"></script>
     <script src="/gun/sea.js"></script>
-    <script src="/gun/lib/webrtc.js"></script>
+    <!--<script src="/gun/lib/webrtc.js"></script>-->
     <script src="/gun/lib/unset.js"></script>
 
     <script src="/bootstrap/js/bootstrap.bundle.js"></script>
@@ -69,8 +80,11 @@
     <script src="/ace/src-noconflict/ext-keybinding_menu.js" type="text/javascript" charset="utf-8"></script>
     
     
+    <script src="/peersocial/lib/iris.js"></script>
+
+
     <script data-main="/peersocial/app" src="/peersocial/lib/require.js"></script>
-    
+
 </body>
 
 </html>

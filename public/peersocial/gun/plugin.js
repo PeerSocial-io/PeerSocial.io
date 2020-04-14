@@ -8,20 +8,21 @@ define(function(require, exports, module) {
     if(!Gun.log.once)
         Gun.log.once = function(){};
     
-    var gun = Gun({super:false}); //"https://"+window.location.host+"/gun");
+    var peers = [];
+
+    
+        peers.push("https://" + window.location.host + "/gun")
+    // else
+     if (thisHost != "www.peersocial.io")
+         peers.push("https://www.peersocial.io/gun");
+
+    var gun = Gun({super:false, peers: peers}); //"https://"+window.location.host+"/gun");
         
     var thisHost = window.location.host;
 
-    var peers = [];
-
-    // if (thisHost != "www.peersocial.io")
-        peers.push("https://" + window.location.host + "/gun")
-    // else
-    //     peers.push("https://www.peersocial.io/gun");
-
     // setTimeout(function() {
 
-        gun.opt({ peers: peers });
+        // gun.opt({ peers: peers });
         
         if (thisHost != "www.peersocial.io") {
             var mesh = gun.back('opt.mesh'); // DAM;
