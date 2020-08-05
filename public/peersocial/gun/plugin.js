@@ -1,3 +1,4 @@
+var MYGUN;
 define(function(require, exports, module) {
 
     appPlugin.consumes = ["app"];
@@ -13,8 +14,8 @@ define(function(require, exports, module) {
     
         peers.push("https://" + window.location.host + "/gun")
     // else
-     if (thisHost != "www.peersocial.io")
-         peers.push("https://www.peersocial.io/gun");
+    //  if (thisHost != "www.peersocial.io")
+    //      peers.push("https://www.peersocial.io/gun");
 
     var gun = Gun({super:false, peers: peers}); //"https://"+window.location.host+"/gun");
         
@@ -32,7 +33,8 @@ define(function(require, exports, module) {
     // }, 1)
 
     window.gun = gun;
-
+    MYGUN = gun;
+    
     function getPubData(pub) {
         return new Promise(resolve => {
             gun.get(pub).once(resolve);

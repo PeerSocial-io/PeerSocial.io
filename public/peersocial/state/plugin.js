@@ -8,7 +8,7 @@ define(function(require, exports, module) {
         this.currentState = History.getState();
         this.lastState = false;
         
-        if (this.currentState.hash == '/') {
+        if (this.currentState.hash.split("?")[0] == '/') {
             _self.pushState("/home","Home");
             this.currentState = History.getState();
         }

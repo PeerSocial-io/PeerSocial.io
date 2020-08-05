@@ -1,7 +1,7 @@
 
 var casheControl = process.env.HTTP_MAXAGE || 0;//1000 * 60 * 60;
 
-var port = process.env.PORT || 8765;
+var port = process.env.PORT || 8000 || 8765;
 //var https = require('https');
 var http = require('http');
 var express = require('express');
@@ -12,6 +12,7 @@ Gun.log.once = function(){};
     
     
 require('gun/axe');// is there a GUN BUG with this?
+require('gun/lib/webrtc');
 
 var app = express();
 
@@ -25,7 +26,7 @@ var gunOptions = {
     peers: ["https://www.peersocial.io/gun"], 
     file: 'radata', 
     web: server , 
-    super:true, 
+    super:false, 
     stats:true
 };
 
@@ -43,8 +44,8 @@ var gun = Gun(gunOptions);
 
 if(process.env.ISMASTERPEER){
 }else{
-    var mesh = gun.back('opt.mesh'); // DAM;
-    mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
+    // var mesh = gun.back('opt.mesh'); // DAM;
+    // mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
 }
 require("./server_api/gunfs/gunfs.js")(gun,app);
 
