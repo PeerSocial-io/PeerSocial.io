@@ -13,6 +13,7 @@
   "author": "peersocial",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.727.1",
     "express": "*",
     "gun": "https://github.com/amark/gun/archive/master.tar.gz"
   },
