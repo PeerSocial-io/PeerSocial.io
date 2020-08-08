@@ -18,7 +18,7 @@ define(function(require, exports, module) {
         var peers = [];
 
 
-        peers.push("https://" + window.location.host + "/gun")
+        //peers.push("https://" + window.location.host + "/gun")
         // else
         //  if (thisHost != "www.peersocial.io")
         //      peers.push("https://www.peersocial.io/gun");

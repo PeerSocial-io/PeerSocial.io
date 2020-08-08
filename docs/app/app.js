@@ -2672,14 +2672,9 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global, module, setImmediate) {;(function(){
+/* WEBPACK VAR INJECTION */(function(module, setImmediate, global) {;(function(){
 
   /* UNBUILD */
-  var root;
-  if(typeof window !== "undefined"){ root = window }
-  if(typeof global !== "undefined"){ root = global }
-  root = root || {};
-  var console = root.console || {log: function(){}};
   function USE(arg, req){
     return req? __webpack_require__("./node_modules/gun sync recursive")(arg) : arg.slice? USE[R(arg)] : function(mod, path){
       arg(mod = {exports: {}});
@@ -2689,7 +2684,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
       return p.split('/').slice(-1).toString().replace('.js','');
     }
   }
-  if(true){ var common = module }
+  if(true){ var MODULE = module }
   /* UNBUILD */
 
 	;USE(function(module){
@@ -2729,6 +2724,17 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			if(u !== o['<'] && t <= o['<']){ return true }
 			return false;
 		}
+		Type.text.hash = function(s, c){ // via SO
+			if(typeof s !== 'string'){ return }
+	    c = c || 0;
+	    if(!s.length){ return c }
+	    for(var i=0,l=s.length,n; i<l; ++i){
+	      n = s.charCodeAt(i);
+	      c = ((c<<5)-c)+n;
+	      c |= 0;
+	    }
+	    return c;
+	  }
 		Type.list = {is: function(l){ return (l instanceof Array) }}
 		Type.list.slit = Array.prototype.slice;
 		Type.list.sort = function(k){ // creates a new sort function based off some key
@@ -2771,9 +2777,9 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			return !o? o : JSON.parse(JSON.stringify(o)); // is shockingly faster than anything else, and our data has to be a subset of JSON anyways!
 		}
 		;(function(){
-			function empty(v,i){ var n = this.n;
+			function empty(v,i){ var n = this.n, u;
 				if(n && (i === n || (obj_is(n) && obj_has(n, i)))){ return }
-				if(i){ return true }
+				if(u !== i){ return true }
 			}
 			Type.obj.empty = function(o, n){
 				if(!o){ return true }
@@ -2789,20 +2795,21 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				} t.r = t.r || [];
 				t.r.push(k);
 			};
-			var keys = Object.keys, map;
+			var keys = Object.keys, map, u;
 			Object.keys = Object.keys || function(o){ return map(o, function(v,k,t){t(k)}) }
 			Type.obj.map = map = function(l, c, _){
-				var u, i = 0, x, r, ll, lle, f = fn_is(c);
-				t.r = null;
+				var u, i = 0, x, r, ll, lle, f = 'function' == typeof c;
+				t.r = u;
 				if(keys && obj_is(l)){
 					ll = keys(l); lle = true;
 				}
+				_ = _ || {};
 				if(list_is(l) || ll){
 					x = (ll || l).length;
 					for(;i < x; i++){
 						var ii = (i + Type.list.index);
 						if(f){
-							r = lle? c.call(_ || this, l[ll[i]], ll[i], t) : c.call(_ || this, l[i], ii, t);
+							r = lle? c.call(_, l[ll[i]], ll[i], t) : c.call(_, l[i], ii, t);
 							if(r !== u){ return r }
 						} else {
 							//if(Type.test.is(c,l[i])){ return ii } // should implement deep equality testing!
@@ -2845,7 +2852,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 						tmp.next(arg);
 				}}
 			}});
-			if(arg instanceof Function){
+			if('function' == typeof arg){
 				var be = {
 					off: onto.off ||
 					(onto.off = function(){
@@ -2873,6 +2880,20 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			return tag;
 		};
 	})(USE, './onto');
+
+	;USE(function(module){
+		var to = (typeof setImmediate !== "undefined")? setImmediate : setTimeout, puff = function(cb){
+			if(Q.length){ Q.push(cb); return } Q = [cb];
+			to(function go(S){ S = S || +new Date;
+				var i = 0, cb; while(i < 9 && (cb = Q[i++])){ cb() }
+				console.STAT && console.STAT(S, +new Date - S, 'puff');
+				if(cb && !(+new Date - S)){ return go(S) }
+				if(!(Q = Q.slice(i)).length){ return }
+				to(go, 0);
+			}, 0);
+		}, Q = [];
+		module.exports = setTimeout.puff = puff;
+	})(USE, './puff');
 
 	;USE(function(module){
 		/* Based on the Hypothetical Amnesia Machine thought experiment */
@@ -2997,7 +3018,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			Node.ify = function(obj, o, as){ // returns a node from a shallow object.
 				if(!o){ o = {} }
 				else if(typeof o === 'string'){ o = {soul: o} }
-				else if(o instanceof Function){ o = {map: o} }
+				else if('function' == typeof o){ o = {map: o} }
 				if(o.map){ o.node = o.map.call(as, obj, u, o.node || {}) }
 				if(o.node = Node.soul.ify(o.node || {}, o)){
 					obj_map(obj, map, {o:o,as:as});
@@ -3033,7 +3054,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			/*if(perf){
 				t = start + perf.now(); // Danger: Accuracy decays significantly over time, even if precise.
 			} else {*/
-				t = time();
+				t = +new Date;
 			//}
 			if(last < t){
 				return N = 0, last = t + State.drift;
@@ -3042,10 +3063,10 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 		}
 		var time = Type.time.is, last = -Infinity, N = 0, D = 1000; // WARNING! In the future, on machines that are D times faster than 2016AD machines, you will want to increase D by another several orders of magnitude so the processing speed never out paces the decimal resolution (increasing an integer effects the state accuracy).
 		var perf = (typeof performance !== 'undefined')? (performance.timing && performance) : false, start = (perf && perf.timing && perf.timing.navigationStart) || (perf = false);
-		State._ = '>';
+		var S_ = State._ = '>';
 		State.drift = 0;
 		State.is = function(n, k, o){ // convenience function to get the state on a key on a node and return it.
-			var tmp = (k && n && n[N_] && n[N_][State._]) || o;
+			var tmp = (k && n && n[N_] && n[N_][S_]) || o;
 			if(!tmp){ return }
 			return num_is(tmp = tmp[k])? tmp : -Infinity;
 		}
@@ -3057,7 +3078,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				}
 				n = Node.soul.ify(n, soul); // then make it so!
 			}
-			var tmp = obj_as(n[N_], State._); // grab the states data.
+			var tmp = obj_as(n[N_], S_); // grab the states data.
 			if(u !== k && k !== N_){
 				if(num_is(s)){
 					tmp[k] = s; // add the valid state.
@@ -3138,8 +3159,12 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				if(typeof env === 'string'){
 					env = {soul: env};
 				} else
-				if(env instanceof Function){
+				if('function' == typeof env){
 					env.map = env;
+				}
+				if(typeof as === 'string'){
+					env.soul = env.soul || as;
+					as = u;
 				}
 				if(env.soul){
 					at.link = Val.link.ify(env.soul);
@@ -3270,9 +3295,9 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 		USE('./onto'); // depends upon onto!
 		module.exports = function ask(cb, as){
 			if(!this.on){ return }
-			if(!(cb instanceof Function)){
+			if(!('function' == typeof cb)){
 				if(!cb || !as){ return }
-				var id = cb['#'] || cb, tmp = (this.tag||empty)[id];
+				var id = cb['#'] || cb, tmp = (this.tag||'')[id];
 				if(!tmp){ return }
 				tmp = this.on(id, as);
 				clearTimeout(tmp.err);
@@ -3282,7 +3307,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			if(!cb){ return id }
 			var to = this.on(id, cb, as);
 			to.err = to.err || setTimeout(function(){
-				to.next({err: "Error: No ACK received yet.", lack: true});
+				to.next({err: "Error: No ACK yet.", lack: true});
 				to.off();
 			}, (this.opt||{}).lack || 9000);
 			return id;
@@ -3292,45 +3317,43 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 	;USE(function(module){
 		var Type = USE('./type');
 		function Dup(opt){
-			var dup = {s:{}};
+			var dup = {s:{}}, s = dup.s;
 			opt = opt || {max: 1000, age: /*1000 * 9};//*/ 1000 * 9 * 3};
-			dup.check = function(id){ var tmp;
-				if(!(tmp = dup.s[id])){ return false }
-				if(tmp.pass){ return tmp.pass = false }
-				return dup.track(id);
+			dup.check = function(id){
+				if(!s[id]){ return false }
+				return dt(id);
 			}
-			dup.track = function(id, pass){
-				var it = dup.s[id] || (dup.s[id] = {});
-				it.was = time_is();
-				if(pass){ it.pass = true }
+			var dt = dup.track = function(id){
+				var it = s[id] || (s[id] = {});
+				it.was = +new Date;
 				if(!dup.to){ dup.to = setTimeout(dup.drop, opt.age + 9) }
 				return it;
 			}
 			dup.drop = function(age){
-				var now = time_is();
-				Type.obj.map(dup.s, function(it, id){
+				var now = +new Date;
+				Type.obj.map(s, function(it, id){
 					if(it && (age || opt.age) > (now - it.was)){ return }
-					Type.obj.del(dup.s, id);
+					delete s[id];
 				});
 				dup.to = null;
+				console.STAT && (age = +new Date - now) > 9 && console.STAT(now, age, 'dup drop');
 			}
 			return dup;
 		}
-		var time_is = Type.time.is;
 		module.exports = Dup;
 	})(USE, './dup');
 
 	;USE(function(module){
 
 		function Gun(o){
-			if(o instanceof Gun){ return (this._ = {gun: this, $: this}).$ }
+			if(o instanceof Gun){ return (this._ = {$: this}).$ }
 			if(!(this instanceof Gun)){ return new Gun(o) }
-			return Gun.create(this._ = {gun: this, $: this, opt: o});
+			return Gun.create(this._ = {$: this, opt: o});
 		}
 
 		Gun.is = function($){ return ($ instanceof Gun) || ($ && $._ && ($ === $._.$)) || false }
 
-		Gun.version = 0.9;
+		Gun.version = 0.2020;
 
 		Gun.chain = Gun.prototype;
 		Gun.chain.toJSON = function(){};
@@ -3345,6 +3368,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 		Gun.on = USE('./onto');
 		Gun.ask = USE('./ask');
 		Gun.dup = USE('./dup');
+		Gun.puff = USE('./puff');
 
 		;(function(){
 			Gun.create = function(at){
@@ -3355,45 +3379,132 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				at.dup = at.dup || Gun.dup();
 				var gun = at.$.opt(at.opt);
 				if(!at.once){
-					at.on('in', root, at);
-					at.on('out', root, {at: at, out: root});
+					at.on('in', universe, at);
+					at.on('out', universe, at);
+					at.on('put', map, at);
 					Gun.on('create', at);
 					at.on('create', at);
 				}
 				at.once = 1;
 				return gun;
 			}
-			function root(msg){
-				//add to.next(at); // TODO: MISSING FEATURE!!!
-				var ev = this, as = ev.as, at = as.at || as, gun = at.$, dup, tmp;
-				if(!(tmp = msg['#'])){ tmp = msg['#'] = text_rand(9) }
-				if((dup = at.dup).check(tmp)){
-					if(as.out === msg.out){
-						msg.out = u;
-						ev.to.next(msg);
-					}
-					return;
+			function universe(msg){
+				if(!msg){ return }
+				if(msg.out === universe){ this.to.next(msg); return }
+				var eve = this, as = eve.as, at = as.at || as, gun = at.$, dup = at.dup, tmp, DBG = msg.DBG;
+				(tmp = msg['#']) || (tmp = msg['#'] = text_rand(9));
+				if(dup.check(tmp)){ return } dup.track(tmp);
+				tmp = msg._; msg._ = ('function' == typeof tmp)? tmp : function(){};
+				(msg.$ && (msg.$ === (msg.$._||'').$)) || (msg.$ = gun);
+				if(!at.ask(msg['@'], msg)){ // is this machine listening for an ack?
+					DBG && (DBG.u = +new Date);
+					if(msg.get){ Gun.on._get(msg, gun) }
+					if(msg.put){ put(msg); return }
 				}
-				dup.track(tmp);
-				if(tmp = msg['@']){ dup.track(tmp) } // HNPERF: Bump original request's liveliness.
-				if(!at.ask(tmp, msg)){
-					if(msg.get){
-						Gun.on.get(msg, gun); //at.on('get', get(msg));
-					}
-					if(msg.put){
-						Gun.on.put(msg, gun); //at.on('put', put(msg));
-					}
-				}
-				ev.to.next(msg);
-				if(!as.out){
-					msg.out = root;
-					at.on('out', msg);
-				}
+				DBG && (DBG.uc = +new Date);
+				eve.to.next(msg);
+				DBG && (DBG.ua = +new Date);
+				msg.out = universe; at.on('out', msg);
+				DBG && (DBG.ue = +new Date);
 			}
+			function put(msg){
+				if(!msg){ return }
+				var ctx = msg._||'', root = ctx.root = ((ctx.$ = msg.$||'')._||'').root;
+				var put = msg.put, id = msg['#'], err, tmp;
+				var DBG = ctx.DBG = msg.DBG;
+				if(put['#'] && put['.']){ root.on('put', msg); return } // TODO: BUG! This needs to call HAM instead.
+				/*root.on(id, function(m){
+					console.log('ack:', m);
+				});*/
+				ctx.out = msg;
+				ctx.lot = {s: 0, more: 1};
+				var S = +new Date;
+				DBG && (DBG.p = S);
+				for(var soul in put){ // Gun.obj.native() makes this safe.
+					var node = put[soul], states;
+					if(!node){ err = ERR+cut(soul)+"no node."; break }
+					if(!(tmp = node._)){ err = ERR+cut(soul)+"no meta."; break }
+					if(soul !== tmp[_soul]){ err = ERR+cut(soul)+"soul not same."; break }
+					if(!(states = tmp[state_])){ err = ERR+cut(soul)+"no state."; break }
+					for(var key in node){ // double loop uncool, but have to support old format.
+						if(node_ === key){ continue }
+						var val = node[key], state = states[key];
+						if(u === state){ err = ERR+cut(key)+"on"+cut(soul)+"no state."; break }
+						if(!val_is(val)){ err = ERR+cut(key)+"on"+cut(soul)+"bad "+(typeof val)+cut(val); break }
+						ham(val, key, soul, state, msg);
+					}
+					if(err){ break }
+				}
+				DBG && (DBG.pe = +new Date);
+				if(console.STAT){ console.STAT(S, +new Date - S, 'mix');console.STAT(S, ctx.lot.s, 'mix #') }
+				if(ctx.err = err){ root.on('in', {'@': id, err: Gun.log(err)}); return }
+				if(!(--ctx.lot.more)){ fire(ctx) } // if synchronous.
+				if(!ctx.stun && !msg['@']){ root.on('in', {'@': id, ok: -1}) } // in case no diff sent to storage, etc., still ack.
+			} Gun.on.put = put;
+			function ham(val, key, soul, state, msg){
+				var ctx = msg._||'', root = ctx.root, graph = root.graph, lot;
+				var vertex = graph[soul] || empty, was = state_is(vertex, key, 1), known = vertex[key];
+				var machine = State(), is = HAM(machine, state, was, val, known), u;
+				if(!is.incoming){
+					if(is.defer){
+						var to = state - machine;
+						setTimeout(function(){
+							ham(val, key, soul, state, msg);
+						}, to > MD? MD : to); // setTimeout Max Defer 32bit :(
+						if(!ctx.to){ root.on('in', {'@': msg['#'], err: to}) } ctx.to = 1; // TODO: This causes too many problems unless sending peers auto-retry.
+						return to;
+					}
+					//return; // it should be this
+					if(!ctx.miss){ return } // but some chains have a cache miss that need to re-fire. // TODO: Improve in future.
+				}
+				(lot = ctx.lot||'').s++; lot.more++;
+				(ctx.stun || (ctx.stun = {}))[soul+key] = 1;
+				var DBG = ctx.DBG; DBG && (DBG.ph = DBG.ph || +new Date);
+				root.on('put', {'#': msg['#'], '@': msg['@'], put: {'#': soul, '.': key, ':': val, '>': state}, _: ctx});
+			}
+			function map(msg){
+				var DBG; if(DBG = (msg._||'').DBG){ DBG.pa = +new Date; DBG.pm = DBG.pm || +new Date}
+      	var eve = this, root = eve.as, graph = root.graph, ctx = msg._, put = msg.put, soul = put['#'], key = put['.'], val = put[':'], state = put['>'], id = msg['#'], tmp;
+				graph[soul] = state_ify(graph[soul], key, state, val, soul); // TODO: Only put in graph if subscribed? Relays vs Browsers?
+				chain(ctx, soul, key, (u !== (tmp = put['=']))? tmp : val, state); // TODO: This should NOT be how the API works, this should be done at an extension layer, but hacky solution to migrate with old code for now.
+				if((tmp = ctx.out) && (tmp = tmp.put)){
+					tmp[soul] = state_ify(tmp[soul], key, state, val, soul); // TODO: Hacky, fix & come back later, for actual pushing messages.
+				}
+				if(!(--ctx.lot.more)){ fire(ctx) } // TODO: 'forget' feature in SEA tied to this, bad approach, but hacked in for now. Any changes here must update there.
+				eve.to.next(msg);
+			}
+			function chain(ctx, soul, key,val, state){
+				var root = ctx.root, put, tmp;
+				(root.opt||'').super && root.$.get(soul); // I think we need super for now, but since we are rewriting, should consider getting rid of it.
+				if(!root || !(tmp = root.next) || !(tmp = tmp[soul]) || !tmp.$){ return }
+				(put = ctx.put || (ctx.put = {}))[soul] = state_ify(put[soul], key, state, val, soul);
+				tmp.put = state_ify(tmp.put, key, state, val, soul);
+			}
+			function fire(ctx){
+				if(ctx.err){ return }
+				var stop = {};
+				var root = ((ctx.$||'')._||'').root, next = (root||'').next||'', put = ctx.put, tmp;
+				var S = +new Date;
+				//Gun.graph.is(put, function(node, soul){
+				for(var soul in put){ var node = put[soul]; // Gun.obj.native() makes this safe.
+					if(!(tmp = next[soul]) || !tmp.$){ continue }
+					root.stop = stop; // temporary fix till a better solution?
+					tmp.on('in', {$: tmp.$, get: soul, put: node});
+					root.stop = null; // temporary fix till a better solution?
+				}
+				console.STAT && console.STAT(S, +new Date - S, 'fire');
+				ctx.DBG && (ctx.DBG.f = +new Date);
+				if(!(tmp = ctx.out)){ return }
+				tmp.out = universe;
+				root.on('out', tmp);
+			}
+			var ERR = "Error: Invalid graph!";
+			var cut = function(s){ return " '"+(''+s).slice(0,9)+"...' " }
+			var HAM = Gun.HAM, MD = 2147483647, State = Gun.state;
 		}());
 
 		;(function(){
-			Gun.on.put = function(msg, gun){
+			Gun.on._put = function(msg, gun){
 				var at = gun._, ctx = {$: gun, graph: at.graph, put: {}, map: {}, souls: {}, machine: Gun.state(), ack: msg['@'], cat: at, stop: {}};
 				if(!Gun.obj.map(msg.put, perf, ctx)){ return } // HNPERF: performance test, not core code, do not port.
 				if(!Gun.graph.is(msg.put, null, verify, ctx)){ ctx.err = "Error: Invalid graph!" }
@@ -3403,13 +3514,12 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				if(u !== ctx.defer){
 					var to = ctx.defer - ctx.machine;
 					setTimeout(function(){
-						Gun.on.put(msg, gun);
+						Gun.on._put(msg, gun);
 					}, to > MD? MD : to ); // setTimeout Max Defer 32bit :(
 				}
 				if(!ctx.diff){ return }
 				at.on('put', obj_to(msg, {put: ctx.diff}));
 			};
-			var MD = 2147483647;
 			function verify(val, key, node, soul){ var ctx = this;
 				var state = Gun.state.is(node, key), tmp;
 				if(!state){ return ctx.err = "Error: No state on '"+key+"' in node '"+soul+"'!" }
@@ -3477,10 +3587,12 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			}
 			function perf(node, soul){ if(node !== this.graph[soul]){ return true } } // HNPERF: do not port!
 
-			Gun.on.get = function(msg, gun){
+			Gun.on._get = function(msg, gun){
 				var root = gun._, get = msg.get, soul = get[_soul], node = root.graph[soul], has = get[_has], tmp;
 				var next = root.next || (root.next = {}), at = next[soul];
 				// queue concurrent GETs?
+				var ctx = msg._||'', DBG = ctx.DBG = msg.DBG;
+				DBG && (DBG.g = +new Date);
 				if(!node){ return root.on('get', msg) }
 				if(has){
 					if('string' != typeof has || !obj_has(node, has)){ return root.on('get', msg) }
@@ -3493,16 +3605,20 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				}
 				node = Gun.graph.node(node);
 				tmp = (at||empty).ack;
-				var faith = function(){}; faith.faith = true; // HNPERF: We're testing performance improvement by skipping going through security again, but this should be audited.
+				var faith = function(){}; faith.ram = faith.faith = true; // HNPERF: We're testing performance improvement by skipping going through security again, but this should be audited.
+				faith.$ = msg.$;
+				DBG && (DBG.ga = +new Date);
 				root.on('in', {
 					'@': msg['#'],
-					how: 'mem',
 					put: node,
+					ram: 1,
 					$: gun,
 					_: faith
 				});
+				DBG && (DBG.gm = +new Date);
 				//if(0 < tmp){ return }
 				root.on('get', msg);
+				DBG && (DBG.gd = +new Date);
 			}
 		}());
 
@@ -3527,41 +3643,32 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 					obj_map(v, each, this[k]);
 				}, at.opt);
 				Gun.on('opt', at);
-				at.opt.uuid = at.opt.uuid || function(){ return state_lex() + text_rand(12) }
+				//at.opt.uuid = at.opt.uuid || function(){ return state_lex() + text_rand(12) }
+				Gun.obj.native();
 				return gun;
 			}
 		}());
+		Gun.obj.native = function(){ var p = Object.prototype; for(var i in p){ console.log("Native Object.prototype polluted, reverting", i); delete p[i]; } };
 
 		var list_is = Gun.list.is;
 		var text = Gun.text, text_is = text.is, text_rand = text.random;
-		var obj = Gun.obj, obj_is = obj.is, obj_has = obj.has, obj_to = obj.to, obj_map = obj.map, obj_copy = obj.copy;
-		var state_lex = Gun.state.lex, _soul = Gun.val.link._, _has = '.', node_ = Gun.node._, rel_is = Gun.val.link.is;
+		var obj = Gun.obj, obj_empty = obj.empty, obj_is = obj.is, obj_has = obj.has, obj_to = obj.to, obj_map = obj.map, obj_copy = obj.copy;
+		var state_lex = Gun.state.lex, state_ify = Gun.state.ify, state_is = Gun.state.is, _soul = Gun.val.link._, _has = '.', node_ = Gun.node._, val_is = Gun.val.is, rel_is = Gun.val.link.is, state_ = Gun.state._;
 		var empty = {}, u;
+		var C;
 
-		console.only = function(i, s){ return (console.only.i && i === console.only.i && console.only.i++) && (console.log.apply(console, arguments) || s) };
-
-		Gun.log = function(){ return (!Gun.log.off && console.log.apply(console, arguments)), [].slice.call(arguments).join(' ') }
-		Gun.log.once = function(w,s,o){ return (o = Gun.log.once)[w] = o[w] || 0, o[w]++ || Gun.log(s) }
-
-		;"Please do not remove these messages unless you are paying for a monthly sponsorship, thanks!";
-		Gun.log.once("welcome", "Hello wonderful person! :) Thanks for using GUN, feel free to ask for help on https://gitter.im/amark/gun and ask StackOverflow questions tagged with 'gun'!");
-		;"Please do not remove these messages unless you are paying for a monthly sponsorship, thanks!";
+		Gun.log = function(){ return (!Gun.log.off && C.log.apply(C, arguments)), [].slice.call(arguments).join(' ') };
+		Gun.log.once = function(w,s,o){ return (o = Gun.log.once)[w] = o[w] || 0, o[w]++ || Gun.log(s) };
 
 		if(typeof window !== "undefined"){ (window.GUN = window.Gun = Gun).window = window }
-		try{ if(typeof common !== "undefined"){ common.exports = Gun } }catch(e){}
+		try{ if(typeof MODULE !== "undefined"){ MODULE.exports = Gun } }catch(e){}
 		module.exports = Gun;
 
-		/*Gun.on('opt', function(ctx){ // FOR TESTING PURPOSES
-			this.to.next(ctx);
-			if(ctx.once){ return }
-			ctx.on('node', function(msg){
-				var to = this.to;
-				//Gun.node.is(msg.put, function(v,k){ msg.put[k] = v + v });
-				setTimeout(function(){
-					to.next(msg);
-				},1);
-			});
-		});*/
+		(Gun.window||'').console = (Gun.window||'').console || {log: function(){}};
+		(C = console).only = function(i, s){ return (C.only.i && i === C.only.i && C.only.i++) && (C.log.apply(C, arguments) || s) };
+
+		;"Please do not remove welcome log unless you are paying for a monthly sponsorship, thanks!";
+		Gun.log.once("welcome", "Hello wonderful person! :) Thanks for using GUN, please ask for help on http://chat.gun.eco if anything takes you longer than 5min to figure out!");
 	})(USE, './root');
 
 	;USE(function(module){
@@ -3591,7 +3698,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				}
 				return;
 			}
-			if(n instanceof Function){
+			if('function' == typeof n){
 				var yes, tmp = {back: at};
 				while((tmp = tmp.back)
 				&& u === (yes = n(tmp, opt))){}
@@ -3663,6 +3770,12 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 						if(!Gun.obj.empty(put)){
 							put._ = meta;
 							back.on('in', {$: back.$, put: put, get: back.get})
+						}
+						if(tmp = at.lex){
+							tmp = (tmp._) || (tmp._ = function(){});
+							if(back.ack < tmp.ask){ tmp.ask = back.ack }
+							if(tmp.ask){ return }
+							tmp.ask = 1;
 						}
 					}
 					root.ask(ack, msg);
@@ -3878,7 +3991,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			Gun.obj.del(at, 'ask'); // TODO: PERFORMANCE? More elegant way?
 		}
 		function ack(msg, ev){
-			var as = this.as, get = as.get || empty, at = as.$._, tmp = (msg.put||empty)[get['#']];
+			var as = this.as, get = as.get||'', at = as.$._, tmp = (msg.put||'')[get['#']];
 			if(at.ack){ at.ack = (at.ack + 1) || 1; }
 			if(!msg.put || ('string' == typeof get['.'] && !obj_has(tmp, at.get))){
 				if(at.put !== u){ return }
@@ -3894,7 +4007,10 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				at.on('in', {get: at.get, put: Gun.val.link.ify(get['#']), $: at.$, '@': msg['@']});
 				return;
 			}
-			Gun.on.put(msg, at.root.$);
+			if(at.$ === (msg._||'').$){ // replying to self, for perf, skip ham/security tho needs audit.
+				(msg._).miss = (at.put === u);
+			}
+			Gun.on.put(msg);
 		}
 		var empty = {}, u;
 		var obj = Gun.obj, obj_has = obj.has, obj_put = obj.put, obj_del = obj.del, obj_to = obj.to, obj_map = obj.map;
@@ -3914,7 +4030,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				}
 				gun = gun.$;
 			} else
-			if(key instanceof Function){
+			if('function' == typeof key){
 				if(true === cb){ return soul(this, key, cb, as), this }
 				gun = this;
 				var at = gun._, root = at.root, tmp = root.now, ev;
@@ -3950,7 +4066,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			if(tmp = this._.stun){ // TODO: Refactor?
 				gun._.stun = gun._.stun || tmp;
 			}
-			if(cb && cb instanceof Function){
+			if(cb && 'function' == typeof cb){
 				gun.get(cb, as);
 			}
 			return gun;
@@ -3976,7 +4092,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			if(cat.jam){ return cat.jam.push([cb, as]) }
 			cat.jam = [[cb,as]];
 			gun.get(function go(msg, eve){
-				if(u === msg.put && (tmp = Object.keys(cat.root.opt.peers).length) && ++acks < tmp){
+				if(u === msg.put && !cat.root.opt.super && (tmp = Object.keys(cat.root.opt.peers).length) && ++acks <= tmp){ // TODO: super should not be in core code, bring AXE up into core instead to fix?
 					return;
 				}
 				eve.rid(msg);
@@ -4005,7 +4121,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			if(eve.seen && at.id && eve.seen[at.id]){ return eve.to.next(msg) }
 			//if((tmp = root.stop)){ if(tmp[at.id]){ return } tmp[at.id] = msg.root; } // temporary fix till a better solution?
 			if((tmp = data) && tmp[rel._] && (tmp = rel.is(tmp))){
-				tmp = ((msg.$$ = at.root.gun.get(tmp))._);
+				tmp = ((msg.$$ = at.root.$.get(tmp))._);
 				if(u !== tmp.put){
 					msg = obj_to(msg, {put: data = tmp.put});
 				}
@@ -4044,21 +4160,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 	;USE(function(module){
 		var Gun = USE('./root');
 		Gun.chain.put = function(data, cb, as){
-			// #soul.has=value>state
-			// ~who#where.where=what>when@was
-			// TODO: BUG! Put probably cannot handle plural chains! `!as` is quickfix test.
 			var gun = this, at = (gun._), root = at.root.$, ctx = root._, M = 100, tmp;
-			/*if(!ctx.puta && !as){ if(tmp = ctx.puts){ if(tmp > M){ // without this, when synchronous, writes to a 'not found' pile up, when 'not found' resolves it recursively calls `put` which incrementally resolves each write. Stack overflow limits can be as low as 10K, so this limit is hardcoded to 1% of 10K.
-				(ctx.stack || (ctx.stack = [])).push([gun, data, cb, as]);
-				if(ctx.puto){ return }
-				ctx.puto = setTimeout(function drain(){
-					var d = ctx.stack.splice(0,M), i = 0, at; ctx.puta = true;
-					while(at = d[i++]){ at[0].put(at[1], at[2], at[3]) } delete ctx.puta;
-					if(ctx.stack.length){ return ctx.puto = setTimeout(drain, 0) }
-					ctx.stack = ctx.puts = ctx.puto = null;
-				}, 0);
-				return gun;
-			} ++ctx.puts } else { ctx.puts = 1 } }*/
 			as = as || {};
 			as.data = data;
 			as.via = as.$ = as.via || as.$ || gun;
@@ -4077,6 +4179,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 					return gun;
 				}
 				as.soul = as.soul || (as.not = Gun.node.soul(as.data) || (as.via.back('opt.uuid') || Gun.text.random)());
+				as.via._.stun = {};
 				if(!as.soul){ // polyfill async uuid for SEA
 					as.via.back('opt.uuid')(function(err, soul){ // TODO: improve perf without anonymous callback
 						if(err){ return Gun.log(err) } // TODO: Handle error!
@@ -4089,9 +4192,11 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				ify(as);
 				return gun;
 			}
+			as.via._.stun = {};
 			if(Gun.is(data)){
 				data.get(function(soul, o, msg){
 					if(!soul){
+						delete as.via._.stun;
 						return Gun.log("The reference you are saving is a", typeof msg.put, '"'+ msg.put +'", not a node (object)!');
 					}
 					gun.put(Gun.val.link.ify(soul), cb, as);
@@ -4113,6 +4218,14 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			}
 			return gun;
 		};
+		/*Gun.chain.put = function(data, cb, as){ // don't rewrite! :(
+			var gun = this, at = gun._;
+			as = as || {};
+			as.soul || (as.soul = at.soul || ('string' == typeof cb && cb));
+			if(!as.soul){ return get(data, cb, as) }
+
+			return gun;
+		}*/
 
 		function ify(as){
 			as.batch = batch;
@@ -4144,9 +4257,10 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 		}
 
 		function batch(){ var as = this;
-			if(!as.graph || obj_map(as.stun, no)){ return }
+			if(!as.graph || !obj_empty(as.stun)){ return }
 			as.res = as.res || function(cb){ if(cb){ cb() } };
 			as.res(function(){
+				delete as.via._.stun;
 				var cat = (as.$.back(-1)._), ask = cat.ask(function(ack){
 					cat.root.on('ack', ack);
 					if(ack.err){ Gun.log(ack) }
@@ -4167,6 +4281,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				});
 				cat.root.mum = mum? obj.to(mum, cat.root.mum) : mum;
 				cat.root.now = tmp;
+				as.via._.on('res', {}); delete as.via._.tag.res; // emitting causes mem leak?
 			}, as);
 			if(as.res){ as.res() }
 		} function no(v,k){ if(v){ return true } }
@@ -4188,16 +4303,23 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 					at.soul(id);
 					return;
 				}
-				(as.stun = as.stun || {})[path] = true;
-				ref.get(soul, true, {as: {at: at, as: as, p:path}});
+				(as.stun = as.stun || {})[path] = 1;
+				ref.get(soul, true, {as: {at: at, as: as, p:path, ref: ref}});
 			}, {as: as, at: at});
 			//if(is){ return {} }
 		}
-
+		var G = String.fromCharCode(31);
 		function soul(id, as, msg, eve){
-			var as = as.as, cat = as.at; as = as.as;
+			var as = as.as, path = as.p, ref = as.ref, cat = as.at, pat = [], sat; as = as.as;
+			ref.back(function(at){
+				if(sat = at.soul || at.link || at.dub){ return sat }
+				pat.push(at.has || at.get);
+			});
+			pat = [sat || as.soul].concat(pat.reverse());
 			var at = ((msg || {}).$ || {})._ || {};
-			id = at.dub = at.dub || id || Gun.node.soul(cat.obj) || Gun.node.soul(msg.put || at.put) || Gun.val.link.is(msg.put || at.put) || (as.via.back('opt.uuid') || Gun.text.random)(); // TODO: BUG!? Do we really want the soul of the object given to us? Could that be dangerous?
+			id = at.dub = at.dub || id || Gun.node.soul(cat.obj) || Gun.node.soul(msg.put || at.put) || Gun.val.link.is(msg.put || at.put) || pat.join('/') /* || (function(){
+				return (as.soul+'.')+Gun.text.hash(path.join(G)).toString(32);
+			})(); // TODO: BUG!? Do we really want the soul of the object given to us? Could that be dangerous? What about copy operations? */
 			if(eve){ eve.stun = true }
 			if(!id){ // polyfill async uuid for SEA
 				as.via.back('opt.uuid')(function(err, id){ // TODO: improve perf without anonymous callback
@@ -4212,7 +4334,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 		function solve(at, id, cat, as){
 			at.$.back(-1).get(id);
 			cat.soul(id);
-			as.stun[cat.path] = false;
+			delete as.stun[cat.path];
 			as.batch();
 		}
 
@@ -4229,6 +4351,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			if(as.ref !== as.$){
 				tmp = (as.$._).get || at.get;
 				if(!tmp){ // TODO: Handle
+					delete as.via._.stun;
 					Gun.log("Please report this as an issue! Put.no.get"); // TODO: BUG!??
 					return;
 				}
@@ -4236,7 +4359,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				tmp = null;
 			}
 			if(u === data){
-				if(!at.get){ return } // TODO: Handle
+				if(!at.get){ delete as.via._.stun; return } // TODO: Handle
 				if(!soul){
 					tmp = at.$.back(function(at){
 						if(at.link || at.soul){ return at.link || at.soul }
@@ -4261,7 +4384,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				}
 				if(!as.soul){ // polyfill async uuid for SEA
 					as.via.back('opt.uuid')(function(err, soul){ // TODO: improve perf without anonymous callback
-						if(err){ return Gun.log(err) } // Handle error.
+						if(err){ delete as.via._.stun; return Gun.log(err) } // Handle error.
 						as.ref.put(as.data, as.soul = soul, as);
 					});
 					return;
@@ -4269,7 +4392,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			}
 			as.ref.put(as.data, as.soul, as);
 		}
-		var obj = Gun.obj, obj_is = obj.is, obj_put = obj.put, obj_map = obj.map;
+		var obj = Gun.obj, obj_is = obj.is, obj_put = obj.put, obj_map = obj.map, obj_empty = obj.empty;
 		var u, empty = {}, noop = function(){}, iife = function(fn,as){fn.call(as||empty)};
 		var node_ = Gun.node._;
 	})(USE, './put');
@@ -4370,9 +4493,10 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			}
 			if((tmp = eve.wait) && (tmp = tmp[at.id])){ clearTimeout(tmp) }
 			eve.ack = (eve.ack||0)+1;
-			if(!to && u === data && eve.ack <= (opt.acks || Object.keys(at.root.opt.peers).length)){ return }
+			// TODO: super should not be in core code, bring AXE up into core instead to fix?
+			if(!to && u === data && !at.root.opt.super && eve.ack <= (opt.acks || Object.keys(at.root.opt.peers).length)){ return }
 			if((!to && (u === data || at.soul || at.link || (link && !(0 < link.ack))))
-			|| (u === data && (tmp = Object.keys(at.root.opt.peers).length) && (!to && (link||at).ack < tmp))){
+			|| (u === data && !at.root.opt.super && (tmp = Object.keys(at.root.opt.peers).length) && (!to && (link||at).ack < tmp))){
 				tmp = (eve.wait = {})[at.id] = setTimeout(function(){
 					val.call({as:opt}, msg, eve, tmp || 1);
 				}, opt.wait || 99);
@@ -4470,17 +4594,20 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			opt = opt || {}; opt.item = opt.item || item;
 			if(soul = Gun.node.soul(item)){ item = Gun.obj.put({}, soul, Gun.val.link.ify(soul)) }
 			if(!Gun.is(item)){
-				if(Gun.obj.is(item)){;
-					item = gun.back(-1).get(soul = soul || Gun.node.soul(item) || gun.back('opt.uuid')()).put(item);
+				if(Gun.obj.is(item)){
+					//item = gun.back(-1).get(soul = soul || Gun.node.soul(item) || (gun.back('opt.uuid') || uuid)()).put(item);
+					soul = soul || Gun.node.soul(item) || uuid(); // this just key now, not a soul.
 				}
-				return gun.get(soul || (Gun.state.lex() + Gun.text.random(7))).put(item, cb, opt);
+				return gun.get(soul || uuid()).put(item, cb, opt);
 			}
 			item.get(function(soul, o, msg){
+				if(!soul && item._.stun){ item._.on('res', function(){ this.off(); gun.set(item, cb, opt) }); return }
 				if(!soul){ return cb.call(gun, {err: Gun.log('Only a node can be linked! Not "' + msg.put + '"!')}) }
 				gun.put(Gun.obj.put({}, soul, Gun.val.link.ify(soul)), cb, opt);
 			},true);
 			return item;
 		}
+		function uuid(){ return Gun.state.lex() + Gun.text.random(7) }
 	})(USE, './set');
 
 	;USE(function(module){
@@ -4521,7 +4648,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			}
 
 			root.on('out', function(msg){
-				if(msg.lS){ return } // TODO: for IndexedDB and others, shouldn't send to peers ACKs to our own GETs.
+				if(msg.lS){ return } // TODO: for IndexedDB and others, shouldn't send to peers ACKs to our own GETs. // THIS IS BLOCKING BROWSERS REPLYING TO REQUESTS, NO??? CHANGE THIS SOON!! UNDER CONTROLLED CIRCUMSTANCES!! Or maybe in-memory already doe sit?
 				if(Gun.is(msg.$) && msg.put && !msg['@']){
 					id = msg['#'];
 					Gun.graph.is(msg.put, null, map);
@@ -4571,10 +4698,11 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			var lS = function(){}, u;
 			root.on('localStorage', disk); // NON-STANDARD EVENT!
 
-			root.on('put', function(at){
-				this.to.next(at);
-				Gun.graph.is(at.put, null, map);
-				if(!at['@']){ acks[at['#']] = true; } // only ack non-acks.
+			root.on('put', function(msg){
+				this.to.next(msg);
+				var put = msg.put, soul = put['#'], key = put['.'], val = put[':'], state = put['>'], tmp;
+				disk[soul] = Gun.state.ify(disk[soul], key, state, val, soul);
+				if(!msg['@']){ (acks[msg['#']] = (tmp = (msg._||'').lot || {})).lS = (tmp.lS||0)+1; } // only ack non-acks.
 				count += 1;
 				if(count >= (opt.batch || 1000)){
 					return flush();
@@ -4595,7 +4723,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 					data = Gun.state.to(data, has);
 				}
 				//if(!data && !Gun.obj.empty(opt.peers)){ return } // if data not found, don't ack if there are peers. // Hmm, what if we have peers but we are disconnected?
-				root.on('in', {'@': msg['#'], put: Gun.graph.node(data), how: 'lS', lS: msg.$});// || root.$});
+				root.on('in', {'@': msg['#'], put: Gun.graph.node(data), lS:1});// || root.$});
 				};
 				Gun.debug? setTimeout(to,1) : to();
 			});
@@ -4619,6 +4747,10 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				}
 				if(!err && !Gun.obj.empty(opt.peers)){ return } // only ack if there are no peers.
 				Gun.obj.map(ack, function(yes, id){
+					if(yes){
+						if(yes.more){ acks[id] = yes; return }
+						if(yes.s !== yes.lS){ err = "localStorage batch not same." }
+					}
 					root.on('in', {
 						'@': id,
 						err: err,
@@ -4631,148 +4763,176 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 
 	;USE(function(module){
 		var Type = USE('../type');
-		var puff = (typeof setImmediate !== "undefined")? setImmediate : setTimeout;
 
 		function Mesh(root){
 			var mesh = function(){};
 			var opt = root.opt || {};
 			opt.log = opt.log || console.log;
-			opt.gap = opt.gap || opt.wait || 1;
+			opt.gap = opt.gap || opt.wait || 0;
 			opt.pack = opt.pack || (opt.memory? (opt.memory * 1000 * 1000) : 1399000000) * 0.3; // max_old_space_size defaults to 1400 MB.
+			opt.puff = opt.puff || 9; // IDEA: do a start/end benchmark, divide ops/result.
+			var puff = setTimeout.puff || setTimeout;
 
-			var dup = root.dup;
+			var dup = root.dup, dup_check = dup.check, dup_track = dup.track;
 
-			// TODO: somewhere in here caused a out-of-memory crash! How? It is inbound!
-			mesh.hear = function(raw, peer){
+			var hear = mesh.hear = function(raw, peer){
 				if(!raw){ return }
-				var msg, id, hash, tmp = raw[0];
 				if(opt.pack <= raw.length){ return mesh.say({dam: '!', err: "Message too big!"}, peer) }
-				if('{' != raw[2]){ mesh.hear.d += raw.length||0; ++mesh.hear.c; } // STATS! // ugh, stupid double JSON encoding
+				var msg, id, hash, tmp = raw[0], DBG;
+				if(mesh === this){ hear.d += raw.length||0 ; ++hear.c } // STATS!
 				if('[' === tmp){
-					try{msg = JSON.parse(raw);}catch(e){opt.log('DAM JSON parse error', e)}
+					try{msg = JSON.parse(raw)}catch(e){opt.log('DAM JSON parse error', e)}
+					raw = '';
 					if(!msg){ return }
-					LOG && opt.log(+new Date, msg.length, 'in hear batch');
+					console.STAT && console.STAT(+new Date, msg.length, '# on hear batch');
+					var P = opt.puff;
 					(function go(){
-						var S; LOG && (S = +new Date); // STATS!
-						var m, c = 100; // hardcoded for now?
-						while(c-- && (m = msg.shift())){
-							mesh.hear(m, peer);
-						}
-						LOG && opt.log(S, +new Date - S, 'batch heard');
+						var S = +new Date;
+						//var P = peer.puff || opt.puff, s = +new Date; // TODO: For future, but in mix?
+						var i = 0, m; while(i < P && (m = msg[i++])){ hear(m, peer) }
+						//peer.puff = Math.ceil((+new Date - s)? P * 1.1 : P * 0.9);
+						msg = msg.slice(i); // slicing after is faster than shifting during.
+						console.STAT && console.STAT(S, +new Date - S, 'hear loop');
+						flush(peer); // force send all synchronously batched acks.
 						if(!msg.length){ return }
 						puff(go, 0);
 					}());
 					return;
 				}
-				if('{' === tmp || (Type.obj.is(raw) && (msg = raw))){
+				if('{' === tmp || ((raw['#'] || obj_is(raw)) && (msg = raw))){
 					try{msg = msg || JSON.parse(raw);
 					}catch(e){return opt.log('DAM JSON parse error', e)}
 					if(!msg){ return }
+					if(msg.DBG){ msg.DBG = DBG = {DBG: msg.DBG} }
+					DBG && (DBG.hp = +new Date);
 					if(!(id = msg['#'])){ id = msg['#'] = Type.text.random(9) }
-					if(msg.DBG_s){ opt.log(+new Date - msg.DBG_s, 'to hear', id) }
-					if(dup.check(id)){ return }
-					dup.track(id, true).it = it(msg); // GUN core also dedups, so `true` is needed. // Does GUN core need to dedup anymore?
-					if(!(hash = msg['##']) && u !== msg.put){ hash = msg['##'] = Type.obj.hash(msg.put) }
+					if(tmp = dup_check(id)){ return }
+					/*if(!(hash = msg['##']) && u !== msg.put){ hash = msg['##'] = Type.obj.hash(msg.put) }
 					if(hash && (tmp = msg['@'] || (msg.get && id))){ // Reduces backward daisy in case varying hashes at different daisy depths are the same.
 						if(dup.check(tmp+hash)){ return }
 						dup.track(tmp+hash, true).it = it(msg); // GUN core also dedups, so `true` is needed. // Does GUN core need to dedup anymore?
 					}
-					(msg._ = function(){}).via = peer;
 					if(tmp = msg['><']){ (msg._).to = Type.obj.map(tmp.split(','), tomap) }
-					if(msg.dam){
-						if(tmp = mesh.hear[msg.dam]){
+					*/ // TOOD: COME BACK TO THIS LATER!!! IMPORTANT MESH STUFF!!
+					(msg._ = function(){}).via = mesh.leap = peer;
+					if(tmp = msg.dam){
+						if(tmp = mesh.hear[tmp]){
 							tmp(msg, peer, root);
 						}
+						dup_track(id);
 						return;
 					}
-					var S, ST; LOG && (S = +new Date);
+					var S = +new Date, ST;
+					DBG && (DBG.is = S);
 					root.on('in', msg);
-					LOG && !msg.nts && (ST = +new Date - S) > 9 && opt.log(S, ST, 'msg', msg['#']);
-					return;
+					//ECHO = msg.put || ECHO; !(msg.ok !== -3740) && mesh.say({ok: -3740, put: ECHO, '@': msg['#']}, peer);
+					DBG && (DBG.hd = +new Date);
+					console.STAT && (ST = +new Date - S) > 9 && console.STAT(S, ST, 'msg'); // TODO: PERF: caught one > 1.5s on tgif
+					dup_track(id).via = peer;
+					mesh.leap = null; // warning! mesh.leap could be buggy.
 				}
 			}
 			var tomap = function(k,i,m){m(k,true)};
-			mesh.hear.c = mesh.hear.d = 0;
+			var noop = function(){};
+			hear.c = hear.d = 0;
 
 			;(function(){
 				var SMIA = 0;
-				var message;
+				var message, loop;
 				function each(peer){ mesh.say(message, peer) }
-				mesh.say = function(msg, peer){
-					if(this.to){ this.to.next(msg) } // compatible with middleware adapters.
+				var say = mesh.say = function(msg, peer){ var tmp;
+					if((tmp = this) && (tmp = tmp.to) && tmp.next){ tmp.next(msg) } // compatible with middleware adapters.
 					if(!msg){ return false }
-					var id, hash, tmp, raw;
-					var S; LOG && (S = +new Date); //msg.DBG_s = msg.DBG_s || +new Date;
+					var id, hash, raw;
+					var DBG = msg.DBG, S; if(!peer){ S = +new Date ; DBG && (DBG.y = S) }
 					var meta = msg._||(msg._=function(){});
 					if(!(id = msg['#'])){ id = msg['#'] = Type.text.random(9) }
-					if(!(hash = msg['##']) && u !== msg.put){ hash = msg['##'] = Type.obj.hash(msg.put) }
+					//if(!(hash = msg['##']) && u !== msg.put){ hash = msg['##'] = Type.obj.hash(msg.put) }
 					if(!(raw = meta.raw)){
 						raw = mesh.raw(msg);
-						if(hash && (tmp = msg['@'])){
+						/*if(hash && (tmp = msg['@'])){
 							dup.track(tmp+hash).it = it(msg);
 							if(tmp = (dup.s[tmp]||ok).it){
 								if(hash === tmp['##']){ return false }
 								tmp['##'] = hash;
 							}
-						}
+						}*/
 					}
-					//LOG && opt.log(S, +new Date - S, 'say prep');
-					dup.track(id).it = it(msg); // track for 9 seconds, default. Earth<->Mars would need more!
-					if(!peer){ peer = (tmp = dup.s[msg['@']]) && (tmp = tmp.it) && (tmp = tmp._) && (tmp = tmp.via) }
+					S && console.STAT && console.STAT(S, +new Date - S, 'say prep');
+					!loop && dup_track(id);//.it = it(msg); // track for 9 seconds, default. Earth<->Mars would need more! // always track, maybe move this to the 'after' logic if we split function.
+					//console.log("SEND!", JSON.parse(JSON.stringify(msg)));
+					if(!peer && (tmp = msg['@'])){ peer = ((tmp = dup.s[tmp]) && (tmp.via || ((tmp = tmp.it) && (tmp = tmp._) && tmp.via))) || mesh.leap } // warning! mesh.leap could be buggy!
 					if(!peer && msg['@']){
-						LOG && opt.log(+new Date, ++SMIA, 'total no peer to ack to');
+						console.STAT && console.STAT(+new Date, ++SMIA, 'total no peer to ack to');
 						return false;
 					} // TODO: Temporary? If ack via trace has been lost, acks will go to all peers, which trashes browser bandwidth. Not relaying the ack will force sender to ask for ack again. Note, this is technically wrong for mesh behavior.
 					if(!peer && mesh.way){ return mesh.way(msg) }
 					if(!peer || !peer.id){ message = msg;
 						if(!Type.obj.is(peer || opt.peers)){ return false }
-						//var S; LOG && (S = +new Date);
-						Type.obj.map(peer || opt.peers, each); // in case peer is a peer list.
-						//LOG && opt.log(S, +new Date - S, 'say loop');
+						var P = opt.puff, ps = opt.peers, pl = Object.keys(peer || opt.peers || {}); // TODO: BETTER PERF? No object.keys? It is polyfilled by Type.js tho.
+						;(function go(){
+							var S = +new Date;
+							//Type.obj.map(peer || opt.peers, each); // in case peer is a peer list.
+							loop = 1; var wr = meta.raw; meta.raw = raw; // quick perf hack
+							var i = 0, p; while(i < 9 && (p = (pl||'')[i++])){
+								if(!(p = ps[p])){ continue }
+								say(msg, p);
+							}
+							meta.raw = wr; loop = 0;
+							pl = pl.slice(i); // slicing after is faster than shifting during.
+							console.STAT && console.STAT(S, +new Date - S, 'say loop');
+							if(!pl.length){ return }
+							puff(go, 0);
+							dup_track(msg['@']); // keep for later
+						}());
 						return;
 					}
+					// TODO: PERF: consider splitting function here, so say loops do less work.
 					if(!peer.wire && mesh.wire){ mesh.wire(peer) }
 					if(id === peer.last){ return } peer.last = id;  // was it just sent?
-					if(peer === meta.via){ return false }
+					if(peer === meta.via){ return false } // don't send back to self.
 					if((tmp = meta.to) && (tmp[peer.url] || tmp[peer.pid] || tmp[peer.id]) /*&& !o*/){ return false }
 					if(peer.batch){
 						peer.tail = (tmp = peer.tail || 0) + raw.length;
 						if(peer.tail <= opt.pack){
-							peer.batch.push(raw); // peer.batch += (tmp?'':',')+raw; // TODO: Prevent double JSON! // FOR v1.0 !?
+							//peer.batch.push(raw);
+							peer.batch += (tmp?',':'')+raw; // TODO: Prevent double JSON! // FOR v1.0 !?
 							return;
 						}
 						flush(peer);
 					}
-					peer.batch = []; // peer.batch = '['; // TODO: Prevent double JSON!
-					setTimeout(function(){flush(peer)}, opt.gap);
+					//peer.batch = [];
+					peer.batch = '['; // TODO: Prevent double JSON!
+					var S = +new Date, ST;
+					setTimeout(function(){
+						console.STAT && (ST = +new Date - S) > 9 && console.STAT(S, ST, '0ms TO', id, peer.id);
+						flush(peer);
+					}, opt.gap);
 					send(raw, peer);
-				}
-				function flush(peer){
-					var tmp = peer.batch; // var tmp = peer.batch + ']'; // TODO: Prevent double JSON!
-					peer.batch = peer.tail = null;
-					if(!tmp){ return }
-					if(!tmp.length){ return } // if(3 > tmp.length){ return } // TODO: ^
-					var S; LOG && (S = +new Date);
-					try{tmp = (1 === tmp.length? tmp[0] : JSON.stringify(tmp));
-					}catch(e){return opt.log('DAM JSON stringify error', e)}
-					LOG && opt.log(S, +new Date - S, 'say stringify', tmp.length);
-					if(!tmp){ return }
-					send(tmp, peer);
 				}
 				mesh.say.c = mesh.say.d = 0;
 			}());
-			
+
+			function flush(peer){
+				var tmp = peer.batch, t = 'string' == typeof tmp, l;
+				if(t){ tmp += ']' }// TODO: Prevent double JSON!
+				peer.batch = peer.tail = null;
+				if(!tmp){ return }
+				if(t? 3 > tmp.length : !tmp.length){ return } // TODO: ^
+				if(!t){try{tmp = (1 === tmp.length? tmp[0] : JSON.stringify(tmp));
+				}catch(e){return opt.log('DAM JSON stringify error', e)}}
+				if(!tmp){ return }
+				send(tmp, peer);
+			}
 			// for now - find better place later.
 			function send(raw, peer){ try{
 				var wire = peer.wire;
-				var S, ST; LOG && (S = +new Date);
 				if(peer.say){
 					peer.say(raw);
 				} else
 				if(wire.send){
 					wire.send(raw);
 				}
-				LOG && (ST = +new Date - S) > 9 && opt.log(S, ST, 'wire send', raw.length);
 				mesh.say.d += raw.length||0; ++mesh.say.c; // STATS!
 			}catch(e){
 				(peer.queue = peer.queue || []).push(raw);
@@ -4784,18 +4944,22 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 					if(!msg){ return '' }
 					var meta = (msg._) || {}, put, hash, tmp;
 					if(tmp = meta.raw){ return tmp }
-					if(typeof msg === 'string'){ return msg }
-					if(!msg.dam){
+					if('string' == typeof msg){ return msg }
+					/*if(!msg.dam){ // TOOD: COME BACK TO THIS LATER!!! IMPORTANT MESH STUFF!!
 						var i = 0, to = []; Type.obj.map(opt.peers, function(p){
 							to.push(p.url || p.pid || p.id); if(++i > 3){ return true } // limit server, fast fix, improve later! // For "tower" peer, MUST include 6 surrounding ids. // REDUCED THIS TO 3 for temporary relay peer performance, towers still should list neighbors.
 						}); if(i > 1){ msg['><'] = to.join() }
-					}
+					}*/  // TOOD: COME BACK TO THIS LATER!!! IMPORTANT MESH STUFF!!
 					var raw = $(msg); // optimize by reusing put = the JSON.stringify from .hash?
 					/*if(u !== put){
 						tmp = raw.indexOf(_, raw.indexOf('put'));
 						raw = raw.slice(0, tmp-1) + put + raw.slice(tmp + _.length + 1);
 						//raw = raw.replace('"'+ _ +'"', put); // NEVER USE THIS! ALSO NEVER DELETE IT TO NOT MAKE SAME MISTAKE! https://github.com/amark/gun/wiki/@$$ Heisenbug
 					}*/
+					// TODO: PERF: tgif, CPU way too much on re-JSONifying ^ it.
+					/*
+						// NOTE TO SELF: Switch NTS to DAM now.
+					*/
 					if(meta && (raw||'').length < (1000 * 100)){ meta.raw = raw } // HNPERF: If string too big, don't keep in memory.
 					return raw;
 				}
@@ -4804,7 +4968,6 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			}());
 
 			mesh.hi = function(peer){
-				console.log("mesh-hi",peer.id)
 				var tmp = peer.wire || {};
 				if(peer.id){
 					opt.peers[peer.url || peer.id] = peer;
@@ -4820,12 +4983,12 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				Type.obj.map(tmp, function(msg){
 					send(msg, peer);
 				});
+				Type.obj.native && Type.obj.native(); // dirty place to check if other JS polluted.
 			}
 			mesh.bye = function(peer){
 				root.on('bye', peer);
 				var tmp = +(new Date); tmp = (tmp - (peer.met||tmp));
 				mesh.bye.time = ((mesh.bye.time || tmp) + tmp) / 2;
-				LOG = console.LOG; // dirty place to cheaply update LOG settings over time.
 			}
 			mesh.hear['!'] = function(msg, peer){ opt.log('Error:', msg.err) }
 			mesh.hear['?'] = function(msg, peer){
@@ -4844,7 +5007,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			});
 
 			root.on('bye', function(peer, tmp){
-				peer = opt.peers[peer.id || peer] || peer; 
+				peer = opt.peers[peer.id || peer] || peer;
 				this.to.next(peer);
 				peer.bye? peer.bye() : (tmp = peer.wire) && tmp.close && tmp.close();
 				Type.obj.del(opt.peers, peer.id);
@@ -4858,6 +5021,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			});
 			root.on('hi', function(peer, tmp){ this.to.next(peer);
 				if(!(tmp = peer.url) || !gets[tmp]){ return } delete gets[tmp];
+				if(opt.super){ return } // temporary (?) until we have better fix/solution?
 				Type.obj.map(root.next, function(node, soul){
 					tmp = {}; tmp[soul] = root.graph[soul];
 					mesh.say({'##': Type.obj.hash(tmp), get: {'#': soul}}, peer);
@@ -4868,18 +5032,6 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 		}
 
 		;(function(){
-			Type.text.hash = function(s){ // via SO
-				if(typeof s !== 'string'){ return {err: 1} }
-		    var c = 0;
-		    if(!s.length){ return c }
-		    for(var i=0,l=s.length,n; i<l; ++i){
-		      n = s.charCodeAt(i);
-		      c = ((c<<5)-c)+n;
-		      c |= 0;
-		    }
-		    return c; // Math.abs(c);
-		  }
-			
 			var $ = JSON.stringify, u;
 
 			Type.obj.hash = function(obj, hash){
@@ -4889,7 +5041,9 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 
 			function sort(k, v){ var tmp;
 				if(!(v instanceof Object)){ return v }
+				var S = +new Date;
 				Type.obj.map(Object.keys(v).sort(), map, {to: tmp = {}, on: v});
+				console.STAT && console.STAT(S, +new Date - S, 'sort');
 				return tmp;
 			}
 			Type.obj.hash.sort = sort;
@@ -4902,7 +5056,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 		function it(msg){ return msg || {_: msg._, '##': msg['##']} } // HNPERF: Only need some meta data, not full reference (took up too much memory). // HNPERF: Garrrgh! We add meta data to msg over time, copying the object happens to early.
 
 	  var empty = {}, ok = true, u;
-		var LOG = console.LOG;
+		var obj_is = Type.obj.is, obj_map = Type.obj.map;
 
 	  try{ module.exports = Mesh }catch(e){}
 
@@ -4933,7 +5087,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			mesh.wire = opt.wire = open;
 			function open(peer){ try{
 				if(!peer || !peer.url){ return wire && wire(peer) }
-				var url = peer.url.replace('http', 'ws');
+				var url = peer.url.replace(/^http/, 'ws');
 				var wire = peer.wire = new opt.WebSocket(url);
 				wire.onclose = function(){
 					opt.mesh.bye(peer);
@@ -4969,662 +5123,2509 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 	})(USE, './adapters/websocket');
 
 }());
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module), __webpack_require__(/*! ./../timers-browserify/main.js */ "./node_modules/timers-browserify/main.js").setImmediate))
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module), __webpack_require__(/*! ./../timers-browserify/main.js */ "./node_modules/timers-browserify/main.js").setImmediate, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "./node_modules/gun/node_modules/isomorphic-webcrypto/src/browser.mjs":
-/*!****************************************************************************!*\
-  !*** ./node_modules/gun/node_modules/isomorphic-webcrypto/src/browser.mjs ***!
-  \****************************************************************************/
-/*! exports provided: default */
-/***/ (function(__webpack_module__, __webpack_exports__, __webpack_require__) {
+/***/ "./node_modules/gun/sea.js":
+/*!*********************************!*\
+  !*** ./node_modules/gun/sea.js ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _webcrypto_shim_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./webcrypto-shim.mjs */ "./node_modules/gun/node_modules/isomorphic-webcrypto/src/webcrypto-shim.mjs");
+/* WEBPACK VAR INJECTION */(function(module, Buffer, global) {;(function(){
 
-/* harmony default export */ __webpack_exports__["default"] = (window.crypto);
-
-
-/***/ }),
-
-/***/ "./node_modules/gun/node_modules/isomorphic-webcrypto/src/webcrypto-shim.mjs":
-/*!***********************************************************************************!*\
-  !*** ./node_modules/gun/node_modules/isomorphic-webcrypto/src/webcrypto-shim.mjs ***!
-  \***********************************************************************************/
-/*! exports provided: default */
-/***/ (function(__webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/**
- * @file Web Cryptography API shim
- * @author Artem S Vybornov <vybornov@gmail.com>
- * @license MIT
- */
-(function (global, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define([], function () {
-            return factory(global);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        // CommonJS-like environments that support module.exports
-        module.exports = factory(global);
-    } else {
-        factory(global);
+  /* UNBUILD */
+  function USE(arg, req){
+    return req? __webpack_require__("./node_modules/gun sync recursive")(arg) : arg.slice? USE[R(arg)] : function(mod, path){
+      arg(mod = {exports: {}});
+      USE[R(path)] = mod.exports;
     }
-}(typeof self !== 'undefined' ? self : undefined, function (global) {
-    'use strict';
-
-    if ( typeof Promise !== 'function' )
-        throw "Promise support required";
-
-    var _crypto = global.crypto || global.msCrypto;
-    if ( !_crypto ) return;
-
-    var _subtle = _crypto.subtle || _crypto.webkitSubtle;
-    if ( !_subtle ) return;
-
-    var _Crypto     = global.Crypto || _crypto.constructor || Object,
-        _SubtleCrypto = global.SubtleCrypto || _subtle.constructor || Object,
-        _CryptoKey  = global.CryptoKey || global.Key || Object;
-
-    var isEdge = global.navigator.userAgent.indexOf('Edge/') > -1;
-    var isIE    = !!global.msCrypto && !isEdge;
-    var isWebkit = !_crypto.subtle && !!_crypto.webkitSubtle;
-    if ( !isIE && !isWebkit ) return;
-
-    function s2a ( s ) {
-        return btoa(s).replace(/\=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+    function R(p){
+      return p.split('/').slice(-1).toString().replace('.js','');
     }
+  }
+  if(true){ var MODULE = module }
+  /* UNBUILD */
 
-    function a2s ( s ) {
-        s += '===', s = s.slice( 0, -s.length % 4 );
-        return atob( s.replace(/-/g, '+').replace(/_/g, '/') );
+  ;USE(function(module){
+    // Security, Encryption, and Authorization: SEA.js
+    // MANDATORY READING: https://gun.eco/explainers/data/security.html
+    // IT IS IMPLEMENTED IN A POLYFILL/SHIM APPROACH.
+    // THIS IS AN EARLY ALPHA!
+
+    if(typeof window !== "undefined"){ module.window = window }
+
+    var tmp = module.window || module;
+    var SEA = tmp.SEA || {};
+
+    if(SEA.window = module.window){ SEA.window.SEA = SEA }
+
+    try{ if(typeof MODULE !== "undefined"){ MODULE.exports = SEA } }catch(e){}
+    module.exports = SEA;
+  })(USE, './root');
+
+  ;USE(function(module){
+    var SEA = USE('./root');
+    try{ if(SEA.window){
+      if(location.protocol.indexOf('s') < 0
+      && location.host.indexOf('localhost') < 0
+      && location.protocol.indexOf('file:') < 0){
+        location.protocol = 'https:'; // WebCrypto does NOT work without HTTPS!
+      }
+    } }catch(e){}
+  })(USE, './https');
+
+  ;USE(function(module){
+    if(typeof btoa === "undefined"){
+      if(typeof Buffer === "undefined") {
+        global.Buffer = __webpack_require__(/*! buffer */ "./node_modules/buffer/index.js").Buffer
+      }
+      global.btoa = function (data) { return Buffer.from(data, "binary").toString("base64"); };
+      global.atob = function (data) { return Buffer.from(data, "base64").toString("binary"); };
     }
+  })(USE, './base64');
 
-    function s2b ( s ) {
-        var b = new Uint8Array(s.length);
-        for ( var i = 0; i < s.length; i++ ) b[i] = s.charCodeAt(i);
-        return b;
+  ;USE(function(module){
+    USE('./base64');
+    // This is Array extended to have .toString(['utf8'|'hex'|'base64'])
+    function SeaArray() {}
+    Object.assign(SeaArray, { from: Array.from })
+    SeaArray.prototype = Object.create(Array.prototype)
+    SeaArray.prototype.toString = function(enc, start, end) { enc = enc || 'utf8'; start = start || 0;
+      const length = this.length
+      if (enc === 'hex') {
+        const buf = new Uint8Array(this)
+        return [ ...Array(((end && (end + 1)) || length) - start).keys()]
+        .map((i) => buf[ i + start ].toString(16).padStart(2, '0')).join('')
+      }
+      if (enc === 'utf8') {
+        return Array.from(
+          { length: (end || length) - start },
+          (_, i) => String.fromCharCode(this[ i + start])
+        ).join('')
+      }
+      if (enc === 'base64') {
+        return btoa(this)
+      }
     }
+    module.exports = SeaArray;
+  })(USE, './array');
 
-    function b2s ( b ) {
-        if ( b instanceof ArrayBuffer ) b = new Uint8Array(b);
-        return String.fromCharCode.apply( String, b );
+  ;USE(function(module){
+    USE('./base64');
+    // This is Buffer implementation used in SEA. Functionality is mostly
+    // compatible with NodeJS 'safe-buffer' and is used for encoding conversions
+    // between binary and 'hex' | 'utf8' | 'base64'
+    // See documentation and validation for safe implementation in:
+    // https://github.com/feross/safe-buffer#update
+    var SeaArray = USE('./array');
+    function SafeBuffer(...props) {
+      console.warn('new SafeBuffer() is depreciated, please use SafeBuffer.from()')
+      return SafeBuffer.from(...props)
     }
-
-    function alg ( a ) {
-        var r = { 'name': (a.name || a || '').toUpperCase().replace('V','v') };
-        switch ( r.name ) {
-            case 'SHA-1':
-            case 'SHA-256':
-            case 'SHA-384':
-            case 'SHA-512':
-                break;
-            case 'AES-CBC':
-            case 'AES-GCM':
-            case 'AES-KW':
-                if ( a.length ) r['length'] = a.length;
-                break;
-            case 'HMAC':
-                if ( a.hash ) r['hash'] = alg(a.hash);
-                if ( a.length ) r['length'] = a.length;
-                break;
-            case 'RSAES-PKCS1-v1_5':
-                if ( a.publicExponent ) r['publicExponent'] = new Uint8Array(a.publicExponent);
-                if ( a.modulusLength ) r['modulusLength'] = a.modulusLength;
-                break;
-            case 'RSASSA-PKCS1-v1_5':
-            case 'RSA-OAEP':
-                if ( a.hash ) r['hash'] = alg(a.hash);
-                if ( a.publicExponent ) r['publicExponent'] = new Uint8Array(a.publicExponent);
-                if ( a.modulusLength ) r['modulusLength'] = a.modulusLength;
-                break;
-            default:
-                throw new SyntaxError("Bad algorithm name");
+    SafeBuffer.prototype = Object.create(Array.prototype)
+    Object.assign(SafeBuffer, {
+      // (data, enc) where typeof data === 'string' then enc === 'utf8'|'hex'|'base64'
+      from() {
+        if (!Object.keys(arguments).length || arguments[0]==null) {
+          throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.')
         }
-        return r;
+        const input = arguments[0]
+        let buf
+        if (typeof input === 'string') {
+          const enc = arguments[1] || 'utf8'
+          if (enc === 'hex') {
+            const bytes = input.match(/([\da-fA-F]{2})/g)
+            .map((byte) => parseInt(byte, 16))
+            if (!bytes || !bytes.length) {
+              throw new TypeError('Invalid first argument for type \'hex\'.')
+            }
+            buf = SeaArray.from(bytes)
+          } else if (enc === 'utf8') {
+            const length = input.length
+            const words = new Uint16Array(length)
+            Array.from({ length: length }, (_, i) => words[i] = input.charCodeAt(i))
+            buf = SeaArray.from(words)
+          } else if (enc === 'base64') {
+            const dec = atob(input)
+            const length = dec.length
+            const bytes = new Uint8Array(length)
+            Array.from({ length: length }, (_, i) => bytes[i] = dec.charCodeAt(i))
+            buf = SeaArray.from(bytes)
+          } else if (enc === 'binary') {
+            buf = SeaArray.from(input)
+          } else {
+            console.info('SafeBuffer.from unknown encoding: '+enc)
+          }
+          return buf
+        }
+        const byteLength = input.byteLength // what is going on here? FOR MARTTI
+        const length = input.byteLength ? input.byteLength : input.length
+        if (length) {
+          let buf
+          if (input instanceof ArrayBuffer) {
+            buf = new Uint8Array(input)
+          }
+          return SeaArray.from(buf || input)
+        }
+      },
+      // This is 'safe-buffer.alloc' sans encoding support
+      alloc(length, fill = 0 /*, enc*/ ) {
+        return SeaArray.from(new Uint8Array(Array.from({ length: length }, () => fill)))
+      },
+      // This is normal UNSAFE 'buffer.alloc' or 'new Buffer(length)' - don't use!
+      allocUnsafe(length) {
+        return SeaArray.from(new Uint8Array(Array.from({ length : length })))
+      },
+      // This puts together array of array like members
+      concat(arr) { // octet array
+        if (!Array.isArray(arr)) {
+          throw new TypeError('First argument must be Array containing ArrayBuffer or Uint8Array instances.')
+        }
+        return SeaArray.from(arr.reduce((ret, item) => ret.concat(Array.from(item)), []))
+      }
+    })
+    SafeBuffer.prototype.from = SafeBuffer.from
+    SafeBuffer.prototype.toString = SeaArray.prototype.toString
+
+    module.exports = SafeBuffer;
+  })(USE, './buffer');
+
+  ;USE(function(module){
+    const SEA = USE('./root')
+    const Buffer = USE('./buffer')
+    const api = {Buffer: Buffer}
+    var o = {};
+
+    if(SEA.window){
+      api.crypto = window.crypto || window.msCrypto
+      api.subtle = (api.crypto||o).subtle || (api.crypto||o).webkitSubtle;
+      api.TextEncoder = window.TextEncoder;
+      api.TextDecoder = window.TextDecoder;
+      api.random = (len) => Buffer.from(api.crypto.getRandomValues(new Uint8Array(Buffer.alloc(len))));
+    }
+    if(!api.TextDecoder)
+    {
+      const { TextEncoder, TextDecoder } = __webpack_require__(/*! text-encoding */ "./node_modules/text-encoding/index.js");
+      api.TextDecoder = TextDecoder;
+      api.TextEncoder = TextEncoder;
+    }
+    if(!api.crypto)
+    {
+      try
+      {
+      var crypto = USE('crypto', 1);
+      Object.assign(api, {
+        crypto,
+        random: (len) => Buffer.from(crypto.randomBytes(len))
+      });      
+      const { Crypto: WebCrypto } = USE('@peculiar/webcrypto', 1);
+      api.ossl = api.subtle = new WebCrypto({directory: 'ossl'}).subtle // ECDH
+    }
+    catch(e){
+      console.log("text-encoding and @peculiar/webcrypto may not be included by default, please add it to your package.json!");
+    }}
+
+    module.exports = api
+  })(USE, './shim');
+
+  ;USE(function(module){
+    var SEA = USE('./root');
+    var Buffer = USE('./buffer');
+    var s = {};
+    s.pbkdf2 = {hash: {name : 'SHA-256'}, iter: 100000, ks: 64};
+    s.ecdsa = {
+      pair: {name: 'ECDSA', namedCurve: 'P-256'},
+      sign: {name: 'ECDSA', hash: {name: 'SHA-256'}}
+    };
+    s.ecdh = {name: 'ECDH', namedCurve: 'P-256'};
+
+    // This creates Web Cryptography API compliant JWK for sign/verify purposes
+    s.jwk = function(pub, d){  // d === priv
+      pub = pub.split('.');
+      var x = pub[0], y = pub[1];
+      var jwk = {kty: "EC", crv: "P-256", x: x, y: y, ext: true};
+      jwk.key_ops = d ? ['sign'] : ['verify'];
+      if(d){ jwk.d = d }
+      return jwk;
+    };
+    
+    s.keyToJwk = function(keyBytes) {
+      const keyB64 = keyBytes.toString('base64');
+      const k = keyB64.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=/g, '');
+      return { kty: 'oct', k: k, ext: false, alg: 'A256GCM' };
+    }
+
+    s.recall = {
+      validity: 12 * 60 * 60, // internally in seconds : 12 hours
+      hook: function(props){ return props } // { iat, exp, alias, remember } // or return new Promise((resolve, reject) => resolve(props)
     };
 
-    function jwkAlg ( a ) {
-        return {
-            'HMAC': {
-                'SHA-1': 'HS1',
-                'SHA-256': 'HS256',
-                'SHA-384': 'HS384',
-                'SHA-512': 'HS512',
-            },
-            'RSASSA-PKCS1-v1_5': {
-                'SHA-1': 'RS1',
-                'SHA-256': 'RS256',
-                'SHA-384': 'RS384',
-                'SHA-512': 'RS512',
-            },
-            'RSAES-PKCS1-v1_5': {
-                '': 'RSA1_5',
-            },
-            'RSA-OAEP': {
-                'SHA-1': 'RSA-OAEP',
-                'SHA-256': 'RSA-OAEP-256',
-            },
-            'AES-KW': {
-                '128': 'A128KW',
-                '192': 'A192KW',
-                '256': 'A256KW',
-            },
-            'AES-GCM': {
-                '128': 'A128GCM',
-                '192': 'A192GCM',
-                '256': 'A256GCM',
-            },
-            'AES-CBC': {
-                '128': 'A128CBC',
-                '192': 'A192CBC',
-                '256': 'A256CBC',
-            },
-        }[a.name][ ( a.hash || {} ).name || a.length || '' ];
+    s.check = function(t){ return (typeof t == 'string') && ('SEA{' === t.slice(0,4)) }
+    s.parse = function p(t){ try {
+      var yes = (typeof t == 'string');
+      if(yes && 'SEA{' === t.slice(0,4)){ t = t.slice(3) }
+      return yes ? JSON.parse(t) : t;
+      } catch (e) {}
+      return t;
     }
 
-    function b2jwk ( k ) {
-        if ( k instanceof ArrayBuffer || k instanceof Uint8Array ) k = JSON.parse( decodeURIComponent( escape( b2s(k) ) ) );
-        var jwk = { 'kty': k.kty, 'alg': k.alg, 'ext': k.ext || k.extractable };
-        switch ( jwk.kty ) {
-            case 'oct':
-                jwk.k = k.k;
-            case 'RSA':
-                [ 'n', 'e', 'd', 'p', 'q', 'dp', 'dq', 'qi', 'oth' ].forEach( function ( x ) { if ( x in k ) jwk[x] = k[x] } );
-                break;
-            default:
-                throw new TypeError("Unsupported key type");
+    SEA.opt = s;
+    module.exports = s
+  })(USE, './settings');
+
+  ;USE(function(module){
+    var shim = USE('./shim');
+    module.exports = async function(d, o){
+      var t = (typeof d == 'string')? d : JSON.stringify(d);
+      var hash = await shim.subtle.digest({name: o||'SHA-256'}, new shim.TextEncoder().encode(t));
+      return shim.Buffer.from(hash);
+    }
+  })(USE, './sha256');
+
+  ;USE(function(module){
+    // This internal func returns SHA-1 hashed data for KeyID generation
+    const __shim = USE('./shim')
+    const subtle = __shim.subtle
+    const ossl = __shim.ossl ? __shim.ossl : subtle
+    const sha1hash = (b) => ossl.digest({name: 'SHA-1'}, new ArrayBuffer(b))
+    module.exports = sha1hash
+  })(USE, './sha1');
+
+  ;USE(function(module){
+    var SEA = USE('./root');
+    var shim = USE('./shim');
+    var S = USE('./settings');
+    var sha = USE('./sha256');
+    var u;
+
+    SEA.work = SEA.work || (async (data, pair, cb, opt) => { try { // used to be named `proof`
+      var salt = (pair||{}).epub || pair; // epub not recommended, salt should be random!
+      var opt = opt || {};
+      if(salt instanceof Function){
+        cb = salt;
+        salt = u;
+      }
+      data = (typeof data == 'string')? data : JSON.stringify(data);
+      if('sha' === (opt.name||'').toLowerCase().slice(0,3)){
+        var rsha = shim.Buffer.from(await sha(data, opt.name), 'binary').toString(opt.encode || 'base64')
+        if(cb){ try{ cb(rsha) }catch(e){console.log(e)} }
+        return rsha;
+      }
+      salt = salt || shim.random(9);
+      var key = await (shim.ossl || shim.subtle).importKey('raw', new shim.TextEncoder().encode(data), {name: opt.name || 'PBKDF2'}, false, ['deriveBits']);
+      var work = await (shim.ossl || shim.subtle).deriveBits({
+        name: opt.name || 'PBKDF2',
+        iterations: opt.iterations || S.pbkdf2.iter,
+        salt: new shim.TextEncoder().encode(opt.salt || salt),
+        hash: opt.hash || S.pbkdf2.hash,
+      }, key, opt.length || (S.pbkdf2.ks * 8))
+      data = shim.random(data.length)  // Erase data in case of passphrase
+      var r = shim.Buffer.from(work, 'binary').toString(opt.encode || 'base64')
+      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
+      return r;
+    } catch(e) { 
+      console.log(e);
+      SEA.err = e;
+      if(SEA.throw){ throw e }
+      if(cb){ cb() }
+      return;
+    }});
+
+    module.exports = SEA.work;
+  })(USE, './work');
+
+  ;USE(function(module){
+    var SEA = USE('./root');
+    var shim = USE('./shim');
+    var S = USE('./settings');
+
+    SEA.name = SEA.name || (async (cb, opt) => { try {
+      if(cb){ try{ cb() }catch(e){console.log(e)} }
+      return;
+    } catch(e) {
+      console.log(e);
+      SEA.err = e;
+      if(SEA.throw){ throw e }
+      if(cb){ cb() }
+      return;
+    }});
+
+    //SEA.pair = async (data, proof, cb) => { try {
+    SEA.pair = SEA.pair || (async (cb, opt) => { try {
+
+      var ecdhSubtle = shim.ossl || shim.subtle;
+      // First: ECDSA keys for signing/verifying...
+      var sa = await shim.subtle.generateKey({name: 'ECDSA', namedCurve: 'P-256'}, true, [ 'sign', 'verify' ])
+      .then(async (keys) => {
+        // privateKey scope doesn't leak out from here!
+        //const { d: priv } = await shim.subtle.exportKey('jwk', keys.privateKey)
+        var key = {};
+        key.priv = (await shim.subtle.exportKey('jwk', keys.privateKey)).d;
+        var pub = await shim.subtle.exportKey('jwk', keys.publicKey);
+        //const pub = Buff.from([ x, y ].join(':')).toString('base64') // old
+        key.pub = pub.x+'.'+pub.y; // new
+        // x and y are already base64
+        // pub is UTF8 but filename/URL safe (https://www.ietf.org/rfc/rfc3986.txt)
+        // but split on a non-base64 letter.
+        return key;
+      })
+      
+      // To include PGPv4 kind of keyId:
+      // const pubId = await SEA.keyid(keys.pub)
+      // Next: ECDH keys for encryption/decryption...
+
+      try{
+      var dh = await ecdhSubtle.generateKey({name: 'ECDH', namedCurve: 'P-256'}, true, ['deriveKey'])
+      .then(async (keys) => {
+        // privateKey scope doesn't leak out from here!
+        var key = {};
+        key.epriv = (await ecdhSubtle.exportKey('jwk', keys.privateKey)).d;
+        var pub = await ecdhSubtle.exportKey('jwk', keys.publicKey);
+        //const epub = Buff.from([ ex, ey ].join(':')).toString('base64') // old
+        key.epub = pub.x+'.'+pub.y; // new
+        // ex and ey are already base64
+        // epub is UTF8 but filename/URL safe (https://www.ietf.org/rfc/rfc3986.txt)
+        // but split on a non-base64 letter.
+        return key;
+      })
+      }catch(e){
+        if(SEA.window){ throw e }
+        if(e == 'Error: ECDH is not a supported algorithm'){ console.log('Ignoring ECDH...') }
+        else { throw e }
+      } dh = dh || {};
+
+      var r = { pub: sa.pub, priv: sa.priv, /* pubId, */ epub: dh.epub, epriv: dh.epriv }
+      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
+      return r;
+    } catch(e) {
+      console.log(e);
+      SEA.err = e;
+      if(SEA.throw){ throw e }
+      if(cb){ cb() }
+      return;
+    }});
+
+    module.exports = SEA.pair;
+  })(USE, './pair');
+
+  ;USE(function(module){
+    var SEA = USE('./root');
+    var shim = USE('./shim');
+    var S = USE('./settings');
+    var sha = USE('./sha256');
+    var u;
+
+    SEA.sign = SEA.sign || (async (data, pair, cb, opt) => { try {
+      opt = opt || {};
+      if(!(pair||opt).priv){
+        pair = await SEA.I(null, {what: data, how: 'sign', why: opt.why});
+      }
+      if(u === data){ throw '`undefined` not allowed.' }
+      var json = S.parse(data);
+      var check = opt.check = opt.check || json;
+      if(SEA.verify && (SEA.opt.check(check) || (check && check.s && check.m))
+      && u !== await SEA.verify(check, pair)){ // don't sign if we already signed it.
+        var r = S.parse(check);
+        if(!opt.raw){ r = 'SEA'+JSON.stringify(r) }
+        if(cb){ try{ cb(r) }catch(e){console.log(e)} }
+        return r;
+      }
+      var pub = pair.pub;
+      var priv = pair.priv;
+      var jwk = S.jwk(pub, priv);
+      var hash = await sha(json);
+      var sig = await (shim.ossl || shim.subtle).importKey('jwk', jwk, {name: 'ECDSA', namedCurve: 'P-256'}, false, ['sign'])
+      .then((key) => (shim.ossl || shim.subtle).sign({name: 'ECDSA', hash: {name: 'SHA-256'}}, key, new Uint8Array(hash))) // privateKey scope doesn't leak out from here!
+      var r = {m: json, s: shim.Buffer.from(sig, 'binary').toString(opt.encode || 'base64')}
+      if(!opt.raw){ r = 'SEA'+JSON.stringify(r) }
+
+      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
+      return r;
+    } catch(e) {
+      console.log(e);
+      SEA.err = e;
+      if(SEA.throw){ throw e }
+      if(cb){ cb() }
+      return;
+    }});
+
+    module.exports = SEA.sign;
+  })(USE, './sign');
+
+  ;USE(function(module){
+    var SEA = USE('./root');
+    var shim = USE('./shim');
+    var S = USE('./settings');
+    var sha = USE('./sha256');
+    var u;
+
+    SEA.verify = SEA.verify || (async (data, pair, cb, opt) => { try {
+      var json = S.parse(data);
+      if(false === pair){ // don't verify!
+        var raw = S.parse(json.m);
+        if(cb){ try{ cb(raw) }catch(e){console.log(e)} }
+        return raw;
+      }
+      opt = opt || {};
+      // SEA.I // verify is free! Requires no user permission.
+      var pub = pair.pub || pair;
+      var key = SEA.opt.slow_leak? await SEA.opt.slow_leak(pub) : await (shim.ossl || shim.subtle).importKey('jwk', S.jwk(pub), {name: 'ECDSA', namedCurve: 'P-256'}, false, ['verify']);
+      var hash = await sha(json.m);
+      var buf, sig, check, tmp; try{
+        buf = shim.Buffer.from(json.s, opt.encode || 'base64'); // NEW DEFAULT!
+        sig = new Uint8Array(buf);
+        check = await (shim.ossl || shim.subtle).verify({name: 'ECDSA', hash: {name: 'SHA-256'}}, key, sig, new Uint8Array(hash));
+        if(!check){ throw "Signature did not match." }
+      }catch(e){
+        if(SEA.opt.fallback){
+          return await SEA.opt.fall_verify(data, pair, cb, opt);
         }
-        return jwk;
+      }
+      var r = check? S.parse(json.m) : u;
+
+      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
+      return r;
+    } catch(e) {
+      console.log(e); // mismatched owner FOR MARTTI
+      SEA.err = e;
+      if(SEA.throw){ throw e }
+      if(cb){ cb() }
+      return;
+    }});
+
+    module.exports = SEA.verify;
+    // legacy & ossl leak mitigation:
+
+    var knownKeys = {};
+    var keyForPair = SEA.opt.slow_leak = pair => {
+      if (knownKeys[pair]) return knownKeys[pair];
+      var jwk = S.jwk(pair);
+      knownKeys[pair] = (shim.ossl || shim.subtle).importKey("jwk", jwk, {name: 'ECDSA', namedCurve: 'P-256'}, false, ["verify"]);
+      return knownKeys[pair];
+    };
+
+    var O = SEA.opt;
+    SEA.opt.fall_verify = async function(data, pair, cb, opt, f){
+      if(f === SEA.opt.fallback){ throw "Signature did not match" } f = f || 1;
+      var tmp = data||'';
+      data = SEA.opt.unpack(data) || data;
+      var json = S.parse(data), pub = pair.pub || pair, key = await SEA.opt.slow_leak(pub);
+      var hash = (f <= SEA.opt.fallback)? shim.Buffer.from(await shim.subtle.digest({name: 'SHA-256'}, new shim.TextEncoder().encode(S.parse(json.m)))) : await sha(json.m); // this line is old bad buggy code but necessary for old compatibility.
+      var buf; var sig; var check; try{
+        buf = shim.Buffer.from(json.s, opt.encode || 'base64') // NEW DEFAULT!
+        sig = new Uint8Array(buf)
+        check = await (shim.ossl || shim.subtle).verify({name: 'ECDSA', hash: {name: 'SHA-256'}}, key, sig, new Uint8Array(hash))
+        if(!check){ throw "Signature did not match." }
+      }catch(e){
+        buf = shim.Buffer.from(json.s, 'utf8') // AUTO BACKWARD OLD UTF8 DATA!
+        sig = new Uint8Array(buf)
+        check = await (shim.ossl || shim.subtle).verify({name: 'ECDSA', hash: {name: 'SHA-256'}}, key, sig, new Uint8Array(hash))
+        if(!check){ throw "Signature did not match." }
+      }
+      var r = check? S.parse(json.m) : u;
+      O.fall_soul = tmp['#']; O.fall_key = tmp['.']; O.fall_val = data; O.fall_state = tmp['>'];
+      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
+      return r;
+    }
+    SEA.opt.fallback = 2;
+
+  })(USE, './verify');
+
+  ;USE(function(module){
+    var shim = USE('./shim');
+    var S = USE('./settings');
+    var sha256hash = USE('./sha256');
+
+    const importGen = async (key, salt, opt) => {
+      //const combo = shim.Buffer.concat([shim.Buffer.from(key, 'utf8'), salt || shim.random(8)]).toString('utf8') // old
+      var opt = opt || {};
+      const combo = key + (salt || shim.random(8)).toString('utf8'); // new
+      const hash = shim.Buffer.from(await sha256hash(combo), 'binary')
+      
+      const jwkKey = S.keyToJwk(hash)      
+      return await shim.subtle.importKey('jwk', jwkKey, {name:'AES-GCM'}, false, ['encrypt', 'decrypt'])
+    }
+    module.exports = importGen;
+  })(USE, './aeskey');
+
+  ;USE(function(module){
+    var SEA = USE('./root');
+    var shim = USE('./shim');
+    var S = USE('./settings');
+    var aeskey = USE('./aeskey');
+    var u;
+
+    SEA.encrypt = SEA.encrypt || (async (data, pair, cb, opt) => { try {
+      opt = opt || {};
+      var key = (pair||opt).epriv || pair;
+      if(u === data){ throw '`undefined` not allowed.' }
+      if(!key){
+        pair = await SEA.I(null, {what: data, how: 'encrypt', why: opt.why});
+        key = pair.epriv || pair;
+      }
+      var msg = (typeof data == 'string')? data : JSON.stringify(data);
+      var rand = {s: shim.random(9), iv: shim.random(15)}; // consider making this 9 and 15 or 18 or 12 to reduce == padding.
+      var ct = await aeskey(key, rand.s, opt).then((aes) => (/*shim.ossl ||*/ shim.subtle).encrypt({ // Keeping the AES key scope as private as possible...
+        name: opt.name || 'AES-GCM', iv: new Uint8Array(rand.iv)
+      }, aes, new shim.TextEncoder().encode(msg)));
+      var r = {
+        ct: shim.Buffer.from(ct, 'binary').toString(opt.encode || 'base64'),
+        iv: rand.iv.toString(opt.encode || 'base64'),
+        s: rand.s.toString(opt.encode || 'base64')
+      }
+      if(!opt.raw){ r = 'SEA'+JSON.stringify(r) }
+
+      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
+      return r;
+    } catch(e) { 
+      console.log(e);
+      SEA.err = e;
+      if(SEA.throw){ throw e }
+      if(cb){ cb() }
+      return;
+    }});
+
+    module.exports = SEA.encrypt;
+  })(USE, './encrypt');
+
+  ;USE(function(module){
+    var SEA = USE('./root');
+    var shim = USE('./shim');
+    var S = USE('./settings');
+    var aeskey = USE('./aeskey');
+
+    SEA.decrypt = SEA.decrypt || (async (data, pair, cb, opt) => { try {
+      opt = opt || {};
+      var key = (pair||opt).epriv || pair;
+      if(!key){
+        pair = await SEA.I(null, {what: data, how: 'decrypt', why: opt.why});
+        key = pair.epriv || pair;
+      }
+      var json = S.parse(data);
+      var buf, bufiv, bufct; try{
+        buf = shim.Buffer.from(json.s, opt.encode || 'base64');
+        bufiv = shim.Buffer.from(json.iv, opt.encode || 'base64');
+        bufct = shim.Buffer.from(json.ct, opt.encode || 'base64');
+        var ct = await aeskey(key, buf, opt).then((aes) => (/*shim.ossl ||*/ shim.subtle).decrypt({  // Keeping aesKey scope as private as possible...
+          name: opt.name || 'AES-GCM', iv: new Uint8Array(bufiv), tagLength: 128
+        }, aes, new Uint8Array(bufct)));
+      }catch(e){
+        if('utf8' === opt.encode){ throw "Could not decrypt" }
+        if(SEA.opt.fallback){
+          opt.encode = 'utf8';
+          return await SEA.decrypt(data, pair, cb, opt);
+        }
+      }
+      var r = S.parse(new shim.TextDecoder('utf8').decode(ct));
+      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
+      return r;
+    } catch(e) { 
+      console.log(e);
+      SEA.err = e;
+      if(SEA.throw){ throw e }
+      if(cb){ cb() }
+      return;
+    }});
+
+    module.exports = SEA.decrypt;
+  })(USE, './decrypt');
+
+  ;USE(function(module){
+    var SEA = USE('./root');
+    var shim = USE('./shim');
+    var S = USE('./settings');
+    // Derive shared secret from other's pub and my epub/epriv 
+    SEA.secret = SEA.secret || (async (key, pair, cb, opt) => { try {
+      opt = opt || {};
+      if(!pair || !pair.epriv || !pair.epub){
+        pair = await SEA.I(null, {what: key, how: 'secret', why: opt.why});
+      }
+      var pub = key.epub || key;
+      var epub = pair.epub;
+      var epriv = pair.epriv;
+      var ecdhSubtle = shim.ossl || shim.subtle;
+      var pubKeyData = keysToEcdhJwk(pub);
+      var props = Object.assign({ public: await ecdhSubtle.importKey(...pubKeyData, true, []) },{name: 'ECDH', namedCurve: 'P-256'}); // Thanks to @sirpy !
+      var privKeyData = keysToEcdhJwk(epub, epriv);
+      var derived = await ecdhSubtle.importKey(...privKeyData, false, ['deriveBits']).then(async (privKey) => {
+        // privateKey scope doesn't leak out from here!
+        var derivedBits = await ecdhSubtle.deriveBits(props, privKey, 256);
+        var rawBits = new Uint8Array(derivedBits);
+        var derivedKey = await ecdhSubtle.importKey('raw', rawBits,{ name: 'AES-GCM', length: 256 }, true, [ 'encrypt', 'decrypt' ]);
+        return ecdhSubtle.exportKey('jwk', derivedKey).then(({ k }) => k);
+      })
+      var r = derived;
+      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
+      return r;
+    } catch(e) {
+      console.log(e);
+      SEA.err = e;
+      if(SEA.throw){ throw e }
+      if(cb){ cb() }
+      return;
+    }});
+
+    // can this be replaced with settings.jwk?
+    var keysToEcdhJwk = (pub, d) => { // d === priv
+      //var [ x, y ] = Buffer.from(pub, 'base64').toString('utf8').split(':') // old
+      var [ x, y ] = pub.split('.') // new
+      var jwk = d ? { d: d } : {}
+      return [  // Use with spread returned value...
+        'jwk',
+        Object.assign(
+          jwk,
+          { x: x, y: y, kty: 'EC', crv: 'P-256', ext: true }
+        ), // ??? refactor
+        {name: 'ECDH', namedCurve: 'P-256'}
+      ]
     }
 
-    function jwk2b ( k ) {
-        var jwk = b2jwk(k);
-        if ( isIE ) jwk['extractable'] = jwk.ext, delete jwk.ext;
-        return s2b( unescape( encodeURIComponent( JSON.stringify(jwk) ) ) ).buffer;
+    module.exports = SEA.secret;
+  })(USE, './secret');
+
+  ;USE(function(module){
+    var shim = USE('./shim');
+    // Practical examples about usage found in tests.
+    var SEA = USE('./root');
+    SEA.work = USE('./work');
+    SEA.sign = USE('./sign');
+    SEA.verify = USE('./verify');
+    SEA.encrypt = USE('./encrypt');
+    SEA.decrypt = USE('./decrypt');
+    //SEA.opt.aeskey = USE('./aeskey'); // not official! // this causes problems in latest WebCrypto.
+
+    SEA.random = SEA.random || shim.random;
+
+    // This is Buffer used in SEA and usable from Gun/SEA application also.
+    // For documentation see https://nodejs.org/api/buffer.html
+    SEA.Buffer = SEA.Buffer || USE('./buffer');
+
+    // These SEA functions support now ony Promises or
+    // async/await (compatible) code, use those like Promises.
+    //
+    // Creates a wrapper library around Web Crypto API
+    // for various AES, ECDSA, PBKDF2 functions we called above.
+    // Calculate public key KeyID aka PGPv4 (result: 8 bytes as hex string)
+    SEA.keyid = SEA.keyid || (async (pub) => {
+      try {
+        // base64('base64(x):base64(y)') => Buffer(xy)
+        const pb = Buffer.concat(
+          pub.replace(/-/g, '+').replace(/_/g, '/').split('.')
+          .map((t) => Buffer.from(t, 'base64'))
+        )
+        // id is PGPv4 compliant raw key
+        const id = Buffer.concat([
+          Buffer.from([0x99, pb.length / 0x100, pb.length % 0x100]), pb
+        ])
+        const sha1 = await sha1hash(id)
+        const hash = Buffer.from(sha1, 'binary')
+        return hash.toString('hex', hash.length - 8)  // 16-bit ID as hex
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    });
+    // all done!
+    // Obviously it is missing MANY necessary features. This is only an alpha release.
+    // Please experiment with it, audit what I've done so far, and complain about what needs to be added.
+    // SEA should be a full suite that is easy and seamless to use.
+    // Again, scroll naer the top, where I provide an EXAMPLE of how to create a user and sign in.
+    // Once logged in, the rest of the code you just read handled automatically signing/validating data.
+    // But all other behavior needs to be equally easy, like opinionated ways of
+    // Adding friends (trusted public keys), sending private messages, etc.
+    // Cheers! Tell me what you think.
+    var Gun = (SEA.window||{}).Gun || USE((typeof MODULE == "undefined"?'.':'')+'./gun', 1);
+    Gun.SEA = SEA;
+    SEA.GUN = SEA.Gun = Gun;
+
+    module.exports = SEA
+  })(USE, './sea');
+
+  ;USE(function(module){
+    var Gun = USE('./sea').Gun;
+    Gun.chain.then = function(cb, opt){
+      var gun = this, p = (new Promise(function(res, rej){
+        gun.once(res, opt);
+      }));
+      return cb? p.then(cb) : p;
     }
+  })(USE, './then');
 
-    function pkcs2jwk ( k ) {
-        var info = b2der(k), prv = false;
-        if ( info.length > 2 ) prv = true, info.shift(); // remove version from PKCS#8 PrivateKeyInfo structure
-        var jwk = { 'ext': true };
-        switch ( info[0][0] ) {
-            case '1.2.840.113549.1.1.1':
-                var rsaComp = [ 'n', 'e', 'd', 'p', 'q', 'dp', 'dq', 'qi' ],
-                    rsaKey  = b2der( info[1] );
-                if ( prv ) rsaKey.shift(); // remove version from PKCS#1 RSAPrivateKey structure
-                for ( var i = 0; i < rsaKey.length; i++ ) {
-                    if ( !rsaKey[i][0] ) rsaKey[i] = rsaKey[i].subarray(1);
-                    jwk[ rsaComp[i] ] = s2a( b2s( rsaKey[i] ) );
-                }
-                jwk['kty'] = 'RSA';
-                break;
-            default:
-                throw new TypeError("Unsupported key type");
-        }
-        return jwk;
+  ;USE(function(module){
+    var SEA = USE('./sea');
+    var Gun = SEA.Gun;
+    var then = USE('./then');
+
+    function User(root){ 
+      this._ = {$: this};
     }
+    User.prototype = (function(){ function F(){}; F.prototype = Gun.chain; return new F() }()) // Object.create polyfill
+    User.prototype.constructor = User;
 
-    function jwk2pkcs ( k ) {
-        var key, info = [ [ '', null ] ], prv = false;
-        switch ( k.kty ) {
-            case 'RSA':
-                var rsaComp = [ 'n', 'e', 'd', 'p', 'q', 'dp', 'dq', 'qi' ],
-                    rsaKey = [];
-                for ( var i = 0; i < rsaComp.length; i++ ) {
-                    if ( !( rsaComp[i] in k ) ) break;
-                    var b = rsaKey[i] = s2b( a2s( k[ rsaComp[i] ] ) );
-                    if ( b[0] & 0x80 ) rsaKey[i] = new Uint8Array(b.length + 1), rsaKey[i].set( b, 1 );
-                }
-                if ( rsaKey.length > 2 ) prv = true, rsaKey.unshift( new Uint8Array([0]) ); // add version to PKCS#1 RSAPrivateKey structure
-                info[0][0] = '1.2.840.113549.1.1.1';
-                key = rsaKey;
-                break;
-            default:
-                throw new TypeError("Unsupported key type");
-        }
-        info.push( new Uint8Array( der2b(key) ).buffer );
-        if ( !prv ) info[1] = { 'tag': 0x03, 'value': info[1] };
-        else info.unshift( new Uint8Array([0]) ); // add version to PKCS#8 PrivateKeyInfo structure
-        return new Uint8Array( der2b(info) ).buffer;
+    // let's extend the gun chain with a `user` function.
+    // only one user can be logged in at a time, per gun instance.
+    Gun.chain.user = function(pub){
+      var gun = this, root = gun.back(-1), user;
+      if(pub){ return root.get('~'+pub) }
+      if(user = root.back('user')){ return user }
+      var root = (root._), at = root, uuid = at.opt.uuid || Gun.state.lex;
+      (at = (user = at.user = gun.chain(new User))._).opt = {};
+      at.opt.uuid = function(cb){
+        var id = uuid(), pub = root.user;
+        if(!pub || !(pub = pub.is) || !(pub = pub.pub)){ return id }
+        id = id + '~' + pub + '/';
+        if(cb && cb.call){ cb(null, id) }
+        return id;
+      }
+      return user;
     }
+    Gun.User = User;
+    module.exports = User;
+  })(USE, './user');
 
-    var oid2str = { 'KoZIhvcNAQEB': '1.2.840.113549.1.1.1' },
-        str2oid = { '1.2.840.113549.1.1.1': 'KoZIhvcNAQEB' };
+  ;USE(function(module){
+    // TODO: This needs to be split into all separate functions.
+    // Not just everything thrown into 'create'.
 
-    function b2der ( buf, ctx ) {
-        if ( buf instanceof ArrayBuffer ) buf = new Uint8Array(buf);
-        if ( !ctx ) ctx = { pos: 0, end: buf.length };
+    var SEA = USE('./sea');
+    var User = USE('./user');
+    var authsettings = USE('./settings');
+    var Gun = SEA.Gun;
 
-        if ( ctx.end - ctx.pos < 2 || ctx.end > buf.length ) throw new RangeError("Malformed DER");
+    var noop = function(){};
 
-        var tag = buf[ctx.pos++],
-            len = buf[ctx.pos++];
-
-        if ( len >= 0x80 ) {
-            len &= 0x7f;
-            if ( ctx.end - ctx.pos < len ) throw new RangeError("Malformed DER");
-            for ( var xlen = 0; len--; ) xlen <<= 8, xlen |= buf[ctx.pos++];
-            len = xlen;
+    // Well first we have to actually create a user. That is what this function does.
+    User.prototype.create = function(...args){
+      const pair = typeof args[0] === 'object' && (args[0].pub || args[0].epub) ? args[0] : typeof args[1] === 'object' && (args[1].pub || args[1].epub) ? args[1] : null;
+      const alias = pair && (pair.pub || pair.epub) ? pair.pub : typeof args[0] === 'string' ? args[0] : null;
+      const pass = pair && (pair.pub || pair.epub) ? pair : alias && typeof args[1] === 'string' ? args[1] : null;
+      const cb = args.filter(arg => typeof arg === 'function')[0] || null; // cb now can stand anywhere, after alias/pass or pair
+      const opt = args && args.length > 1 && typeof args[args.length-1] === 'object' ? args[args.length-1] : {}; // opt is always the last parameter which typeof === 'object' and stands after cb
+      
+      var gun = this, cat = (gun._), root = gun.back(-1);
+      
+      if(cat.ing){
+        (cb || noop)({err: Gun.log("User is already being created or authenticated!"), wait: true});
+        return gun;
+      }
+      cat.ing = true;
+      var act = {}, u;
+      act.a = function(pubs){
+        act.pubs = pubs;
+        if(pubs && !opt.already){
+          // If we can enforce that a user name is already taken, it might be nice to try, but this is not guaranteed.
+          var ack = {err: Gun.log('User already created!')};
+          cat.ing = false;
+          (cb || noop)(ack);
+          gun.leave();
+          return;
         }
-
-        if ( ctx.end - ctx.pos < len ) throw new RangeError("Malformed DER");
-
-        var rv;
-
-        switch ( tag ) {
-            case 0x02: // Universal Primitive INTEGER
-                rv = buf.subarray( ctx.pos, ctx.pos += len );
-                break;
-            case 0x03: // Universal Primitive BIT STRING
-                if ( buf[ctx.pos++] ) throw new Error( "Unsupported bit string" );
-                len--;
-            case 0x04: // Universal Primitive OCTET STRING
-                rv = new Uint8Array( buf.subarray( ctx.pos, ctx.pos += len ) ).buffer;
-                break;
-            case 0x05: // Universal Primitive NULL
-                rv = null;
-                break;
-            case 0x06: // Universal Primitive OBJECT IDENTIFIER
-                var oid = btoa( b2s( buf.subarray( ctx.pos, ctx.pos += len ) ) );
-                if ( !( oid in oid2str ) ) throw new Error( "Unsupported OBJECT ID " + oid );
-                rv = oid2str[oid];
-                break;
-            case 0x30: // Universal Constructed SEQUENCE
-                rv = [];
-                for ( var end = ctx.pos + len; ctx.pos < end; ) rv.push( b2der( buf, ctx ) );
-                break;
-            default:
-                throw new Error( "Unsupported DER tag 0x" + tag.toString(16) );
+        act.salt = Gun.text.random(64); // pseudo-randomly create a salt, then use PBKDF2 function to extend the password with it.
+        SEA.work(pass, act.salt, act.b); // this will take some short amount of time to produce a proof, which slows brute force attacks.
+      }
+      act.b = function(proof){
+        act.proof = proof;
+        pair ? act.c(pair) : SEA.pair(act.c) // generate a brand new key pair or use the existing.
+      }
+      act.c = function(pair){
+        var tmp
+        act.pair = pair || {};
+        if(tmp = cat.root.user){
+          tmp._.sea = pair;
+          tmp.is = {pub: pair.pub, epub: pair.epub, alias: alias};
         }
-
-        return rv;
+        // the user's public key doesn't need to be signed. But everything else needs to be signed with it! // we have now automated it! clean up these extra steps now!
+        act.data = {pub: pair.pub};
+        act.d();
+      }
+      act.d = function(){
+        act.data.alias = alias;
+        act.e();
+      }
+      act.e = function(){
+        act.data.epub = act.pair.epub; 
+        SEA.encrypt({priv: act.pair.priv, epriv: act.pair.epriv}, act.proof, act.f, {raw:1}); // to keep the private key safe, we AES encrypt it with the proof of work!
+      }
+      act.f = function(auth){
+        act.data.auth = JSON.stringify({ek: auth, s: act.salt}); 
+        act.g(act.data.auth);
+      }
+      act.g = function(auth){ var tmp;
+        act.data.auth = act.data.auth || auth;
+        root.get(tmp = '~'+act.pair.pub).put(act.data); // awesome, now we can actually save the user with their public key as their ID.
+        root.get('~@'+alias).put(Gun.obj.put({}, tmp, Gun.val.link.ify(tmp)), act.h); // next up, we want to associate the alias with the public key. So we add it to the alias list.
+      }
+      act.h = function(){
+        cat.ing = false;
+        (cb || noop)({ok: 0, pub: act.pair.pub}); // callback that the user has been created. (Note: ok = 0 because we didn't wait for disk to ack)
+        if(!cb) {pair ? gun.auth(pair) : gun.auth(alias, pass)} // if no callback is passed, auto-login after signing up.
+      }
+      root.get('~@'+alias).once(act.a);
+      return gun;
     }
-
-    function der2b ( val, buf ) {
-        if ( !buf ) buf = [];
-
-        var tag = 0, len = 0,
-            pos = buf.length + 2;
-
-        buf.push( 0, 0 ); // placeholder
-
-        if ( val instanceof Uint8Array ) {  // Universal Primitive INTEGER
-            tag = 0x02, len = val.length;
-            for ( var i = 0; i < len; i++ ) buf.push( val[i] );
+    // now that we have created a user, we want to authenticate them!
+    User.prototype.auth = function(...args){
+      const pair = typeof args[0] === 'object' && (args[0].pub || args[0].epub) ? args[0] : typeof args[1] === 'object' && (args[1].pub || args[1].epub) ? args[1] : null;
+      const alias = !pair && typeof args[0] === 'string' ? args[0] : null;
+      const pass = alias && typeof args[1] === 'string' ? args[1] : null;
+      const cb = args.filter(arg => typeof arg === 'function')[0] || null; // cb now can stand anywhere, after alias/pass or pair
+      const opt = args && args.length > 1 && typeof args[args.length-1] === 'object' ? args[args.length-1] : {}; // opt is always the last parameter which typeof === 'object' and stands after cb
+      
+      var gun = this, cat = (gun._), root = gun.back(-1);
+      
+      if(cat.ing){
+        (cb || noop)({err: Gun.log("User is already being created or authenticated!"), wait: true});
+        return gun;
+      }
+      cat.ing = true;
+      
+      var act = {}, u;
+      act.a = function(data){
+        if(!data){ return act.b() }
+        if(!data.pub){
+          var tmp = [];
+          Gun.node.is(data, function(v){ tmp.push(v) })
+          return act.b(tmp);
         }
-        else if ( val instanceof ArrayBuffer ) { // Universal Primitive OCTET STRING
-            tag = 0x04, len = val.byteLength, val = new Uint8Array(val);
-            for ( var i = 0; i < len; i++ ) buf.push( val[i] );
+        if(act.name){ return act.f(data) }
+        act.c((act.data = data).auth);
+      }
+      act.b = function(list){
+        var get = (act.list = (act.list||[]).concat(list||[])).shift();
+        if(u === get){
+          if(act.name){ return act.err('Your user account is not published for dApps to access, please consider syncing it online, or allowing local access by adding your device as a peer.') }
+          return act.err('Wrong user or password.') 
         }
-        else if ( val === null ) { // Universal Primitive NULL
-            tag = 0x05, len = 0;
+        root.get(get).once(act.a);
+      }
+      act.c = function(auth){
+        if(u === auth){ return act.b() }
+        if(Gun.text.is(auth)){ return act.c(Gun.obj.ify(auth)) } // in case of legacy
+        SEA.work(pass, (act.auth = auth).s, act.d, act.enc); // the proof of work is evidence that we've spent some time/effort trying to log in, this slows brute force.
+      }
+      act.d = function(proof){
+        SEA.decrypt(act.auth.ek, proof, act.e, act.enc);
+      }
+      act.e = function(half){
+        if(u === half){
+          if(!act.enc){ // try old format
+            act.enc = {encode: 'utf8'};
+            return act.c(act.auth);
+          } act.enc = null; // end backwards
+          return act.b();
         }
-        else if ( typeof val === 'string' && val in str2oid ) { // Universal Primitive OBJECT IDENTIFIER
-            var oid = s2b( atob( str2oid[val] ) );
-            tag = 0x06, len = oid.length;
-            for ( var i = 0; i < len; i++ ) buf.push( oid[i] );
+        act.half = half;
+        act.f(act.data);
+      }
+      act.f = function(data){
+        if(!data || !data.pub){ return act.b() }
+        var tmp = act.half || {};
+        act.g({pub: data.pub, epub: data.epub, priv: tmp.priv, epriv: tmp.epriv});
+      }
+      act.g = function(pair){
+        act.pair = pair;
+        var user = (root._).user, at = (user._);
+        var tmp = at.tag;
+        var upt = at.opt;
+        at = user._ = root.get('~'+pair.pub)._;
+        at.opt = upt;
+        // add our credentials in-memory only to our root user instance
+        user.is = {pub: pair.pub, epub: pair.epub, alias: alias || pair};
+        at.sea = act.pair;
+        cat.ing = false;
+        try{if(pass && !Gun.obj.has(Gun.obj.ify(cat.root.graph['~'+pair.pub].auth), ':')){ opt.shuffle = opt.change = pass; } }catch(e){} // migrate UTF8 & Shuffle!
+        opt.change? act.z() : (cb || noop)(at);
+        if(SEA.window && ((gun.back('user')._).opt||opt).remember){
+          // TODO: this needs to be modular.
+          try{var sS = {};
+          sS = window.sessionStorage;
+          sS.recall = true;
+          sS.pair = JSON.stringify(pair); // auth using pair is more reliable than alias/pass
+          }catch(e){}
         }
-        else if ( val instanceof Array ) { // Universal Constructed SEQUENCE
-            for ( var i = 0; i < val.length; i++ ) der2b( val[i], buf );
-            tag = 0x30, len = buf.length - pos;
+        try{
+          (root._).on('auth', at) // TODO: Deprecate this, emit on user instead! Update docs when you do.
+          //at.on('auth', at) // Arrgh, this doesn't work without event "merge" code, but "merge" code causes stack overflow and crashes after logging in & trying to write data.
+        }catch(e){
+          Gun.log("Your 'auth' callback crashed with:", e);
         }
-        else if ( typeof val === 'object' && val.tag === 0x03 && val.value instanceof ArrayBuffer ) { // Tag hint
-            val = new Uint8Array(val.value), tag = 0x03, len = val.byteLength;
-            buf.push(0); for ( var i = 0; i < len; i++ ) buf.push( val[i] );
-            len++;
+      }
+      act.z = function(){
+        // password update so encrypt private key using new pwd + salt
+        act.salt = Gun.text.random(64); // pseudo-random
+        SEA.work(opt.change, act.salt, act.y);
+      }
+      act.y = function(proof){
+        SEA.encrypt({priv: act.pair.priv, epriv: act.pair.epriv}, proof, act.x, {raw:1});
+      }
+      act.x = function(auth){
+        act.w(JSON.stringify({ek: auth, s: act.salt}));
+      }
+      act.w = function(auth){
+        if(opt.shuffle){ // delete in future!
+          console.log('migrate core account from UTF8 & shuffle');
+          var tmp = Gun.obj.to(act.data);
+          Gun.obj.del(tmp, '_');
+          tmp.auth = auth;
+          root.get('~'+act.pair.pub).put(tmp);
+        } // end delete
+        root.get('~'+act.pair.pub).get('auth').put(auth, cb || noop);
+      }
+      act.err = function(e){
+        var ack = {err: Gun.log(e || 'User cannot be found!')};
+        cat.ing = false;
+        (cb || noop)(ack);
+      }
+      act.plugin = function(name){
+        if(!(act.name = name)){ return act.err() }
+        var tmp = [name];
+        if('~' !== name[0]){
+          tmp[1] = '~'+name;
+          tmp[2] = '~@'+name;
         }
-        else {
-            throw new Error( "Unsupported DER value " + val );
-        }
-
-        if ( len >= 0x80 ) {
-            var xlen = len, len = 4;
-            buf.splice( pos, 0, (xlen >> 24) & 0xff, (xlen >> 16) & 0xff, (xlen >> 8) & 0xff, xlen & 0xff );
-            while ( len > 1 && !(xlen >> 24) ) xlen <<= 8, len--;
-            if ( len < 4 ) buf.splice( pos, 4 - len );
-            len |= 0x80;
-        }
-
-        buf.splice( pos - 2, 2, tag, len );
-
-        return buf;
+        act.b(tmp);
+      }
+      if(pair){
+        act.g(pair);
+      } else
+      if(alias){
+        root.get('~@'+alias).once(act.a);
+      } else
+      if(!alias && !pass){
+        SEA.name(act.plugin);
+      }
+      return gun;
     }
-
-    function CryptoKey ( key, alg, ext, use ) {
-        Object.defineProperties( this, {
-            _key: {
-                value: key
-            },
-            type: {
-                value: key.type,
-                enumerable: true,
-            },
-            extractable: {
-                value: (ext === undefined) ? key.extractable : ext,
-                enumerable: true,
-            },
-            algorithm: {
-                value: (alg === undefined) ? key.algorithm : alg,
-                enumerable: true,
-            },
-            usages: {
-                value: (use === undefined) ? key.usages : use,
-                enumerable: true,
-            },
+    User.prototype.pair = function(){
+      console.log("user.pair() IS DEPRECATED AND WILL BE DELETED!!!");
+      var user = this;
+      if(!user.is){ return false }
+      return user._.sea;
+    }
+    User.prototype.leave = function(opt, cb){
+      var gun = this, user = (gun.back(-1)._).user;
+      if(user){
+        delete user.is;
+        delete user._.is;
+        delete user._.sea;
+      }
+      if(SEA.window){
+        try{var sS = {};
+        sS = window.sessionStorage;
+        delete sS.recall;
+        delete sS.pair;
+        }catch(e){};
+      }
+      return gun;
+    }
+    // If authenticated user wants to delete his/her account, let's support it!
+    User.prototype.delete = async function(alias, pass, cb){
+      console.log("user.delete() IS DEPRECATED AND WILL BE MOVED TO A MODULE!!!");
+      var gun = this, root = gun.back(-1), user = gun.back('user');
+      try {
+        user.auth(alias, pass, function(ack){
+          var pub = (user.is||{}).pub;
+          // Delete user data
+          user.map().once(function(){ this.put(null) });
+          // Wipe user data from memory
+          user.leave();
+          (cb || noop)({ok: 0});
         });
+      } catch (e) {
+        Gun.log('User.delete failed! Error:', e);
+      }
+      return gun;
+    }
+    User.prototype.recall = function(opt, cb){
+      var gun = this, root = gun.back(-1), tmp;
+      opt = opt || {};
+      if(opt && opt.sessionStorage){
+        if(SEA.window){
+          try{
+            var sS = {};
+            sS = window.sessionStorage;
+            if(sS){
+              (root._).opt.remember = true;
+              ((gun.back('user')._).opt||opt).remember = true;
+              if(sS.recall || sS.pair) root.user().auth(JSON.parse(sS.pair), cb); // pair is more reliable than alias/pass
+            }
+          }catch(e){}
+        }
+        return gun;
+      }
+      /*
+        TODO: copy mhelander's expiry code back in.
+        Although, we should check with community,
+        should expiry be core or a plugin?
+      */
+      return gun;
+    }
+    User.prototype.alive = async function(){
+      console.log("user.alive() IS DEPRECATED!!!");
+      const gunRoot = this.back(-1)
+      try {
+        // All is good. Should we do something more with actual recalled data?
+        await authRecall(gunRoot)
+        return gunRoot._.user._
+      } catch (e) {
+        const err = 'No session!'
+        Gun.log(err)
+        throw { err }
+      }
+    }
+    User.prototype.trust = async function(user){
+      // TODO: BUG!!! SEA `node` read listener needs to be async, which means core needs to be async too.
+      //gun.get('alice').get('age').trust(bob);
+      if (Gun.is(user)) {
+        user.get('pub').get((ctx, ev) => {
+          console.log(ctx, ev)
+        })
+      }
+      user.get('trust').get(path).put(theirPubkey);
+
+      // do a lookup on this gun chain directly (that gets bob's copy of the data)
+      // do a lookup on the metadata trust table for this path (that gets all the pubkeys allowed to write on this path)
+      // do a lookup on each of those pubKeys ON the path (to get the collab data "layers")
+      // THEN you perform Jachen's mix operation
+      // and return the result of that to...
+    }
+    User.prototype.grant = function(to, cb){
+      console.log("`.grant` API MAY BE DELETED OR CHANGED OR RENAMED, DO NOT USE!");
+      var gun = this, user = gun.back(-1).user(), pair = user._.sea, path = '';
+      gun.back(function(at){ if(at.is){ return } path += (at.get||'') });
+      (async function(){
+      var enc, sec = await user.get('grant').get(pair.pub).get(path).then();
+      sec = await SEA.decrypt(sec, pair);
+      if(!sec){
+        sec = SEA.random(16).toString();
+        enc = await SEA.encrypt(sec, pair);
+        user.get('grant').get(pair.pub).get(path).put(enc);
+      }
+      var pub = to.get('pub').then();
+      var epub = to.get('epub').then();
+      pub = await pub; epub = await epub;
+      var dh = await SEA.secret(epub, pair);
+      enc = await SEA.encrypt(sec, dh);
+      user.get('grant').get(pub).get(path).put(enc, cb);
+      }());
+      return gun;
+    }
+    User.prototype.secret = function(data, cb){
+      console.log("`.secret` API MAY BE DELETED OR CHANGED OR RENAMED, DO NOT USE!");
+      var gun = this, user = gun.back(-1).user(), pair = user.pair(), path = '';
+      gun.back(function(at){ if(at.is){ return } path += (at.get||'') });
+      (async function(){
+      var enc, sec = await user.get('trust').get(pair.pub).get(path).then();
+      sec = await SEA.decrypt(sec, pair);
+      if(!sec){
+        sec = SEA.random(16).toString();
+        enc = await SEA.encrypt(sec, pair);
+        user.get('trust').get(pair.pub).get(path).put(enc);
+      }
+      enc = await SEA.encrypt(data, sec);
+      gun.put(enc, cb);
+      }());
+      return gun;
     }
 
-    function isPubKeyUse ( u ) {
-        return u === 'verify' || u === 'encrypt' || u === 'wrapKey';
+    /**
+     * returns the decrypted value, encrypted by secret
+     * @returns {Promise<any>}
+     // Mark needs to review 1st before officially supported
+    User.prototype.decrypt = function(cb) {
+      let gun = this,
+        path = ''
+      gun.back(function(at) {
+        if (at.is) {
+          return
+        }
+        path += at.get || ''
+      })
+      return gun
+        .then(async data => {
+          if (data == null) {
+            return
+          }
+          const user = gun.back(-1).user()
+          const pair = user.pair()
+          let sec = await user
+            .get('trust')
+            .get(pair.pub)
+            .get(path)
+          sec = await SEA.decrypt(sec, pair)
+          if (!sec) {
+            return data
+          }
+          let decrypted = await SEA.decrypt(data, sec)
+          return decrypted
+        })
+        .then(res => {
+          cb && cb(res)
+          return res
+        })
+    }
+    */
+    module.exports = User
+  })(USE, './create');
+
+  ;USE(function(module){
+    var SEA = USE('./sea')
+    var Gun = SEA.Gun;
+    // After we have a GUN extension to make user registration/login easy, we then need to handle everything else.
+
+    // We do this with a GUN adapter, we first listen to when a gun instance is created (and when its options change)
+    Gun.on('opt', function(at){
+      if(!at.sea){ // only add SEA once per instance, on the "at" context.
+        at.sea = {own: {}};
+        //at.on('in', security, at); // now listen to all input data, acting as a firewall.
+        //at.on('out', signature, at); // and output listeners, to encrypt outgoing data.
+        at.on('put', check, at);
+      }
+      this.to.next(at); // make sure to call the "next" middleware adapter.
+    });
+
+    // Alright, this next adapter gets run at the per node level in the graph database.
+    // This will let us verify that every property on a node has a value signed by a public key we trust.
+    // If the signature does not match, the data is just `undefined` so it doesn't get passed on.
+    // If it does match, then we transform the in-memory "view" of the data into its plain value (without the signature).
+    // Now NOTE! Some data is "system" data, not user data. Example: List of public keys, aliases, etc.
+    // This data is self-enforced (the value can only match its ID), but that is handled in the `security` function.
+    // From the self-enforced data, we can see all the edges in the graph that belong to a public key.
+    // Example: ~ASDF is the ID of a node with ASDF as its public key, signed alias and salt, and
+    // its encrypted private key, but it might also have other signed values on it like `profile = <ID>` edge.
+    // Using that directed edge's ID, we can then track (in memory) which IDs belong to which keys.
+    // Here is a problem: Multiple public keys can "claim" any node's ID, so this is dangerous!
+    // This means we should ONLY trust our "friends" (our key ring) public keys, not any ones.
+    // I have not yet added that to SEA yet in this alpha release. That is coming soon, but beware in the meanwhile!
+    function each(msg){ // TODO: Warning: Need to switch to `gun.on('node')`! Do not use `Gun.on('node'` in your apps!
+      // NOTE: THE SECURITY FUNCTION HAS ALREADY VERIFIED THE DATA!!!
+      // WE DO NOT NEED TO RE-VERIFY AGAIN, JUST TRANSFORM IT TO PLAINTEXT.
+      var to = this.to, vertex = (msg.$._).put, c = 0, d;
+      Gun.node.is(msg.put, function(val, key, node){
+        // only process if SEA formatted?
+        var tmp = Gun.obj.ify(val) || noop;
+        if(u !== tmp[':']){
+          node[key] = SEA.opt.unpack(tmp);
+          return;
+        }
+        if(!SEA.opt.check(val)){ return }
+        c++; // for each property on the node
+        SEA.verify(val, false, function(data){ c--; // false just extracts the plain data.
+          node[key] = SEA.opt.unpack(data, key, node);; // transform to plain value.
+          if(d && !c && (c = -1)){ to.next(msg) }
+        });
+      });
+      if((d = true) && !c){ to.next(msg) }
     }
 
-    function isPrvKeyUse ( u ) {
-        return u === 'sign' || u === 'decrypt' || u === 'unwrapKey';
+    // signature handles data output, it is a proxy to the security function.
+    function signature(msg){
+      if((msg._||noop).user){
+        return this.to.next(msg);
+      }
+      var ctx = this.as;
+      (msg._||(msg._=function(){})).user = ctx.user;
+      security.call(this, msg);
     }
 
-    [ 'generateKey', 'importKey', 'unwrapKey' ]
-        .forEach( function ( m ) {
-            var _fn = _subtle[m];
-
-            _subtle[m] = function ( a, b, c ) {
-                var args = [].slice.call(arguments),
-                    ka, kx, ku;
-
-                switch ( m ) {
-                    case 'generateKey':
-                        ka = alg(a), kx = b, ku = c;
-                        break;
-                    case 'importKey':
-                        ka = alg(c), kx = args[3], ku = args[4];
-                        if ( a === 'jwk' ) {
-                            b = b2jwk(b);
-                            if ( !b.alg ) b.alg = jwkAlg(ka);
-                            if ( !b.key_ops ) b.key_ops = ( b.kty !== 'oct' ) ? ( 'd' in b ) ? ku.filter(isPrvKeyUse) : ku.filter(isPubKeyUse) : ku.slice();
-                            args[1] = jwk2b(b);
-                        }
-                        break;
-                    case 'unwrapKey':
-                        ka = args[4], kx = args[5], ku = args[6];
-                        args[2] = c._key;
-                        break;
-                }
-
-                if ( m === 'generateKey' && ka.name === 'HMAC' && ka.hash ) {
-                    ka.length = ka.length || { 'SHA-1': 512, 'SHA-256': 512, 'SHA-384': 1024, 'SHA-512': 1024 }[ka.hash.name];
-                    return _subtle.importKey( 'raw', _crypto.getRandomValues( new Uint8Array( (ka.length+7)>>3 ) ), ka, kx, ku );
-                }
-
-                if ( isWebkit && m === 'generateKey' && ka.name === 'RSASSA-PKCS1-v1_5' && ( !ka.modulusLength || ka.modulusLength >= 2048 ) ) {
-                    a = alg(a), a.name = 'RSAES-PKCS1-v1_5', delete a.hash;
-                    return _subtle.generateKey( a, true, [ 'encrypt', 'decrypt' ] )
-                        .then( function ( k ) {
-                            return Promise.all([
-                                _subtle.exportKey( 'jwk', k.publicKey ),
-                                _subtle.exportKey( 'jwk', k.privateKey ),
-                            ]);
-                        })
-                        .then( function ( keys ) {
-                            keys[0].alg = keys[1].alg = jwkAlg(ka);
-                            keys[0].key_ops = ku.filter(isPubKeyUse), keys[1].key_ops = ku.filter(isPrvKeyUse);
-                            return Promise.all([
-                                _subtle.importKey( 'jwk', keys[0], ka, true, keys[0].key_ops ),
-                                _subtle.importKey( 'jwk', keys[1], ka, kx, keys[1].key_ops ),
-                            ]);
-                        })
-                        .then( function ( keys ) {
-                            return {
-                                publicKey: keys[0],
-                                privateKey: keys[1],
-                            };
-                        });
-                }
-
-                if ( ( isWebkit || ( isIE && ( ka.hash || {} ).name === 'SHA-1' ) )
-                        && m === 'importKey' && a === 'jwk' && ka.name === 'HMAC' && b.kty === 'oct' ) {
-                    return _subtle.importKey( 'raw', s2b( a2s(b.k) ), c, args[3], args[4] );
-                }
-
-                if ( isWebkit && m === 'importKey' && ( a === 'spki' || a === 'pkcs8' ) ) {
-                    return _subtle.importKey( 'jwk', pkcs2jwk(b), c, args[3], args[4] );
-                }
-
-                if ( isIE && m === 'unwrapKey' ) {
-                    return _subtle.decrypt( args[3], c, b )
-                        .then( function ( k ) {
-                            return _subtle.importKey( a, k, args[4], args[5], args[6] );
-                        });
-                }
-
-                var op;
-                try {
-                    op = _fn.apply( _subtle, args );
-                }
-                catch ( e ) {
-                    return Promise.reject(e);
-                }
-
-                if ( isIE ) {
-                    op = new Promise( function ( res, rej ) {
-                        op.onabort =
-                        op.onerror =    function ( e ) { rej(e)               };
-                        op.oncomplete = function ( r ) { res(r.target.result) };
-                    });
-                }
-
-                op = op.then( function ( k ) {
-                    if ( ka.name === 'HMAC' ) {
-                        if ( !ka.length ) ka.length = 8 * k.algorithm.length;
-                    }
-                    if ( ka.name.search('RSA') == 0 ) {
-                        if ( !ka.modulusLength ) ka.modulusLength = (k.publicKey || k).algorithm.modulusLength;
-                        if ( !ka.publicExponent ) ka.publicExponent = (k.publicKey || k).algorithm.publicExponent;
-                    }
-                    if ( k.publicKey && k.privateKey ) {
-                        k = {
-                            publicKey: new CryptoKey( k.publicKey, ka, kx, ku.filter(isPubKeyUse) ),
-                            privateKey: new CryptoKey( k.privateKey, ka, kx, ku.filter(isPrvKeyUse) ),
-                        };
-                    }
-                    else {
-                        k = new CryptoKey( k, ka, kx, ku );
-                    }
-                    return k;
-                });
-
-                return op;
-            }
+    var u;
+    function check(msg){ // REVISE / IMPROVE, NO NEED TO PASS MSG/EVE EACH SUB?
+      var eve = this, at = eve.as, put = msg.put, soul = put['#'], key = put['.'], val = put[':'], state = put['>'], id = msg['#'], tmp;
+      if(!soul || !key){ return }
+      if((msg._||'').faith && (at.opt||'').faith && 'function' == typeof msg._){
+        SEA.verify(SEA.opt.pack(put), false, function(data){ // this is synchronous if false
+          put['='] = SEA.opt.unpack(data);
+          eve.to.next(msg);
         });
+        return 
+      }
+      var no = function(why){ at.on('in', {'@': id, err: why}) };
+      //var no = function(why){ msg.ack(why) };
+      (msg._||'').DBG && ((msg._||'').DBG.c = +new Date);
+      if(0 <= soul.indexOf('<?')){ // special case for "do not sync data X old"
+        // 'a~pub.key/b<?9'
+        tmp = parseFloat(soul.split('<?')[1]||'');
+        if(tmp && (state < (Gun.state() - (tmp * 1000)))){ // sec to ms
+          (tmp = msg._) && (tmp = tmp.lot) && (tmp.more--); // THIS IS BAD CODE! It assumes GUN internals do something that will probably change in future, but hacking in now.
+          return; // omit!
+        }
+      }
+      if('~@' === soul){  // special case for shared system data, the list of aliases.
+        check.alias(eve, msg, val, key, soul, at, no); return;
+      }
+      if('~@' === soul.slice(0,2)){ // special case for shared system data, the list of public keys for an alias.
+        check.pubs(eve, msg, val, key, soul, at, no); return;
+      }
+      //if('~' === soul.slice(0,1) && 2 === (tmp = soul.slice(1)).split('.').length){ // special case, account data for a public key.
+      if(tmp = SEA.opt.pub(soul)){ // special case, account data for a public key.
+        check.pub(eve, msg, val, key, soul, at, no, at.user||'', tmp); return;
+      }
+      if(0 <= soul.indexOf('#')){ // special case for content addressing immutable hashed data.
+        check.hash(eve, msg, val, key, soul, at, no); return;
+      } 
+      check.any(eve, msg, val, key, soul, at, no, at.user||''); return;
+      eve.to.next(msg); // not handled
+    }
+    check.hash = function(eve, msg, val, key, soul, at, no){
+      SEA.work(val, null, function(data){
+        if(data && data === key.split('#').slice(-1)[0]){ return eve.to.next(msg) }
+        no("Data hash not same as hash!");
+      }, {name: 'SHA-256'});
+    }
+    check.alias = function(eve, msg, val, key, soul, at, no){ // Example: {_:#~@, ~@alice: {#~@alice}}
+      if(!val){ return no("Data must exist!") } // data MUST exist
+      if('~@'+key === link_is(val)){ return eve.to.next(msg) } // in fact, it must be EXACTLY equal to itself
+      no("Alias not same!"); // if it isn't, reject.
+    };
+    check.pubs = function(eve, msg, val, key, soul, at, no){ // Example: {_:#~@alice, ~asdf: {#~asdf}}
+      if(!val){ return no("Alias must exist!") } // data MUST exist
+      if(key === link_is(val)){ return eve.to.next(msg) } // and the ID must be EXACTLY equal to its property
+      no("Alias not same!"); // that way nobody can tamper with the list of public keys.
+    };
+    check.pub = function(eve, msg, val, key, soul, at, no, user, pub){ var tmp; // Example: {_:#~asdf, hello:'world'~fdsa}}
+      if('pub' === key && '~'+pub === soul){
+        if(val === pub){ return eve.to.next(msg) } // the account MUST match `pub` property that equals the ID of the public key.
+        return no("Account not same!");
+      }
+      if((tmp = user.is) && pub === tmp.pub){
+        SEA.sign(SEA.opt.pack(msg.put), (user._).sea, function(data){
+          if(u === data){ return no(SEA.err || 'Signature fail.') }
+          if(tmp = link_is(val)){ (at.sea.own[tmp] = at.sea.own[tmp] || {})[pub] = 1 }
+          msg.put[':'] = JSON.stringify({':': tmp = SEA.opt.unpack(data.m), '~': data.s});
+          msg.put['='] = tmp;
+          eve.to.next(msg);
+        }, {raw: 1});
+        return;
+      }
+      SEA.verify(SEA.opt.pack(msg.put), pub, function(data){ var tmp;
+        data = SEA.opt.unpack(data);
+        if(u === data){ return no("Unverified data.") } // make sure the signature matches the account it claims to be on. // reject any updates that are signed with a mismatched account.
+        if((tmp = link_is(data)) && pub === SEA.opt.pub(tmp)){ (at.sea.own[tmp] = at.sea.own[tmp] || {})[pub] = 1 }
+        msg.put['='] = data;
+        eve.to.next(msg);
+      });
+    };
+    check.any = function(eve, msg, val, key, soul, at, no, user){ var tmp, pub;
+      if(at.opt.secure){ return no("Soul missing public key at '" + key + "'.") }
+      // TODO: Ask community if should auto-sign non user-graph data.
+      at.on('secure', function(msg){ this.off();
+        if(!at.opt.secure){ return eve.to.next(msg) }
+        no("Data cannot be changed.");
+      }).on.on('secure', msg);
+      return;
+    }
+    var link_is = Gun.val.link.is, state_ify = Gun.state.ify;
 
-    [ 'exportKey', 'wrapKey' ]
-        .forEach( function ( m ) {
-            var _fn = _subtle[m];
-
-            _subtle[m] = function ( a, b, c ) {
-                var args = [].slice.call(arguments);
-
-                switch ( m ) {
-                    case 'exportKey':
-                        args[1] = b._key;
-                        break;
-                    case 'wrapKey':
-                        args[1] = b._key, args[2] = c._key;
-                        break;
-                }
-
-                if ( ( isWebkit || ( isIE && ( b.algorithm.hash || {} ).name === 'SHA-1' ) )
-                        && m === 'exportKey' && a === 'jwk' && b.algorithm.name === 'HMAC' ) {
-                    args[0] = 'raw';
-                }
-
-                if ( isWebkit && m === 'exportKey' && ( a === 'spki' || a === 'pkcs8' ) ) {
-                    args[0] = 'jwk';
-                }
-
-                if ( isIE && m === 'wrapKey' ) {
-                    return _subtle.exportKey( a, b )
-                        .then( function ( k ) {
-                            if ( a === 'jwk' ) k = s2b( unescape( encodeURIComponent( JSON.stringify( b2jwk(k) ) ) ) );
-                            return  _subtle.encrypt( args[3], c, k );
-                        });
-                }
-
-                var op;
-                try {
-                    op = _fn.apply( _subtle, args );
-                }
-                catch ( e ) {
-                    return Promise.reject(e);
-                }
-
-                if ( isIE ) {
-                    op = new Promise( function ( res, rej ) {
-                        op.onabort =
-                        op.onerror =    function ( e ) { rej(e)               };
-                        op.oncomplete = function ( r ) { res(r.target.result) };
-                    });
-                }
-
-                if ( m === 'exportKey' && a === 'jwk' ) {
-                    op = op.then( function ( k ) {
-                        if ( ( isWebkit || ( isIE && ( b.algorithm.hash || {} ).name === 'SHA-1' ) )
-                                && b.algorithm.name === 'HMAC') {
-                            return { 'kty': 'oct', 'alg': jwkAlg(b.algorithm), 'key_ops': b.usages.slice(), 'ext': true, 'k': s2a( b2s(k) ) };
-                        }
-                        k = b2jwk(k);
-                        if ( !k.alg ) k['alg'] = jwkAlg(b.algorithm);
-                        if ( !k.key_ops ) k['key_ops'] = ( b.type === 'public' ) ? b.usages.filter(isPubKeyUse) : ( b.type === 'private' ) ? b.usages.filter(isPrvKeyUse) : b.usages.slice();
-                        return k;
-                    });
-                }
-
-                if ( isWebkit && m === 'exportKey' && ( a === 'spki' || a === 'pkcs8' ) ) {
-                    op = op.then( function ( k ) {
-                        k = jwk2pkcs( b2jwk(k) );
-                        return k;
-                    });
-                }
-
-                return op;
-            }
-        });
-
-    [ 'encrypt', 'decrypt', 'sign', 'verify' ]
-        .forEach( function ( m ) {
-            var _fn = _subtle[m];
-
-            _subtle[m] = function ( a, b, c, d ) {
-                if ( isIE && ( !c.byteLength || ( d && !d.byteLength ) ) )
-                    throw new Error("Empy input is not allowed");
-
-                var args = [].slice.call(arguments),
-                    ka = alg(a);
-
-                if ( isIE && m === 'decrypt' && ka.name === 'AES-GCM' ) {
-                    var tl = a.tagLength >> 3;
-                    args[2] = (c.buffer || c).slice( 0, c.byteLength - tl ),
-                    a.tag = (c.buffer || c).slice( c.byteLength - tl );
-                }
-
-                args[1] = b._key;
-
-                var op;
-                try {
-                    op = _fn.apply( _subtle, args );
-                }
-                catch ( e ) {
-                    return Promise.reject(e);
-                }
-
-                if ( isIE ) {
-                    op = new Promise( function ( res, rej ) {
-                        op.onabort =
-                        op.onerror = function ( e ) {
-                            rej(e);
-                        };
-
-                        op.oncomplete = function ( r ) {
-                            var r = r.target.result;
-
-                            if ( m === 'encrypt' && r instanceof AesGcmEncryptResult ) {
-                                var c = r.ciphertext, t = r.tag;
-                                r = new Uint8Array( c.byteLength + t.byteLength );
-                                r.set( new Uint8Array(c), 0 );
-                                r.set( new Uint8Array(t), c.byteLength );
-                                r = r.buffer;
-                            }
-
-                            res(r);
-                        };
-                    });
-                }
-
-                return op;
-            }
-        });
-
-    if ( isIE ) {
-        var _digest = _subtle.digest;
-
-        _subtle['digest'] = function ( a, b ) {
-            if ( !b.byteLength )
-                throw new Error("Empy input is not allowed");
-
-            var op;
-            try {
-                op = _digest.call( _subtle, a, b );
-            }
-            catch ( e ) {
-                return Promise.reject(e);
-            }
-
-            op = new Promise( function ( res, rej ) {
-                op.onabort =
-                op.onerror =    function ( e ) { rej(e)               };
-                op.oncomplete = function ( r ) { res(r.target.result) };
-            });
-
-            return op;
+    // okay! The security function handles all the heavy lifting.
+    // It needs to deal read and write of input and output of system data, account/public key data, and regular data.
+    // This is broken down into some pretty clear edge cases, let's go over them:
+    function security(msg){
+      var at = this.as, sea = at.sea, to = this.to;
+      if(at.opt.faith && (msg._||noop).faith){ // you probably shouldn't have faith in this!
+        this.to.next(msg); // why do we allow skipping security? I'm very scared about it actually.
+        return; // but so that way storage adapters that already verified something can get performance boost. This was a community requested feature. If anybody finds an exploit with it, please report immediately. It should only be exploitable if you have XSS control anyways, which if you do, you can bypass security regardless of this.
+      }
+      if(msg.get){
+        // if there is a request to read data from us, then...
+        var soul = msg.get['#'];
+        if(soul){ // for now, only allow direct IDs to be read.
+          if(typeof soul !== 'string'){ return to.next(msg) } // do not handle lexical cursors.
+          if('alias' === soul){ // Allow reading the list of usernames/aliases in the system?
+            return to.next(msg); // yes.
+          } else
+          if('~@' === soul.slice(0,2)){ // Allow reading the list of public keys associated with an alias?
+            return to.next(msg); // yes.
+          } else { // Allow reading everything?
+            return to.next(msg); // yes // TODO: No! Make this a callback/event that people can filter on.
+          }
+        }
+      }
+      if(msg.put){
+        /*
+          NOTICE: THIS IS OLD AND GETTING DEPRECATED.
+          ANY SECURITY CHANGES SHOULD HAPPEN ABOVE FIRST
+          THEN PORTED TO HERE.
+        */
+        // potentially parallel async operations!!!
+        var check = {}, each = {}, u;
+        each.node = function(node, soul){
+          if(Gun.obj.empty(node, '_')){ return check['node'+soul] = 0 } // ignore empty updates, don't reject them.
+          Gun.obj.map(node, each.way, {soul: soul, node: node});
         };
+        each.way = function(val, key){
+          var soul = this.soul, node = this.node, tmp;
+          if('_' === key){ return } // ignore meta data
+          if('~@' === soul){  // special case for shared system data, the list of aliases.
+            each.alias(val, key, node, soul); return;
+          }
+          if('~@' === soul.slice(0,2)){ // special case for shared system data, the list of public keys for an alias.
+            each.pubs(val, key, node, soul); return;
+          }
+          if('~' === soul.slice(0,1) && 2 === (tmp = soul.slice(1)).split('.').length){ // special case, account data for a public key.
+            each.pub(val, key, node, soul, tmp, (msg._||noop).user); return;
+          }
+          each.any(val, key, node, soul, (msg._||noop).user); return;
+          return each.end({err: "No other data allowed!"});
+        };
+        each.alias = function(val, key, node, soul){ // Example: {_:#~@, ~@alice: {#~@alice}}
+          if(!val){ return each.end({err: "Data must exist!"}) } // data MUST exist
+          if('~@'+key === Gun.val.link.is(val)){ return check['alias'+key] = 0 } // in fact, it must be EXACTLY equal to itself
+          each.end({err: "Mismatching alias."}); // if it isn't, reject.
+        };
+        each.pubs = function(val, key, node, soul){ // Example: {_:#~@alice, ~asdf: {#~asdf}}
+          if(!val){ return each.end({err: "Alias must exist!"}) } // data MUST exist
+          if(key === Gun.val.link.is(val)){ return check['pubs'+soul+key] = 0 } // and the ID must be EXACTLY equal to its property
+          each.end({err: "Alias must match!"}); // that way nobody can tamper with the list of public keys.
+        };
+        each.pub = function(val, key, node, soul, pub, user){ var tmp; // Example: {_:#~asdf, hello:'world'~fdsa}}
+          if('pub' === key){
+            if(val === pub){ return (check['pub'+soul+key] = 0) } // the account MUST match `pub` property that equals the ID of the public key.
+            return each.end({err: "Account must match!"});
+          }
+          check['user'+soul+key] = 1;
+          if(Gun.is(msg.$) && user && user.is && pub === user.is.pub){
+            SEA.sign(SEA.opt.prep(tmp = SEA.opt.parse(val), key, node, soul), (user._).sea, function(data){ var rel;
+              if(u === data){ return each.end({err: SEA.err || 'Pub signature fail.'}) }
+              if(rel = Gun.val.link.is(val)){
+                (at.sea.own[rel] = at.sea.own[rel] || {})[pub] = true;
+              }
+              node[key] = JSON.stringify({':': SEA.opt.unpack(data.m), '~': data.s});
+              check['user'+soul+key] = 0;
+              each.end({ok: 1});
+            }, {check: SEA.opt.pack(tmp, key, node, soul), raw: 1});
+            return;
+          }
+          SEA.verify(SEA.opt.pack(val,key,node,soul), pub, function(data){ var rel, tmp;
+            data = SEA.opt.unpack(data, key, node);
+            if(u === data){ // make sure the signature matches the account it claims to be on.
+              return each.end({err: "Unverified data."}); // reject any updates that are signed with a mismatched account.
+            }
+            if((rel = Gun.val.link.is(data)) && pub === SEA.opt.pub(rel)){
+              (at.sea.own[rel] = at.sea.own[rel] || {})[pub] = true;
+            }
+            check['user'+soul+key] = 0;
+            each.end({ok: 1});
+          });
+        };
+        each.any = function(val, key, node, soul, user){ var tmp, pub;
+          if(!(pub = SEA.opt.pub(soul))){
+            if(at.opt.secure){
+              each.end({err: "Soul is missing public key at '" + key + "'."});
+              return;
+            }
+            // TODO: Ask community if should auto-sign non user-graph data.
+            check['any'+soul+key] = 1;
+            at.on('secure', function(msg){ this.off();
+              check['any'+soul+key] = 0;
+              if(at.opt.secure){ msg = null }
+              each.end(msg || {err: "Data cannot be modified."});
+            }).on.on('secure', msg);
+            //each.end({err: "Data cannot be modified."});
+            return;
+          }
+          if(Gun.is(msg.$) && user && user.is && pub === user.is.pub){
+            /*var other = Gun.obj.map(at.sea.own[soul], function(v, p){
+              if((user.is||{}).pub !== p){ return p }
+            });
+            if(other){
+              each.any(val, key, node, soul);
+              return;
+            }*/
+            check['any'+soul+key] = 1;
+            SEA.sign(SEA.opt.prep(tmp = SEA.opt.parse(val), key, node, soul), (user._).sea, function(data){
+              if(u === data){ return each.end({err: 'My signature fail.'}) }
+              node[key] = JSON.stringify({':': SEA.opt.unpack(data.m), '~': data.s});
+              check['any'+soul+key] = 0;
+              each.end({ok: 1});
+            }, {check: SEA.opt.pack(tmp, key, node, soul), raw: 1});
+            return;
+          }
+          check['any'+soul+key] = 1;
+          SEA.verify(SEA.opt.pack(val,key,node,soul), pub, function(data){ var rel;
+            data = SEA.opt.unpack(data, key, node);
+            if(u === data){ return each.end({err: "Mismatched owner on '" + key + "'."}) } // thanks @rogowski !
+            if((rel = Gun.val.link.is(data)) && pub === SEA.opt.pub(rel)){
+              (at.sea.own[rel] = at.sea.own[rel] || {})[pub] = true;
+            }
+            check['any'+soul+key] = 0;
+            each.end({ok: 1});
+          });
+        }
+        each.end = function(ctx){ // TODO: Can't you just switch this to each.end = cb?
+          if(each.err){ return }
+          if((each.err = ctx.err) || ctx.no){
+            console.log('NO!', each.err, msg.put); // 451 mistmached data FOR MARTTI
+            return;
+          }
+          if(!each.end.ed){ return }
+          if(Gun.obj.map(check, function(no){
+            if(no){ return true }
+          })){ return }
+          (msg._||{}).user = at.user || security; // already been through firewall, does not need to again on out.
+          to.next(msg);
+        };
+        Gun.obj.map(msg.put, each.node);
+        each.end({end: each.end.ed = true});
+        return; // need to manually call next after async.
+      }
+      to.next(msg); // pass forward any data we do not know how to handle or process (this allows custom security protocols).
+    }
+    var pubcut = /[^\w_-]/; // anything not alphanumeric or _ -
+    SEA.opt.pub = function(s){
+      if(!s){ return }
+      s = s.split('~');
+      if(!s || !(s = s[1])){ return }
+      s = s.split(pubcut).slice(0,2);
+      if(!s || 2 != s.length){ return }
+      if('@' === (s[0]||'')[0]){ return }
+      s = s.slice(0,2).join('.');
+      return s;
+    }
+    SEA.opt.prep = function(d,k, n,s){ // prep for signing
+      return {'#':s,'.':k,':':SEA.opt.parse(d),'>':Gun.state.is(n, k)};
+    }
+    SEA.opt.pack = function(d,k, n,s){ // pack for verifying
+      if(SEA.opt.check(d)){ return d }
+      var meta = (Gun.obj.ify((d && d[':'])||d)||''), sig = meta['~'];
+      return sig? {m: {'#':s||d['#'],'.':k||d['.'],':':meta[':'],'>':d['>']||Gun.state.is(n, k)}, s: sig} : d;
+    }
+    var O = SEA.opt;
+    SEA.opt.unpack = function(d, k, n){ var tmp;
+      if(u === d){ return }
+      if(d && (u !== (tmp = d[':']))){ return tmp }
+      k = k || O.fall_key; if(!n && O.fall_val){ n = {}; n[k] = O.fall_val }
+      if(!k || !n){ return }
+      if(d === n[k]){ return d }
+      if(!SEA.opt.check(n[k])){ return d }
+      var soul = Gun.node.soul(n) || O.fall_soul, s = Gun.state.is(n, k) || O.fall_state;
+      if(d && 4 === d.length && soul === d[0] && k === d[1] && fl(s) === fl(d[3])){
+        return d[2];
+      }
+      if(s < SEA.opt.shuffle_attack){
+        return d;
+      }
+    }
+    SEA.opt.shuffle_attack = 1546329600000; // Jan 1, 2019
+    var noop = function(){}, u;
+    var fl = Math.floor; // TODO: Still need to fix inconsistent state issue.
+    var rel_is = Gun.val.rel.is;
+    var obj_ify = Gun.obj.ify;
+    // TODO: Potential bug? If pub/priv key starts with `-`? IDK how possible.
 
-        global.crypto = Object.create( _crypto, {
-            getRandomValues: { value: function ( a ) { return _crypto.getRandomValues(a) } },
-            subtle:          { value: _subtle },
-        });
+  })(USE, './index');
+}());
 
-        global.CryptoKey = CryptoKey;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module), __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./node_modules/ieee754/index.js":
+/*!***************************************!*\
+  !*** ./node_modules/ieee754/index.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+exports.read = function (buffer, offset, isLE, mLen, nBytes) {
+  var e, m
+  var eLen = (nBytes * 8) - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var nBits = -7
+  var i = isLE ? (nBytes - 1) : 0
+  var d = isLE ? -1 : 1
+  var s = buffer[offset + i]
+
+  i += d
+
+  e = s & ((1 << (-nBits)) - 1)
+  s >>= (-nBits)
+  nBits += eLen
+  for (; nBits > 0; e = (e * 256) + buffer[offset + i], i += d, nBits -= 8) {}
+
+  m = e & ((1 << (-nBits)) - 1)
+  e >>= (-nBits)
+  nBits += mLen
+  for (; nBits > 0; m = (m * 256) + buffer[offset + i], i += d, nBits -= 8) {}
+
+  if (e === 0) {
+    e = 1 - eBias
+  } else if (e === eMax) {
+    return m ? NaN : ((s ? -1 : 1) * Infinity)
+  } else {
+    m = m + Math.pow(2, mLen)
+    e = e - eBias
+  }
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+}
+
+exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
+  var e, m, c
+  var eLen = (nBytes * 8) - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
+  var i = isLE ? 0 : (nBytes - 1)
+  var d = isLE ? 1 : -1
+  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
+
+  value = Math.abs(value)
+
+  if (isNaN(value) || value === Infinity) {
+    m = isNaN(value) ? 1 : 0
+    e = eMax
+  } else {
+    e = Math.floor(Math.log(value) / Math.LN2)
+    if (value * (c = Math.pow(2, -e)) < 1) {
+      e--
+      c *= 2
+    }
+    if (e + eBias >= 1) {
+      value += rt / c
+    } else {
+      value += rt * Math.pow(2, 1 - eBias)
+    }
+    if (value * c >= 2) {
+      e++
+      c /= 2
     }
 
-    if ( isWebkit ) {
-        _crypto.subtle = _subtle;
-
-        global.Crypto = _Crypto;
-        global.SubtleCrypto = _SubtleCrypto;
-        global.CryptoKey = CryptoKey;
+    if (e + eBias >= eMax) {
+      m = 0
+      e = eMax
+    } else if (e + eBias >= 1) {
+      m = ((value * c) - 1) * Math.pow(2, mLen)
+      e = e + eBias
+    } else {
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
+      e = 0
     }
-}));
+  }
 
- /* harmony default export */ __webpack_exports__["default"] = ({}); // section modified by isomorphic-webcrypto build 
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
+
+  e = (e << mLen) | m
+  eLen += mLen
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
+
+  buffer[offset + i - d] |= s * 128
+}
 
 
 /***/ }),
 
-/***/ "./node_modules/gun/node_modules/text-encoding/index.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/gun/node_modules/text-encoding/index.js ***!
-  \**************************************************************/
+/***/ "./node_modules/isarray/index.js":
+/*!***************************************!*\
+  !*** ./node_modules/isarray/index.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/node-libs-browser/node_modules/events/events.js":
+/*!**********************************************************************!*\
+  !*** ./node_modules/node-libs-browser/node_modules/events/events.js ***!
+  \**********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+var R = typeof Reflect === 'object' ? Reflect : null
+var ReflectApply = R && typeof R.apply === 'function'
+  ? R.apply
+  : function ReflectApply(target, receiver, args) {
+    return Function.prototype.apply.call(target, receiver, args);
+  }
+
+var ReflectOwnKeys
+if (R && typeof R.ownKeys === 'function') {
+  ReflectOwnKeys = R.ownKeys
+} else if (Object.getOwnPropertySymbols) {
+  ReflectOwnKeys = function ReflectOwnKeys(target) {
+    return Object.getOwnPropertyNames(target)
+      .concat(Object.getOwnPropertySymbols(target));
+  };
+} else {
+  ReflectOwnKeys = function ReflectOwnKeys(target) {
+    return Object.getOwnPropertyNames(target);
+  };
+}
+
+function ProcessEmitWarning(warning) {
+  if (console && console.warn) console.warn(warning);
+}
+
+var NumberIsNaN = Number.isNaN || function NumberIsNaN(value) {
+  return value !== value;
+}
+
+function EventEmitter() {
+  EventEmitter.init.call(this);
+}
+module.exports = EventEmitter;
+module.exports.once = once;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._eventsCount = 0;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+var defaultMaxListeners = 10;
+
+function checkListener(listener) {
+  if (typeof listener !== 'function') {
+    throw new TypeError('The "listener" argument must be of type Function. Received type ' + typeof listener);
+  }
+}
+
+Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
+  enumerable: true,
+  get: function() {
+    return defaultMaxListeners;
+  },
+  set: function(arg) {
+    if (typeof arg !== 'number' || arg < 0 || NumberIsNaN(arg)) {
+      throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received ' + arg + '.');
+    }
+    defaultMaxListeners = arg;
+  }
+});
+
+EventEmitter.init = function() {
+
+  if (this._events === undefined ||
+      this._events === Object.getPrototypeOf(this)._events) {
+    this._events = Object.create(null);
+    this._eventsCount = 0;
+  }
+
+  this._maxListeners = this._maxListeners || undefined;
+};
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
+  if (typeof n !== 'number' || n < 0 || NumberIsNaN(n)) {
+    throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received ' + n + '.');
+  }
+  this._maxListeners = n;
+  return this;
+};
+
+function _getMaxListeners(that) {
+  if (that._maxListeners === undefined)
+    return EventEmitter.defaultMaxListeners;
+  return that._maxListeners;
+}
+
+EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
+  return _getMaxListeners(this);
+};
+
+EventEmitter.prototype.emit = function emit(type) {
+  var args = [];
+  for (var i = 1; i < arguments.length; i++) args.push(arguments[i]);
+  var doError = (type === 'error');
+
+  var events = this._events;
+  if (events !== undefined)
+    doError = (doError && events.error === undefined);
+  else if (!doError)
+    return false;
+
+  // If there is no 'error' event listener then throw.
+  if (doError) {
+    var er;
+    if (args.length > 0)
+      er = args[0];
+    if (er instanceof Error) {
+      // Note: The comments on the `throw` lines are intentional, they show
+      // up in Node's output if this results in an unhandled exception.
+      throw er; // Unhandled 'error' event
+    }
+    // At least give some kind of context to the user
+    var err = new Error('Unhandled error.' + (er ? ' (' + er.message + ')' : ''));
+    err.context = er;
+    throw err; // Unhandled 'error' event
+  }
+
+  var handler = events[type];
+
+  if (handler === undefined)
+    return false;
+
+  if (typeof handler === 'function') {
+    ReflectApply(handler, this, args);
+  } else {
+    var len = handler.length;
+    var listeners = arrayClone(handler, len);
+    for (var i = 0; i < len; ++i)
+      ReflectApply(listeners[i], this, args);
+  }
+
+  return true;
+};
+
+function _addListener(target, type, listener, prepend) {
+  var m;
+  var events;
+  var existing;
+
+  checkListener(listener);
+
+  events = target._events;
+  if (events === undefined) {
+    events = target._events = Object.create(null);
+    target._eventsCount = 0;
+  } else {
+    // To avoid recursion in the case that type === "newListener"! Before
+    // adding it to the listeners, first emit "newListener".
+    if (events.newListener !== undefined) {
+      target.emit('newListener', type,
+                  listener.listener ? listener.listener : listener);
+
+      // Re-assign `events` because a newListener handler could have caused the
+      // this._events to be assigned to a new object
+      events = target._events;
+    }
+    existing = events[type];
+  }
+
+  if (existing === undefined) {
+    // Optimize the case of one listener. Don't need the extra array object.
+    existing = events[type] = listener;
+    ++target._eventsCount;
+  } else {
+    if (typeof existing === 'function') {
+      // Adding the second element, need to change to array.
+      existing = events[type] =
+        prepend ? [listener, existing] : [existing, listener];
+      // If we've already got an array, just append.
+    } else if (prepend) {
+      existing.unshift(listener);
+    } else {
+      existing.push(listener);
+    }
+
+    // Check for listener leak
+    m = _getMaxListeners(target);
+    if (m > 0 && existing.length > m && !existing.warned) {
+      existing.warned = true;
+      // No error code for this since it is a Warning
+      // eslint-disable-next-line no-restricted-syntax
+      var w = new Error('Possible EventEmitter memory leak detected. ' +
+                          existing.length + ' ' + String(type) + ' listeners ' +
+                          'added. Use emitter.setMaxListeners() to ' +
+                          'increase limit');
+      w.name = 'MaxListenersExceededWarning';
+      w.emitter = target;
+      w.type = type;
+      w.count = existing.length;
+      ProcessEmitWarning(w);
+    }
+  }
+
+  return target;
+}
+
+EventEmitter.prototype.addListener = function addListener(type, listener) {
+  return _addListener(this, type, listener, false);
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.prependListener =
+    function prependListener(type, listener) {
+      return _addListener(this, type, listener, true);
+    };
+
+function onceWrapper() {
+  if (!this.fired) {
+    this.target.removeListener(this.type, this.wrapFn);
+    this.fired = true;
+    if (arguments.length === 0)
+      return this.listener.call(this.target);
+    return this.listener.apply(this.target, arguments);
+  }
+}
+
+function _onceWrap(target, type, listener) {
+  var state = { fired: false, wrapFn: undefined, target: target, type: type, listener: listener };
+  var wrapped = onceWrapper.bind(state);
+  wrapped.listener = listener;
+  state.wrapFn = wrapped;
+  return wrapped;
+}
+
+EventEmitter.prototype.once = function once(type, listener) {
+  checkListener(listener);
+  this.on(type, _onceWrap(this, type, listener));
+  return this;
+};
+
+EventEmitter.prototype.prependOnceListener =
+    function prependOnceListener(type, listener) {
+      checkListener(listener);
+      this.prependListener(type, _onceWrap(this, type, listener));
+      return this;
+    };
+
+// Emits a 'removeListener' event if and only if the listener was removed.
+EventEmitter.prototype.removeListener =
+    function removeListener(type, listener) {
+      var list, events, position, i, originalListener;
+
+      checkListener(listener);
+
+      events = this._events;
+      if (events === undefined)
+        return this;
+
+      list = events[type];
+      if (list === undefined)
+        return this;
+
+      if (list === listener || list.listener === listener) {
+        if (--this._eventsCount === 0)
+          this._events = Object.create(null);
+        else {
+          delete events[type];
+          if (events.removeListener)
+            this.emit('removeListener', type, list.listener || listener);
+        }
+      } else if (typeof list !== 'function') {
+        position = -1;
+
+        for (i = list.length - 1; i >= 0; i--) {
+          if (list[i] === listener || list[i].listener === listener) {
+            originalListener = list[i].listener;
+            position = i;
+            break;
+          }
+        }
+
+        if (position < 0)
+          return this;
+
+        if (position === 0)
+          list.shift();
+        else {
+          spliceOne(list, position);
+        }
+
+        if (list.length === 1)
+          events[type] = list[0];
+
+        if (events.removeListener !== undefined)
+          this.emit('removeListener', type, originalListener || listener);
+      }
+
+      return this;
+    };
+
+EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+
+EventEmitter.prototype.removeAllListeners =
+    function removeAllListeners(type) {
+      var listeners, events, i;
+
+      events = this._events;
+      if (events === undefined)
+        return this;
+
+      // not listening for removeListener, no need to emit
+      if (events.removeListener === undefined) {
+        if (arguments.length === 0) {
+          this._events = Object.create(null);
+          this._eventsCount = 0;
+        } else if (events[type] !== undefined) {
+          if (--this._eventsCount === 0)
+            this._events = Object.create(null);
+          else
+            delete events[type];
+        }
+        return this;
+      }
+
+      // emit removeListener for all listeners on all events
+      if (arguments.length === 0) {
+        var keys = Object.keys(events);
+        var key;
+        for (i = 0; i < keys.length; ++i) {
+          key = keys[i];
+          if (key === 'removeListener') continue;
+          this.removeAllListeners(key);
+        }
+        this.removeAllListeners('removeListener');
+        this._events = Object.create(null);
+        this._eventsCount = 0;
+        return this;
+      }
+
+      listeners = events[type];
+
+      if (typeof listeners === 'function') {
+        this.removeListener(type, listeners);
+      } else if (listeners !== undefined) {
+        // LIFO order
+        for (i = listeners.length - 1; i >= 0; i--) {
+          this.removeListener(type, listeners[i]);
+        }
+      }
+
+      return this;
+    };
+
+function _listeners(target, type, unwrap) {
+  var events = target._events;
+
+  if (events === undefined)
+    return [];
+
+  var evlistener = events[type];
+  if (evlistener === undefined)
+    return [];
+
+  if (typeof evlistener === 'function')
+    return unwrap ? [evlistener.listener || evlistener] : [evlistener];
+
+  return unwrap ?
+    unwrapListeners(evlistener) : arrayClone(evlistener, evlistener.length);
+}
+
+EventEmitter.prototype.listeners = function listeners(type) {
+  return _listeners(this, type, true);
+};
+
+EventEmitter.prototype.rawListeners = function rawListeners(type) {
+  return _listeners(this, type, false);
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  if (typeof emitter.listenerCount === 'function') {
+    return emitter.listenerCount(type);
+  } else {
+    return listenerCount.call(emitter, type);
+  }
+};
+
+EventEmitter.prototype.listenerCount = listenerCount;
+function listenerCount(type) {
+  var events = this._events;
+
+  if (events !== undefined) {
+    var evlistener = events[type];
+
+    if (typeof evlistener === 'function') {
+      return 1;
+    } else if (evlistener !== undefined) {
+      return evlistener.length;
+    }
+  }
+
+  return 0;
+}
+
+EventEmitter.prototype.eventNames = function eventNames() {
+  return this._eventsCount > 0 ? ReflectOwnKeys(this._events) : [];
+};
+
+function arrayClone(arr, n) {
+  var copy = new Array(n);
+  for (var i = 0; i < n; ++i)
+    copy[i] = arr[i];
+  return copy;
+}
+
+function spliceOne(list, index) {
+  for (; index + 1 < list.length; index++)
+    list[index] = list[index + 1];
+  list.pop();
+}
+
+function unwrapListeners(arr) {
+  var ret = new Array(arr.length);
+  for (var i = 0; i < ret.length; ++i) {
+    ret[i] = arr[i].listener || arr[i];
+  }
+  return ret;
+}
+
+function once(emitter, name) {
+  return new Promise(function (resolve, reject) {
+    function eventListener() {
+      if (errorListener !== undefined) {
+        emitter.removeListener('error', errorListener);
+      }
+      resolve([].slice.call(arguments));
+    };
+    var errorListener;
+
+    // Adding an error listener is not optional because
+    // if an error is thrown on an event emitter we cannot
+    // guarantee that the actual event we are waiting will
+    // be fired. The result could be a silent way to create
+    // memory or file descriptor leaks, which is something
+    // we should avoid.
+    if (name !== 'error') {
+      errorListener = function errorListener(err) {
+        emitter.removeListener(name, eventListener);
+        reject(err);
+      };
+
+      emitter.once('error', errorListener);
+    }
+
+    emitter.once(name, eventListener);
+  });
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/process/browser.js":
+/*!*****************************************!*\
+  !*** ./node_modules/process/browser.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+
+/***/ "./node_modules/setimmediate/setImmediate.js":
+/*!***************************************************!*\
+  !*** ./node_modules/setimmediate/setImmediate.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+    "use strict";
+
+    if (global.setImmediate) {
+        return;
+    }
+
+    var nextHandle = 1; // Spec says greater than zero
+    var tasksByHandle = {};
+    var currentlyRunningATask = false;
+    var doc = global.document;
+    var registerImmediate;
+
+    function setImmediate(callback) {
+      // Callback can either be a function or a string
+      if (typeof callback !== "function") {
+        callback = new Function("" + callback);
+      }
+      // Copy function arguments
+      var args = new Array(arguments.length - 1);
+      for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i + 1];
+      }
+      // Store and register the task
+      var task = { callback: callback, args: args };
+      tasksByHandle[nextHandle] = task;
+      registerImmediate(nextHandle);
+      return nextHandle++;
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function run(task) {
+        var callback = task.callback;
+        var args = task.args;
+        switch (args.length) {
+        case 0:
+            callback();
+            break;
+        case 1:
+            callback(args[0]);
+            break;
+        case 2:
+            callback(args[0], args[1]);
+            break;
+        case 3:
+            callback(args[0], args[1], args[2]);
+            break;
+        default:
+            callback.apply(undefined, args);
+            break;
+        }
+    }
+
+    function runIfPresent(handle) {
+        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+        // So if we're currently running a task, we'll need to delay this invocation.
+        if (currentlyRunningATask) {
+            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+            // "too much recursion" error.
+            setTimeout(runIfPresent, 0, handle);
+        } else {
+            var task = tasksByHandle[handle];
+            if (task) {
+                currentlyRunningATask = true;
+                try {
+                    run(task);
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
+                }
+            }
+        }
+    }
+
+    function installNextTickImplementation() {
+        registerImmediate = function(handle) {
+            process.nextTick(function () { runIfPresent(handle); });
+        };
+    }
+
+    function canUsePostMessage() {
+        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+        // where `global.postMessage` means something completely different and can't be used for this purpose.
+        if (global.postMessage && !global.importScripts) {
+            var postMessageIsAsynchronous = true;
+            var oldOnMessage = global.onmessage;
+            global.onmessage = function() {
+                postMessageIsAsynchronous = false;
+            };
+            global.postMessage("", "*");
+            global.onmessage = oldOnMessage;
+            return postMessageIsAsynchronous;
+        }
+    }
+
+    function installPostMessageImplementation() {
+        // Installs an event handler on `global` for the `message` event: see
+        // * https://developer.mozilla.org/en/DOM/window.postMessage
+        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+        var messagePrefix = "setImmediate$" + Math.random() + "$";
+        var onGlobalMessage = function(event) {
+            if (event.source === global &&
+                typeof event.data === "string" &&
+                event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
+            }
+        };
+
+        if (global.addEventListener) {
+            global.addEventListener("message", onGlobalMessage, false);
+        } else {
+            global.attachEvent("onmessage", onGlobalMessage);
+        }
+
+        registerImmediate = function(handle) {
+            global.postMessage(messagePrefix + handle, "*");
+        };
+    }
+
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function(event) {
+            var handle = event.data;
+            runIfPresent(handle);
+        };
+
+        registerImmediate = function(handle) {
+            channel.port2.postMessage(handle);
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+        registerImmediate = function(handle) {
+            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+            var script = doc.createElement("script");
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+                script = null;
+            };
+            html.appendChild(script);
+        };
+    }
+
+    function installSetTimeoutImplementation() {
+        registerImmediate = function(handle) {
+            setTimeout(runIfPresent, 0, handle);
+        };
+    }
+
+    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+    // Don't get fooled by e.g. browserify environments.
+    if ({}.toString.call(global.process) === "[object process]") {
+        // For Node.js before 0.9
+        installNextTickImplementation();
+
+    } else if (canUsePostMessage()) {
+        // For non-IE10 modern browsers
+        installPostMessageImplementation();
+
+    } else if (global.MessageChannel) {
+        // For web workers, where supported
+        installMessageChannelImplementation();
+
+    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+        // For IE 6–8
+        installReadyStateChangeImplementation();
+
+    } else {
+        // For older browsers
+        installSetTimeoutImplementation();
+    }
+
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../process/browser.js */ "./node_modules/process/browser.js")))
+
+/***/ }),
+
+/***/ "./node_modules/text-encoding/index.js":
+/*!*********************************************!*\
+  !*** ./node_modules/text-encoding/index.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 // This is free and unencumbered software released into the public domain.
 // See LICENSE.md for more information.
 
-var encoding = __webpack_require__(/*! ./lib/encoding.js */ "./node_modules/gun/node_modules/text-encoding/lib/encoding.js");
+var encoding = __webpack_require__(/*! ./lib/encoding.js */ "./node_modules/text-encoding/lib/encoding.js");
 
 module.exports = {
   TextEncoder: encoding.TextEncoder,
@@ -5634,10 +7635,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./node_modules/gun/node_modules/text-encoding/lib/encoding-indexes.js":
-/*!*****************************************************************************!*\
-  !*** ./node_modules/gun/node_modules/text-encoding/lib/encoding-indexes.js ***!
-  \*****************************************************************************/
+/***/ "./node_modules/text-encoding/lib/encoding-indexes.js":
+/*!************************************************************!*\
+  !*** ./node_modules/text-encoding/lib/encoding-indexes.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5691,10 +7692,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./node_modules/gun/node_modules/text-encoding/lib/encoding.js":
-/*!*********************************************************************!*\
-  !*** ./node_modules/gun/node_modules/text-encoding/lib/encoding.js ***!
-  \*********************************************************************/
+/***/ "./node_modules/text-encoding/lib/encoding.js":
+/*!****************************************************!*\
+  !*** ./node_modules/text-encoding/lib/encoding.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5712,7 +7713,7 @@ module.exports = {
   if ( true && module.exports &&
     !global["encoding-indexes"]) {
     global["encoding-indexes"] =
-      __webpack_require__(/*! ./encoding-indexes.js */ "./node_modules/gun/node_modules/text-encoding/lib/encoding-indexes.js")["encoding-indexes"];
+      __webpack_require__(/*! ./encoding-indexes.js */ "./node_modules/text-encoding/lib/encoding-indexes.js")["encoding-indexes"];
   }
 
   //
@@ -9014,2349 +11015,6 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./node_modules/gun/sea.js":
-/*!*********************************!*\
-  !*** ./node_modules/gun/sea.js ***!
-  \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global, module, Buffer) {;(function(){
-
-  /* UNBUILD */
-  var root;
-  if(typeof window !== "undefined"){ root = window }
-  
-  if(typeof global !== "undefined"){ root = global }
-  root = root || {};
-  var console = root.console || {log: function(){}};
-  function USE(arg, req){
-    return req? __webpack_require__("./node_modules/gun sync recursive")(arg) : arg.slice? USE[R(arg)] : function(mod, path){
-      arg(mod = {exports: {}});
-      USE[R(path)] = mod.exports;
-    }
-    function R(p){
-      return p.split('/').slice(-1).toString().replace('.js','');
-    }
-  }
-  if(true){ var common = module }
-  /* UNBUILD */
-
-  ;USE(function(module){
-    // Security, Encryption, and Authorization: SEA.js
-    // MANDATORY READING: https://gun.eco/explainers/data/security.html
-    // IT IS IMPLEMENTED IN A POLYFILL/SHIM APPROACH.
-    // THIS IS AN EARLY ALPHA!
-
-    if(typeof window !== "undefined"){ module.window = window }
-
-    var tmp = module.window || module;
-    var SEA = tmp.SEA || {};
-
-    if(SEA.window = module.window){ SEA.window.SEA = SEA }
-
-    try{ if(typeof common !== "undefined"){ common.exports = SEA } }catch(e){}
-    module.exports = SEA;
-  })(USE, './root');
-
-  ;USE(function(module){
-    var SEA = USE('./root');
-    try{ if(SEA.window){
-      if(location.protocol.indexOf('s') < 0
-      && location.host.indexOf('localhost') < 0
-      && location.protocol.indexOf('file:') < 0){
-        location.protocol = 'https:'; // WebCrypto does NOT work without HTTPS!
-      }
-    } }catch(e){}
-  })(USE, './https');
-
-  ;USE(function(module){
-    if(typeof btoa === "undefined"){
-      if(typeof Buffer === "undefined") {
-        root.Buffer = __webpack_require__(/*! buffer */ "./node_modules/buffer/index.js").Buffer
-      }
-      root.btoa = function (data) { return Buffer.from(data, "binary").toString("base64"); };
-      root.atob = function (data) { return Buffer.from(data, "base64").toString("binary"); };
-    }
-  })(USE, './base64');
-
-  ;USE(function(module){
-    USE('./base64');
-    // This is Array extended to have .toString(['utf8'|'hex'|'base64'])
-    function SeaArray() {}
-    Object.assign(SeaArray, { from: Array.from })
-    SeaArray.prototype = Object.create(Array.prototype)
-    SeaArray.prototype.toString = function(enc, start, end) { enc = enc || 'utf8'; start = start || 0;
-      const length = this.length
-      if (enc === 'hex') {
-        const buf = new Uint8Array(this)
-        return [ ...Array(((end && (end + 1)) || length) - start).keys()]
-        .map((i) => buf[ i + start ].toString(16).padStart(2, '0')).join('')
-      }
-      if (enc === 'utf8') {
-        return Array.from(
-          { length: (end || length) - start },
-          (_, i) => String.fromCharCode(this[ i + start])
-        ).join('')
-      }
-      if (enc === 'base64') {
-        return btoa(this)
-      }
-    }
-    module.exports = SeaArray;
-  })(USE, './array');
-
-  ;USE(function(module){
-    USE('./base64');
-    // This is Buffer implementation used in SEA. Functionality is mostly
-    // compatible with NodeJS 'safe-buffer' and is used for encoding conversions
-    // between binary and 'hex' | 'utf8' | 'base64'
-    // See documentation and validation for safe implementation in:
-    // https://github.com/feross/safe-buffer#update
-    var SeaArray = USE('./array');
-    function SafeBuffer(...props) {
-      console.warn('new SafeBuffer() is depreciated, please use SafeBuffer.from()')
-      return SafeBuffer.from(...props)
-    }
-    SafeBuffer.prototype = Object.create(Array.prototype)
-    Object.assign(SafeBuffer, {
-      // (data, enc) where typeof data === 'string' then enc === 'utf8'|'hex'|'base64'
-      from() {
-        if (!Object.keys(arguments).length || arguments[0]==null) {
-          throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.')
-        }
-        const input = arguments[0]
-        let buf
-        if (typeof input === 'string') {
-          const enc = arguments[1] || 'utf8'
-          if (enc === 'hex') {
-            const bytes = input.match(/([\da-fA-F]{2})/g)
-            .map((byte) => parseInt(byte, 16))
-            if (!bytes || !bytes.length) {
-              throw new TypeError('Invalid first argument for type \'hex\'.')
-            }
-            buf = SeaArray.from(bytes)
-          } else if (enc === 'utf8') {
-            const length = input.length
-            const words = new Uint16Array(length)
-            Array.from({ length: length }, (_, i) => words[i] = input.charCodeAt(i))
-            buf = SeaArray.from(words)
-          } else if (enc === 'base64') {
-            const dec = atob(input)
-            const length = dec.length
-            const bytes = new Uint8Array(length)
-            Array.from({ length: length }, (_, i) => bytes[i] = dec.charCodeAt(i))
-            buf = SeaArray.from(bytes)
-          } else if (enc === 'binary') {
-            buf = SeaArray.from(input)
-          } else {
-            console.info('SafeBuffer.from unknown encoding: '+enc)
-          }
-          return buf
-        }
-        const byteLength = input.byteLength // what is going on here? FOR MARTTI
-        const length = input.byteLength ? input.byteLength : input.length
-        if (length) {
-          let buf
-          if (input instanceof ArrayBuffer) {
-            buf = new Uint8Array(input)
-          }
-          return SeaArray.from(buf || input)
-        }
-      },
-      // This is 'safe-buffer.alloc' sans encoding support
-      alloc(length, fill = 0 /*, enc*/ ) {
-        return SeaArray.from(new Uint8Array(Array.from({ length: length }, () => fill)))
-      },
-      // This is normal UNSAFE 'buffer.alloc' or 'new Buffer(length)' - don't use!
-      allocUnsafe(length) {
-        return SeaArray.from(new Uint8Array(Array.from({ length : length })))
-      },
-      // This puts together array of array like members
-      concat(arr) { // octet array
-        if (!Array.isArray(arr)) {
-          throw new TypeError('First argument must be Array containing ArrayBuffer or Uint8Array instances.')
-        }
-        return SeaArray.from(arr.reduce((ret, item) => ret.concat(Array.from(item)), []))
-      }
-    })
-    SafeBuffer.prototype.from = SafeBuffer.from
-    SafeBuffer.prototype.toString = SeaArray.prototype.toString
-
-    module.exports = SafeBuffer;
-  })(USE, './buffer');
-
-  ;USE(function(module){
-    const SEA = USE('./root')
-    const Buffer = USE('./buffer')
-    const api = {Buffer: Buffer}
-    var o = {};
-
-    if(SEA.window){
-      api.crypto = navigator && navigator.product === 'ReactNative' ? __webpack_require__(/*! isomorphic-webcrypto */ "./node_modules/gun/node_modules/isomorphic-webcrypto/src/browser.mjs") : window.crypto || window.msCrypto || __webpack_require__(/*! isomorphic-webcrypto */ "./node_modules/gun/node_modules/isomorphic-webcrypto/src/browser.mjs");
-      api.subtle = (api.crypto||o).subtle || (api.crypto||o).webkitSubtle;
-      api.TextEncoder = window.TextEncoder;
-      api.TextDecoder = window.TextDecoder;
-      api.random = (len) => Buffer.from(api.crypto.getRandomValues(new Uint8Array(Buffer.alloc(len))));
-    }
-    if(!api.TextDecoder)
-    {
-      const { TextEncoder, TextDecoder } = __webpack_require__(/*! text-encoding */ "./node_modules/gun/node_modules/text-encoding/index.js");
-      api.TextDecoder = TextDecoder;
-      api.TextEncoder = TextEncoder;
-    }
-    if(!api.crypto){try{
-      var crypto = USE('crypto', 1);
-      Object.assign(api, {
-        crypto,
-        random: (len) => Buffer.from(crypto.randomBytes(len))
-      });      
-      const isocrypto = __webpack_require__(/*! isomorphic-webcrypto */ "./node_modules/gun/node_modules/isomorphic-webcrypto/src/browser.mjs");
-      api.ossl = api.subtle = isocrypto.subtle;
-    }catch(e){
-      console.log("text-encoding and @peculiar/webcrypto may not be included by default, please add it to your package.json!");
-      TEXT_ENCODING_OR_PECULIAR_WEBCRYPTO_NOT_INSTALLED;
-    }}
-
-    module.exports = api
-  })(USE, './shim');
-
-  ;USE(function(module){
-    var SEA = USE('./root');
-    var Buffer = USE('./buffer');
-    var s = {};
-    s.pbkdf2 = {hash: {name : 'SHA-256'}, iter: 100000, ks: 64};
-    s.ecdsa = {
-      pair: {name: 'ECDSA', namedCurve: 'P-256'},
-      sign: {name: 'ECDSA', hash: {name: 'SHA-256'}}
-    };
-    s.ecdh = {name: 'ECDH', namedCurve: 'P-256'};
-
-    // This creates Web Cryptography API compliant JWK for sign/verify purposes
-    s.jwk = function(pub, d){  // d === priv
-      pub = pub.split('.');
-      var x = pub[0], y = pub[1];
-      var jwk = {kty: "EC", crv: "P-256", x: x, y: y, ext: true};
-      jwk.key_ops = d ? ['sign'] : ['verify'];
-      if(d){ jwk.d = d }
-      return jwk;
-    };
-    
-    s.keyToJwk = function(keyBytes) {
-      const keyB64 = keyBytes.toString('base64');
-      const k = keyB64.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=/g, '');
-      return { kty: 'oct', k: k, ext: false, alg: 'A256GCM' };
-    }
-
-    s.recall = {
-      validity: 12 * 60 * 60, // internally in seconds : 12 hours
-      hook: function(props){ return props } // { iat, exp, alias, remember } // or return new Promise((resolve, reject) => resolve(props)
-    };
-
-    s.check = function(t){ return (typeof t == 'string') && ('SEA{' === t.slice(0,4)) }
-    s.parse = function p(t){ try {
-      var yes = (typeof t == 'string');
-      if(yes && 'SEA{' === t.slice(0,4)){ t = t.slice(3) }
-      return yes ? JSON.parse(t) : t;
-      } catch (e) {}
-      return t;
-    }
-
-    SEA.opt = s;
-    module.exports = s
-  })(USE, './settings');
-
-  ;USE(function(module){
-    var shim = USE('./shim');
-    module.exports = async function(d, o){
-      var t = (typeof d == 'string')? d : JSON.stringify(d);
-      var hash = await shim.subtle.digest({name: o||'SHA-256'}, new shim.TextEncoder().encode(t));
-      return shim.Buffer.from(hash);
-    }
-  })(USE, './sha256');
-
-  ;USE(function(module){
-    // This internal func returns SHA-1 hashed data for KeyID generation
-    const __shim = USE('./shim')
-    const subtle = __shim.subtle
-    const ossl = __shim.ossl ? __shim.ossl : subtle
-    const sha1hash = (b) => ossl.digest({name: 'SHA-1'}, new ArrayBuffer(b))
-    module.exports = sha1hash
-  })(USE, './sha1');
-
-  ;USE(function(module){
-    var SEA = USE('./root');
-    var shim = USE('./shim');
-    var S = USE('./settings');
-    var sha = USE('./sha256');
-    var u;
-
-    SEA.work = SEA.work || (async (data, pair, cb, opt) => { try { // used to be named `proof`
-      var salt = (pair||{}).epub || pair; // epub not recommended, salt should be random!
-      var opt = opt || {};
-      if(salt instanceof Function){
-        cb = salt;
-        salt = u;
-      }
-      salt = salt || shim.random(9);
-      data = (typeof data == 'string')? data : JSON.stringify(data);
-      if('sha' === (opt.name||'').toLowerCase().slice(0,3)){
-        var rsha = shim.Buffer.from(await sha(data, opt.name), 'binary').toString(opt.encode || 'base64')
-        if(cb){ try{ cb(rsha) }catch(e){console.log(e)} }
-        return rsha;
-      }
-      var key = await (shim.ossl || shim.subtle).importKey('raw', new shim.TextEncoder().encode(data), {name: opt.name || 'PBKDF2'}, false, ['deriveBits']);
-      var work = await (shim.ossl || shim.subtle).deriveBits({
-        name: opt.name || 'PBKDF2',
-        iterations: opt.iterations || S.pbkdf2.iter,
-        salt: new shim.TextEncoder().encode(opt.salt || salt),
-        hash: opt.hash || S.pbkdf2.hash,
-      }, key, opt.length || (S.pbkdf2.ks * 8))
-      data = shim.random(data.length)  // Erase data in case of passphrase
-      var r = shim.Buffer.from(work, 'binary').toString(opt.encode || 'base64')
-      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
-      return r;
-    } catch(e) { 
-      console.log(e);
-      SEA.err = e;
-      if(SEA.throw){ throw e }
-      if(cb){ cb() }
-      return;
-    }});
-
-    module.exports = SEA.work;
-  })(USE, './work');
-
-  ;USE(function(module){
-    var SEA = USE('./root');
-    var shim = USE('./shim');
-    var S = USE('./settings');
-
-    SEA.name = SEA.name || (async (cb, opt) => { try {
-      if(cb){ try{ cb() }catch(e){console.log(e)} }
-      return;
-    } catch(e) {
-      console.log(e);
-      SEA.err = e;
-      if(SEA.throw){ throw e }
-      if(cb){ cb() }
-      return;
-    }});
-
-    //SEA.pair = async (data, proof, cb) => { try {
-    SEA.pair = SEA.pair || (async (cb, opt) => { try {
-
-      var ecdhSubtle = shim.ossl || shim.subtle;
-      // First: ECDSA keys for signing/verifying...
-      var sa = await shim.subtle.generateKey({name: 'ECDSA', namedCurve: 'P-256'}, true, [ 'sign', 'verify' ])
-      .then(async (keys) => {
-        // privateKey scope doesn't leak out from here!
-        //const { d: priv } = await shim.subtle.exportKey('jwk', keys.privateKey)
-        var key = {};
-        key.priv = (await shim.subtle.exportKey('jwk', keys.privateKey)).d;
-        var pub = await shim.subtle.exportKey('jwk', keys.publicKey);
-        //const pub = Buff.from([ x, y ].join(':')).toString('base64') // old
-        key.pub = pub.x+'.'+pub.y; // new
-        // x and y are already base64
-        // pub is UTF8 but filename/URL safe (https://www.ietf.org/rfc/rfc3986.txt)
-        // but split on a non-base64 letter.
-        return key;
-      })
-      
-      // To include PGPv4 kind of keyId:
-      // const pubId = await SEA.keyid(keys.pub)
-      // Next: ECDH keys for encryption/decryption...
-
-      try{
-      var dh = await ecdhSubtle.generateKey({name: 'ECDH', namedCurve: 'P-256'}, true, ['deriveKey'])
-      .then(async (keys) => {
-        // privateKey scope doesn't leak out from here!
-        var key = {};
-        key.epriv = (await ecdhSubtle.exportKey('jwk', keys.privateKey)).d;
-        var pub = await ecdhSubtle.exportKey('jwk', keys.publicKey);
-        //const epub = Buff.from([ ex, ey ].join(':')).toString('base64') // old
-        key.epub = pub.x+'.'+pub.y; // new
-        // ex and ey are already base64
-        // epub is UTF8 but filename/URL safe (https://www.ietf.org/rfc/rfc3986.txt)
-        // but split on a non-base64 letter.
-        return key;
-      })
-      }catch(e){
-        if(SEA.window){ throw e }
-        if(e == 'Error: ECDH is not a supported algorithm'){ console.log('Ignoring ECDH...') }
-        else { throw e }
-      } dh = dh || {};
-
-      var r = { pub: sa.pub, priv: sa.priv, /* pubId, */ epub: dh.epub, epriv: dh.epriv }
-      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
-      return r;
-    } catch(e) {
-      console.log(e);
-      SEA.err = e;
-      if(SEA.throw){ throw e }
-      if(cb){ cb() }
-      return;
-    }});
-
-    module.exports = SEA.pair;
-  })(USE, './pair');
-
-  ;USE(function(module){
-    var SEA = USE('./root');
-    var shim = USE('./shim');
-    var S = USE('./settings');
-    var sha = USE('./sha256');
-    var u;
-
-    SEA.sign = SEA.sign || (async (data, pair, cb, opt) => { try {
-      opt = opt || {};
-      if(!(pair||opt).priv){
-        pair = await SEA.I(null, {what: data, how: 'sign', why: opt.why});
-      }
-      if(u === data){ throw '`undefined` not allowed.' }
-      var json = S.parse(data);
-      var check = opt.check = opt.check || json;
-      if(SEA.verify && (SEA.opt.check(check) || (check && check.s && check.m))
-      && u !== await SEA.verify(check, pair)){ // don't sign if we already signed it.
-        var r = S.parse(check);
-        if(!opt.raw){ r = 'SEA'+JSON.stringify(r) }
-        if(cb){ try{ cb(r) }catch(e){console.log(e)} }
-        return r;
-      }
-      var pub = pair.pub;
-      var priv = pair.priv;
-      var jwk = S.jwk(pub, priv);
-      var hash = await sha(json);
-      var sig = await (shim.ossl || shim.subtle).importKey('jwk', jwk, {name: 'ECDSA', namedCurve: 'P-256'}, false, ['sign'])
-      .then((key) => (shim.ossl || shim.subtle).sign({name: 'ECDSA', hash: {name: 'SHA-256'}}, key, new Uint8Array(hash))) // privateKey scope doesn't leak out from here!
-      var r = {m: json, s: shim.Buffer.from(sig, 'binary').toString(opt.encode || 'base64')}
-      if(!opt.raw){ r = 'SEA'+JSON.stringify(r) }
-
-      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
-      return r;
-    } catch(e) {
-      console.log(e);
-      SEA.err = e;
-      if(SEA.throw){ throw e }
-      if(cb){ cb() }
-      return;
-    }});
-
-    module.exports = SEA.sign;
-  })(USE, './sign');
-
-  ;USE(function(module){
-    var SEA = USE('./root');
-    var shim = USE('./shim');
-    var S = USE('./settings');
-    var sha = USE('./sha256');
-    var u;
-
-    SEA.verify = SEA.verify || (async (data, pair, cb, opt) => { try {
-      var json = S.parse(data);
-      if(false === pair){ // don't verify!
-        var raw = S.parse(json.m);
-        if(cb){ try{ cb(raw) }catch(e){console.log(e)} }
-        return raw;
-      }
-      opt = opt || {};
-      // SEA.I // verify is free! Requires no user permission.
-      var pub = pair.pub || pair;
-      var key = SEA.opt.slow_leak? await SEA.opt.slow_leak(pub) : await (shim.ossl || shim.subtle).importKey('jwk', jwk, {name: 'ECDSA', namedCurve: 'P-256'}, false, ['verify']);
-      var hash = await sha(json.m);
-      var buf, sig, check, tmp; try{
-        buf = shim.Buffer.from(json.s, opt.encode || 'base64'); // NEW DEFAULT!
-        sig = new Uint8Array(buf);
-        check = await (shim.ossl || shim.subtle).verify({name: 'ECDSA', hash: {name: 'SHA-256'}}, key, sig, new Uint8Array(hash));
-        if(!check){ throw "Signature did not match." }
-      }catch(e){
-        if(SEA.opt.fallback){
-          return await SEA.opt.fall_verify(data, pair, cb, opt);
-        }
-      }
-      var r = check? S.parse(json.m) : u;
-
-      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
-      return r;
-    } catch(e) {
-      console.log(e); // mismatched owner FOR MARTTI
-      SEA.err = e;
-      if(SEA.throw){ throw e }
-      if(cb){ cb() }
-      return;
-    }});
-
-    module.exports = SEA.verify;
-    // legacy & ossl leak mitigation:
-
-    var knownKeys = {};
-    var keyForPair = SEA.opt.slow_leak = pair => {
-      if (knownKeys[pair]) return knownKeys[pair];
-      var jwk = S.jwk(pair);
-      knownKeys[pair] = (shim.ossl || shim.subtle).importKey("jwk", jwk, {name: 'ECDSA', namedCurve: 'P-256'}, false, ["verify"]);
-      return knownKeys[pair];
-    };
-
-
-    SEA.opt.fall_verify = async function(data, pair, cb, opt, f){
-      if(f === SEA.opt.fallback){ throw "Signature did not match" } f = f || 1;
-      var json = S.parse(data), pub = pair.pub || pair, key = await SEA.opt.slow_leak(pub);
-      var hash = (f <= SEA.opt.fallback)? shim.Buffer.from(await shim.subtle.digest({name: 'SHA-256'}, new shim.TextEncoder().encode(S.parse(json.m)))) : await sha(json.m); // this line is old bad buggy code but necessary for old compatibility.
-      var buf; var sig; var check; try{
-        buf = shim.Buffer.from(json.s, opt.encode || 'base64') // NEW DEFAULT!
-        sig = new Uint8Array(buf)
-        check = await (shim.ossl || shim.subtle).verify({name: 'ECDSA', hash: {name: 'SHA-256'}}, key, sig, new Uint8Array(hash))
-        if(!check){ throw "Signature did not match." }
-      }catch(e){
-        buf = shim.Buffer.from(json.s, 'utf8') // AUTO BACKWARD OLD UTF8 DATA!
-        sig = new Uint8Array(buf)
-        check = await (shim.ossl || shim.subtle).verify({name: 'ECDSA', hash: {name: 'SHA-256'}}, key, sig, new Uint8Array(hash))
-        if(!check){ throw "Signature did not match." }
-      }
-      var r = check? S.parse(json.m) : u;
-      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
-      return r;
-    }
-    SEA.opt.fallback = 2;
-
-  })(USE, './verify');
-
-  ;USE(function(module){
-    var shim = USE('./shim');
-    var S = USE('./settings');
-    var sha256hash = USE('./sha256');
-
-    const importGen = async (key, salt, opt) => {
-      //const combo = shim.Buffer.concat([shim.Buffer.from(key, 'utf8'), salt || shim.random(8)]).toString('utf8') // old
-      var opt = opt || {};
-      const combo = key + (salt || shim.random(8)).toString('utf8'); // new
-      const hash = shim.Buffer.from(await sha256hash(combo), 'binary')
-      
-      const jwkKey = S.keyToJwk(hash)      
-      return await shim.subtle.importKey('jwk', jwkKey, {name:'AES-GCM'}, false, ['encrypt', 'decrypt'])
-    }
-    module.exports = importGen;
-  })(USE, './aeskey');
-
-  ;USE(function(module){
-    var SEA = USE('./root');
-    var shim = USE('./shim');
-    var S = USE('./settings');
-    var aeskey = USE('./aeskey');
-    var u;
-
-    SEA.encrypt = SEA.encrypt || (async (data, pair, cb, opt) => { try {
-      opt = opt || {};
-      var key = (pair||opt).epriv || pair;
-      if(u === data){ throw '`undefined` not allowed.' }
-      if(!key){
-        pair = await SEA.I(null, {what: data, how: 'encrypt', why: opt.why});
-        key = pair.epriv || pair;
-      }
-      var msg = (typeof data == 'string')? data : JSON.stringify(data);
-      var rand = {s: shim.random(9), iv: shim.random(15)}; // consider making this 9 and 15 or 18 or 12 to reduce == padding.
-      var ct = await aeskey(key, rand.s, opt).then((aes) => (/*shim.ossl ||*/ shim.subtle).encrypt({ // Keeping the AES key scope as private as possible...
-        name: opt.name || 'AES-GCM', iv: new Uint8Array(rand.iv)
-      }, aes, new shim.TextEncoder().encode(msg)));
-      var r = {
-        ct: shim.Buffer.from(ct, 'binary').toString(opt.encode || 'base64'),
-        iv: rand.iv.toString(opt.encode || 'base64'),
-        s: rand.s.toString(opt.encode || 'base64')
-      }
-      if(!opt.raw){ r = 'SEA'+JSON.stringify(r) }
-
-      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
-      return r;
-    } catch(e) { 
-      console.log(e);
-      SEA.err = e;
-      if(SEA.throw){ throw e }
-      if(cb){ cb() }
-      return;
-    }});
-
-    module.exports = SEA.encrypt;
-  })(USE, './encrypt');
-
-  ;USE(function(module){
-    var SEA = USE('./root');
-    var shim = USE('./shim');
-    var S = USE('./settings');
-    var aeskey = USE('./aeskey');
-
-    SEA.decrypt = SEA.decrypt || (async (data, pair, cb, opt) => { try {
-      opt = opt || {};
-      var key = (pair||opt).epriv || pair;
-      if(!key){
-        pair = await SEA.I(null, {what: data, how: 'decrypt', why: opt.why});
-        key = pair.epriv || pair;
-      }
-      var json = S.parse(data);
-      var buf, bufiv, bufct; try{
-        buf = shim.Buffer.from(json.s, opt.encode || 'base64');
-        bufiv = shim.Buffer.from(json.iv, opt.encode || 'base64');
-        bufct = shim.Buffer.from(json.ct, opt.encode || 'base64');
-        var ct = await aeskey(key, buf, opt).then((aes) => (/*shim.ossl ||*/ shim.subtle).decrypt({  // Keeping aesKey scope as private as possible...
-          name: opt.name || 'AES-GCM', iv: new Uint8Array(bufiv), tagLength: 128
-        }, aes, new Uint8Array(bufct)));
-      }catch(e){
-        if('utf8' === opt.encode){ throw "Could not decrypt" }
-        if(SEA.opt.fallback){
-          opt.encode = 'utf8';
-          return await SEA.decrypt(data, pair, cb, opt);
-        }
-      }
-      var r = S.parse(new shim.TextDecoder('utf8').decode(ct));
-      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
-      return r;
-    } catch(e) { 
-      console.log(e);
-      SEA.err = e;
-      if(SEA.throw){ throw e }
-      if(cb){ cb() }
-      return;
-    }});
-
-    module.exports = SEA.decrypt;
-  })(USE, './decrypt');
-
-  ;USE(function(module){
-    var SEA = USE('./root');
-    var shim = USE('./shim');
-    var S = USE('./settings');
-    // Derive shared secret from other's pub and my epub/epriv 
-    SEA.secret = SEA.secret || (async (key, pair, cb, opt) => { try {
-      opt = opt || {};
-      if(!pair || !pair.epriv || !pair.epub){
-        pair = await SEA.I(null, {what: key, how: 'secret', why: opt.why});
-      }
-      var pub = key.epub || key;
-      var epub = pair.epub;
-      var epriv = pair.epriv;
-      var ecdhSubtle = shim.ossl || shim.subtle;
-      var pubKeyData = keysToEcdhJwk(pub);
-      var props = Object.assign({ public: await ecdhSubtle.importKey(...pubKeyData, true, []) },{name: 'ECDH', namedCurve: 'P-256'}); // Thanks to @sirpy !
-      var privKeyData = keysToEcdhJwk(epub, epriv);
-      var derived = await ecdhSubtle.importKey(...privKeyData, false, ['deriveBits']).then(async (privKey) => {
-        // privateKey scope doesn't leak out from here!
-        var derivedBits = await ecdhSubtle.deriveBits(props, privKey, 256);
-        var rawBits = new Uint8Array(derivedBits);
-        var derivedKey = await ecdhSubtle.importKey('raw', rawBits,{ name: 'AES-GCM', length: 256 }, true, [ 'encrypt', 'decrypt' ]);
-        return ecdhSubtle.exportKey('jwk', derivedKey).then(({ k }) => k);
-      })
-      var r = derived;
-      if(cb){ try{ cb(r) }catch(e){console.log(e)} }
-      return r;
-    } catch(e) {
-      console.log(e);
-      SEA.err = e;
-      if(SEA.throw){ throw e }
-      if(cb){ cb() }
-      return;
-    }});
-
-    // can this be replaced with settings.jwk?
-    var keysToEcdhJwk = (pub, d) => { // d === priv
-      //var [ x, y ] = Buffer.from(pub, 'base64').toString('utf8').split(':') // old
-      var [ x, y ] = pub.split('.') // new
-      var jwk = d ? { d: d } : {}
-      return [  // Use with spread returned value...
-        'jwk',
-        Object.assign(
-          jwk,
-          { x: x, y: y, kty: 'EC', crv: 'P-256', ext: true }
-        ), // ??? refactor
-        {name: 'ECDH', namedCurve: 'P-256'}
-      ]
-    }
-
-    module.exports = SEA.secret;
-  })(USE, './secret');
-
-  ;USE(function(module){
-    var shim = USE('./shim');
-    // Practical examples about usage found from ./test/common.js
-    var SEA = USE('./root');
-    SEA.work = USE('./work');
-    SEA.sign = USE('./sign');
-    SEA.verify = USE('./verify');
-    SEA.encrypt = USE('./encrypt');
-    SEA.decrypt = USE('./decrypt');
-    SEA.opt.aeskey = USE('./aeskey'); // not official!
-
-    SEA.random = SEA.random || shim.random;
-
-    // This is Buffer used in SEA and usable from Gun/SEA application also.
-    // For documentation see https://nodejs.org/api/buffer.html
-    SEA.Buffer = SEA.Buffer || USE('./buffer');
-
-    // These SEA functions support now ony Promises or
-    // async/await (compatible) code, use those like Promises.
-    //
-    // Creates a wrapper library around Web Crypto API
-    // for various AES, ECDSA, PBKDF2 functions we called above.
-    // Calculate public key KeyID aka PGPv4 (result: 8 bytes as hex string)
-    SEA.keyid = SEA.keyid || (async (pub) => {
-      try {
-        // base64('base64(x):base64(y)') => Buffer(xy)
-        const pb = Buffer.concat(
-          pub.replace(/-/g, '+').replace(/_/g, '/').split('.')
-          .map((t) => Buffer.from(t, 'base64'))
-        )
-        // id is PGPv4 compliant raw key
-        const id = Buffer.concat([
-          Buffer.from([0x99, pb.length / 0x100, pb.length % 0x100]), pb
-        ])
-        const sha1 = await sha1hash(id)
-        const hash = Buffer.from(sha1, 'binary')
-        return hash.toString('hex', hash.length - 8)  // 16-bit ID as hex
-      } catch (e) {
-        console.log(e)
-        throw e
-      }
-    });
-    // all done!
-    // Obviously it is missing MANY necessary features. This is only an alpha release.
-    // Please experiment with it, audit what I've done so far, and complain about what needs to be added.
-    // SEA should be a full suite that is easy and seamless to use.
-    // Again, scroll naer the top, where I provide an EXAMPLE of how to create a user and sign in.
-    // Once logged in, the rest of the code you just read handled automatically signing/validating data.
-    // But all other behavior needs to be equally easy, like opinionated ways of
-    // Adding friends (trusted public keys), sending private messages, etc.
-    // Cheers! Tell me what you think.
-    var Gun = (SEA.window||{}).Gun || USE((typeof common == "undefined"?'.':'')+'./gun', 1);
-    Gun.SEA = SEA;
-    SEA.GUN = SEA.Gun = Gun;
-
-    module.exports = SEA
-  })(USE, './sea');
-
-  ;USE(function(module){
-    var Gun = USE('./sea').Gun;
-    Gun.chain.then = function(cb){
-      var gun = this, p = (new Promise(function(res, rej){
-        gun.once(res);
-      }));
-      return cb? p.then(cb) : p;
-    }
-  })(USE, './then');
-
-  ;USE(function(module){
-    var SEA = USE('./sea');
-    var Gun = SEA.Gun;
-    var then = USE('./then');
-
-    function User(root){ 
-      this._ = {$: this};
-    }
-    User.prototype = (function(){ function F(){}; F.prototype = Gun.chain; return new F() }()) // Object.create polyfill
-    User.prototype.constructor = User;
-
-    // let's extend the gun chain with a `user` function.
-    // only one user can be logged in at a time, per gun instance.
-    Gun.chain.user = function(pub){
-      var gun = this, root = gun.back(-1), user;
-      if(pub){ return root.get('~'+pub) }
-      if(user = root.back('user')){ return user }
-      var root = (root._), at = root, uuid = at.opt.uuid || Gun.state.lex;
-      (at = (user = at.user = gun.chain(new User))._).opt = {};
-      at.opt.uuid = function(cb){
-        var id = uuid(), pub = root.user;
-        if(!pub || !(pub = pub.is) || !(pub = pub.pub)){ return id }
-        id = id + '~' + pub + '.';
-        if(cb && cb.call){ cb(null, id) }
-        return id;
-      }
-      return user;
-    }
-    Gun.User = User;
-    module.exports = User;
-  })(USE, './user');
-
-  ;USE(function(module){
-    // TODO: This needs to be split into all separate functions.
-    // Not just everything thrown into 'create'.
-
-    var SEA = USE('./sea');
-    var User = USE('./user');
-    var authsettings = USE('./settings');
-    var Gun = SEA.Gun;
-
-    var noop = function(){};
-
-    // Well first we have to actually create a user. That is what this function does.
-    User.prototype.create = function(alias, pass, cb, opt){
-      var gun = this, cat = (gun._), root = gun.back(-1);
-      cb = cb || noop;
-      if(cat.ing){
-        cb({err: Gun.log("User is already being created or authenticated!"), wait: true});
-        return gun;
-      }
-      cat.ing = true;
-      opt = opt || {};
-      var act = {}, u;
-      act.a = function(pubs){
-        act.pubs = pubs;
-        if(pubs && !opt.already){
-          // If we can enforce that a user name is already taken, it might be nice to try, but this is not guaranteed.
-          var ack = {err: Gun.log('User already created!')};
-          cat.ing = false;
-          cb(ack);
-          gun.leave();
-          return;
-        }
-        act.salt = Gun.text.random(64); // pseudo-randomly create a salt, then use PBKDF2 function to extend the password with it.
-        SEA.work(pass, act.salt, act.b); // this will take some short amount of time to produce a proof, which slows brute force attacks.
-      }
-      act.b = function(proof){
-        act.proof = proof;
-        SEA.pair(act.c); // now we have generated a brand new ECDSA key pair for the user account.
-      }
-      act.c = function(pair){ var tmp;
-        act.pair = pair || {};
-        if(tmp = cat.root.user){
-          tmp._.sea = pair;
-          tmp.is = {pub: pair.pub, epub: pair.epub, alias: alias};
-        }
-        // the user's public key doesn't need to be signed. But everything else needs to be signed with it! // we have now automated it! clean up these extra steps now!
-        act.data = {pub: pair.pub};
-        act.d();
-      }
-      act.d = function(){
-        act.data.alias = alias;
-        act.e();
-      }
-      act.e = function(){
-        act.data.epub = act.pair.epub; 
-        SEA.encrypt({priv: act.pair.priv, epriv: act.pair.epriv}, act.proof, act.f, {raw:1}); // to keep the private key safe, we AES encrypt it with the proof of work!
-      }
-      act.f = function(auth){
-        act.data.auth = JSON.stringify({ek: auth, s: act.salt}); 
-        act.g(act.data.auth);
-      }
-      act.g = function(auth){ var tmp;
-        act.data.auth = act.data.auth || auth;
-        root.get(tmp = '~'+act.pair.pub).put(act.data); // awesome, now we can actually save the user with their public key as their ID.
-        root.get('~@'+alias).put(Gun.obj.put({}, tmp, Gun.val.link.ify(tmp))); // next up, we want to associate the alias with the public key. So we add it to the alias list.
-        setTimeout(function(){ // we should be able to delete this now, right?
-        cat.ing = false;
-        cb({ok: 0, pub: act.pair.pub}); // callback that the user has been created. (Note: ok = 0 because we didn't wait for disk to ack)
-        if(noop === cb){ gun.auth(alias, pass) } // if no callback is passed, auto-login after signing up.
-        },10);
-      }
-      root.get('~@'+alias).once(act.a);
-      return gun;
-    }
-    // now that we have created a user, we want to authenticate them!
-    User.prototype.auth = function(alias, pass, cb, opt){
-      var gun = this, cat = (gun._), root = gun.back(-1);
-      cb = cb || function(){};
-      if(cat.ing){
-        cb({err: Gun.log("User is already being created or authenticated!"), wait: true});
-        return gun;
-      }
-      cat.ing = true;
-      opt = opt || {};
-      var pair = (alias && (alias.pub || alias.epub))? alias : (pass && (pass.pub || pass.epub))? pass : null;
-      var act = {}, u;
-      act.a = function(data){
-        if(!data){ return act.b() }
-        if(!data.pub){
-          var tmp = [];
-          Gun.node.is(data, function(v){ tmp.push(v) })
-          return act.b(tmp);
-        }
-        if(act.name){ return act.f(data) }
-        act.c((act.data = data).auth);
-      }
-      act.b = function(list){
-        var get = (act.list = (act.list||[]).concat(list||[])).shift();
-        if(u === get){
-          if(act.name){ return act.err('Your user account is not published for dApps to access, please consider syncing it online, or allowing local access by adding your device as a peer.') }
-          return act.err('Wrong user or password.') 
-        }
-        root.get(get).once(act.a);
-      }
-      act.c = function(auth){
-        if(u === auth){ return act.b() }
-        if(Gun.text.is(auth)){ return act.c(Gun.obj.ify(auth)) } // in case of legacy
-        SEA.work(pass, (act.auth = auth).s, act.d, act.enc); // the proof of work is evidence that we've spent some time/effort trying to log in, this slows brute force.
-      }
-      act.d = function(proof){
-        SEA.decrypt(act.auth.ek, proof, act.e, act.enc);
-      }
-      act.e = function(half){
-        if(u === half){
-          if(!act.enc){ // try old format
-            act.enc = {encode: 'utf8'};
-            return act.c(act.auth);
-          } act.enc = null; // end backwards
-          return act.b();
-        }
-        act.half = half;
-        act.f(act.data);
-      }
-      act.f = function(data){
-        if(!data || !data.pub){ return act.b() }
-        var tmp = act.half || {};
-        act.g({pub: data.pub, epub: data.epub, priv: tmp.priv, epriv: tmp.epriv});
-      }
-      act.g = function(pair){
-        act.pair = pair;
-        var user = (root._).user, at = (user._);
-        var tmp = at.tag;
-        var upt = at.opt;
-        at = user._ = root.get('~'+pair.pub)._;
-        at.opt = upt;
-        // add our credentials in-memory only to our root user instance
-        user.is = {pub: pair.pub, epub: pair.epub, alias: alias};
-        at.sea = act.pair;
-        cat.ing = false;
-        try{if(pass && !Gun.obj.has(Gun.obj.ify(cat.root.graph['~'+pair.pub].auth), ':')){ opt.shuffle = opt.change = pass; } }catch(e){} // migrate UTF8 & Shuffle!
-        opt.change? act.z() : cb(at);
-        if(SEA.window && ((gun.back('user')._).opt||opt).remember){
-          // TODO: this needs to be modular.
-          try{var sS = {};
-          sS = window.sessionStorage;
-          sS.recall = true;
-          sS.alias = alias;
-          sS.tmp = pass;
-          }catch(e){}
-        }
-        try{
-          (root._).on('auth', at) // TODO: Deprecate this, emit on user instead! Update docs when you do.
-          //at.on('auth', at) // Arrgh, this doesn't work without event "merge" code, but "merge" code causes stack overflow and crashes after logging in & trying to write data.
-        }catch(e){
-          Gun.log("Your 'auth' callback crashed with:", e);
-        }
-      }
-      act.z = function(){
-        // password update so encrypt private key using new pwd + salt
-        act.salt = Gun.text.random(64); // pseudo-random
-        SEA.work(opt.change, act.salt, act.y);
-      }
-      act.y = function(proof){
-        SEA.encrypt({priv: act.pair.priv, epriv: act.pair.epriv}, proof, act.x, {raw:1});
-      }
-      act.x = function(auth){
-        act.w(JSON.stringify({ek: auth, s: act.salt}));
-      }
-      act.w = function(auth){
-        if(opt.shuffle){ // delete in future!
-          console.log('migrate core account from UTF8 & shuffle');
-          var tmp = Gun.obj.to(act.data);
-          Gun.obj.del(tmp, '_');
-          tmp.auth = auth;
-          root.get('~'+act.pair.pub).put(tmp);
-        } // end delete
-        root.get('~'+act.pair.pub).get('auth').put(auth, cb);
-      }
-      act.err = function(e){
-        var ack = {err: Gun.log(e || 'User cannot be found!')};
-        cat.ing = false;
-        cb(ack);
-      }
-      act.plugin = function(name){
-        if(!(act.name = name)){ return act.err() }
-        var tmp = [name];
-        if('~' !== name[0]){
-          tmp[1] = '~'+name;
-          tmp[2] = '~@'+name;
-        }
-        act.b(tmp);
-      }
-      if(pair){
-        act.g(pair);
-      } else
-      if(alias){
-        root.get('~@'+alias).once(act.a);
-      } else
-      if(!alias && !pass){
-        SEA.name(act.plugin);
-      }
-      return gun;
-    }
-    User.prototype.pair = function(){
-      console.log("user.pair() IS DEPRECATED AND WILL BE DELETED!!!");
-      var user = this;
-      if(!user.is){ return false }
-      return user._.sea;
-    }
-    User.prototype.leave = function(opt, cb){
-      var gun = this, user = (gun.back(-1)._).user;
-      if(user){
-        delete user.is;
-        delete user._.is;
-        delete user._.sea;
-      }
-      if(SEA.window){
-        try{var sS = {};
-        sS = window.sessionStorage;
-        delete sS.alias;
-        delete sS.tmp;
-        delete sS.recall;
-        }catch(e){};
-      }
-      return gun;
-    }
-    // If authenticated user wants to delete his/her account, let's support it!
-    User.prototype.delete = async function(alias, pass, cb){
-      console.log("user.delete() IS DEPRECATED AND WILL BE MOVED TO A MODULE!!!");
-      var gun = this, root = gun.back(-1), user = gun.back('user');
-      try {
-        user.auth(alias, pass, function(ack){
-          var pub = (user.is||{}).pub;
-          // Delete user data
-          user.map().once(function(){ this.put(null) });
-          // Wipe user data from memory
-          user.leave();
-          (cb || noop)({ok: 0});
-        });
-      } catch (e) {
-        Gun.log('User.delete failed! Error:', e);
-      }
-      return gun;
-    }
-    User.prototype.recall = function(opt, cb){
-      var gun = this, root = gun.back(-1), tmp;
-      opt = opt || {};
-      if(opt && opt.sessionStorage){
-        if(SEA.window){
-          try{var sS = {};
-          sS = window.sessionStorage;
-          if(sS){
-            (root._).opt.remember = true;
-            ((gun.back('user')._).opt||opt).remember = true;
-            if(sS.recall || (sS.alias && sS.tmp)){
-              root.user().auth(sS.alias, sS.tmp, cb);
-            }
-          }
-          }catch(e){}
-        }
-        return gun;
-      }
-      /*
-        TODO: copy mhelander's expiry code back in.
-        Although, we should check with community,
-        should expiry be core or a plugin?
-      */
-      return gun;
-    }
-    User.prototype.alive = async function(){
-      console.log("user.alive() IS DEPRECATED!!!");
-      const gunRoot = this.back(-1)
-      try {
-        // All is good. Should we do something more with actual recalled data?
-        await authRecall(gunRoot)
-        return gunRoot._.user._
-      } catch (e) {
-        const err = 'No session!'
-        Gun.log(err)
-        throw { err }
-      }
-    }
-    User.prototype.trust = async function(user){
-      // TODO: BUG!!! SEA `node` read listener needs to be async, which means core needs to be async too.
-      //gun.get('alice').get('age').trust(bob);
-      if (Gun.is(user)) {
-        user.get('pub').get((ctx, ev) => {
-          console.log(ctx, ev)
-        })
-      }
-      user.get('trust').get(path).put(theirPubkey);
-
-      // do a lookup on this gun chain directly (that gets bob's copy of the data)
-      // do a lookup on the metadata trust table for this path (that gets all the pubkeys allowed to write on this path)
-      // do a lookup on each of those pubKeys ON the path (to get the collab data "layers")
-      // THEN you perform Jachen's mix operation
-      // and return the result of that to...
-    }
-    User.prototype.grant = function(to, cb){
-      console.log("`.grant` API MAY BE DELETED OR CHANGED OR RENAMED, DO NOT USE!");
-      var gun = this, user = gun.back(-1).user(), pair = user._.sea, path = '';
-      gun.back(function(at){ if(at.is){ return } path += (at.get||'') });
-      (async function(){
-      var enc, sec = await user.get('grant').get(pair.pub).get(path).then();
-      sec = await SEA.decrypt(sec, pair);
-      if(!sec){
-        sec = SEA.random(16).toString();
-        enc = await SEA.encrypt(sec, pair);
-        user.get('grant').get(pair.pub).get(path).put(enc);
-      }
-      var pub = to.get('pub').then();
-      var epub = to.get('epub').then();
-      pub = await pub; epub = await epub;
-      var dh = await SEA.secret(epub, pair);
-      enc = await SEA.encrypt(sec, dh);
-      user.get('grant').get(pub).get(path).put(enc, cb);
-      }());
-      return gun;
-    }
-    User.prototype.secret = function(data, cb){
-      console.log("`.secret` API MAY BE DELETED OR CHANGED OR RENAMED, DO NOT USE!");
-      var gun = this, user = gun.back(-1).user(), pair = user.pair(), path = '';
-      gun.back(function(at){ if(at.is){ return } path += (at.get||'') });
-      (async function(){
-      var enc, sec = await user.get('trust').get(pair.pub).get(path).then();
-      sec = await SEA.decrypt(sec, pair);
-      if(!sec){
-        sec = SEA.random(16).toString();
-        enc = await SEA.encrypt(sec, pair);
-        user.get('trust').get(pair.pub).get(path).put(enc);
-      }
-      enc = await SEA.encrypt(data, sec);
-      gun.put(enc, cb);
-      }());
-      return gun;
-    }
-    module.exports = User
-  })(USE, './create');
-
-  ;USE(function(module){
-    const SEA = USE('./sea')
-    const Gun = SEA.Gun;
-    // After we have a GUN extension to make user registration/login easy, we then need to handle everything else.
-
-    // We do this with a GUN adapter, we first listen to when a gun instance is created (and when its options change)
-    Gun.on('opt', function(at){
-      if(!at.sea){ // only add SEA once per instance, on the "at" context.
-        at.sea = {own: {}};
-        at.on('in', security, at); // now listen to all input data, acting as a firewall.
-        at.on('out', signature, at); // and output listeners, to encrypt outgoing data.
-        at.on('node', each, at);
-      }
-      this.to.next(at); // make sure to call the "next" middleware adapter.
-    });
-
-    // Alright, this next adapter gets run at the per node level in the graph database.
-    // This will let us verify that every property on a node has a value signed by a public key we trust.
-    // If the signature does not match, the data is just `undefined` so it doesn't get passed on.
-    // If it does match, then we transform the in-memory "view" of the data into its plain value (without the signature).
-    // Now NOTE! Some data is "system" data, not user data. Example: List of public keys, aliases, etc.
-    // This data is self-enforced (the value can only match its ID), but that is handled in the `security` function.
-    // From the self-enforced data, we can see all the edges in the graph that belong to a public key.
-    // Example: ~ASDF is the ID of a node with ASDF as its public key, signed alias and salt, and
-    // its encrypted private key, but it might also have other signed values on it like `profile = <ID>` edge.
-    // Using that directed edge's ID, we can then track (in memory) which IDs belong to which keys.
-    // Here is a problem: Multiple public keys can "claim" any node's ID, so this is dangerous!
-    // This means we should ONLY trust our "friends" (our key ring) public keys, not any ones.
-    // I have not yet added that to SEA yet in this alpha release. That is coming soon, but beware in the meanwhile!
-    function each(msg){ // TODO: Warning: Need to switch to `gun.on('node')`! Do not use `Gun.on('node'` in your apps!
-      // NOTE: THE SECURITY FUNCTION HAS ALREADY VERIFIED THE DATA!!!
-      // WE DO NOT NEED TO RE-VERIFY AGAIN, JUST TRANSFORM IT TO PLAINTEXT.
-      var to = this.to, vertex = (msg.$._).put, c = 0, d;
-      Gun.node.is(msg.put, function(val, key, node){
-        // only process if SEA formatted?
-        var tmp = Gun.obj.ify(val) || noop;
-        if(u !== tmp[':']){
-          node[key] = SEA.opt.unpack(tmp);
-          return;
-        }
-        if(!SEA.opt.check(val)){ return }
-        c++; // for each property on the node
-        SEA.verify(val, false, function(data){ c--; // false just extracts the plain data.
-          node[key] = SEA.opt.unpack(data, key, node);; // transform to plain value.
-          if(d && !c && (c = -1)){ to.next(msg) }
-        });
-      });
-      if((d = true) && !c){ to.next(msg) }
-    }
-
-    // signature handles data output, it is a proxy to the security function.
-    function signature(msg){
-      if((msg._||noop).user){
-        return this.to.next(msg);
-      }
-      var ctx = this.as;
-      (msg._||(msg._=function(){})).user = ctx.user;
-      security.call(this, msg);
-    }
-
-    // okay! The security function handles all the heavy lifting.
-    // It needs to deal read and write of input and output of system data, account/public key data, and regular data.
-    // This is broken down into some pretty clear edge cases, let's go over them:
-    function security(msg){
-      var at = this.as, sea = at.sea, to = this.to;
-      if(at.opt.faith && (msg._||noop).faith){ // you probably shouldn't have faith in this!
-        this.to.next(msg); // why do we allow skipping security? I'm very scared about it actually.
-        return; // but so that way storage adapters that already verified something can get performance boost. This was a community requested feature. If anybody finds an exploit with it, please report immediately. It should only be exploitable if you have XSS control anyways, which if you do, you can bypass security regardless of this.
-      }
-      if(msg.get){
-        // if there is a request to read data from us, then...
-        var soul = msg.get['#'];
-        if(soul){ // for now, only allow direct IDs to be read.
-          if(typeof soul !== 'string'){ return to.next(msg) } // do not handle lexical cursors.
-          if('alias' === soul){ // Allow reading the list of usernames/aliases in the system?
-            return to.next(msg); // yes.
-          } else
-          if('~@' === soul.slice(0,2)){ // Allow reading the list of public keys associated with an alias?
-            return to.next(msg); // yes.
-          } else { // Allow reading everything?
-            return to.next(msg); // yes // TODO: No! Make this a callback/event that people can filter on.
-          }
-        }
-      }
-      if(msg.put){
-        // potentially parallel async operations!!!
-        var check = {}, each = {}, u;
-        each.node = function(node, soul){
-          if(Gun.obj.empty(node, '_')){ return check['node'+soul] = 0 } // ignore empty updates, don't reject them.
-          Gun.obj.map(node, each.way, {soul: soul, node: node});
-        };
-        each.way = function(val, key){
-          var soul = this.soul, node = this.node, tmp;
-          if('_' === key){ return } // ignore meta data
-          if('~@' === soul){  // special case for shared system data, the list of aliases.
-            each.alias(val, key, node, soul); return;
-          }
-          if('~@' === soul.slice(0,2)){ // special case for shared system data, the list of public keys for an alias.
-            each.pubs(val, key, node, soul); return;
-          }
-          if('~' === soul.slice(0,1) && 2 === (tmp = soul.slice(1)).split('.').length){ // special case, account data for a public key.
-            each.pub(val, key, node, soul, tmp, (msg._||noop).user); return;
-          }
-          each.any(val, key, node, soul, (msg._||noop).user); return;
-          return each.end({err: "No other data allowed!"});
-        };
-        each.alias = function(val, key, node, soul){ // Example: {_:#~@, ~@alice: {#~@alice}}
-          if(!val){ return each.end({err: "Data must exist!"}) } // data MUST exist
-          if('~@'+key === Gun.val.link.is(val)){ return check['alias'+key] = 0 } // in fact, it must be EXACTLY equal to itself
-          each.end({err: "Mismatching alias."}); // if it isn't, reject.
-        };
-        each.pubs = function(val, key, node, soul){ // Example: {_:#~@alice, ~asdf: {#~asdf}}
-          if(!val){ return each.end({err: "Alias must exist!"}) } // data MUST exist
-          if(key === Gun.val.link.is(val)){ return check['pubs'+soul+key] = 0 } // and the ID must be EXACTLY equal to its property
-          each.end({err: "Alias must match!"}); // that way nobody can tamper with the list of public keys.
-        };
-        each.pub = function(val, key, node, soul, pub, user){ var tmp; // Example: {_:#~asdf, hello:'world'~fdsa}}
-          if('pub' === key){
-            if(val === pub){ return (check['pub'+soul+key] = 0) } // the account MUST match `pub` property that equals the ID of the public key.
-            return each.end({err: "Account must match!"});
-          }
-          check['user'+soul+key] = 1;
-          if(Gun.is(msg.$) && user && user.is && pub === user.is.pub){
-            SEA.sign(SEA.opt.prep(tmp = SEA.opt.parse(val), key, node, soul), (user._).sea, function(data){ var rel;
-              if(u === data){ return each.end({err: SEA.err || 'Pub signature fail.'}) }
-              if(rel = Gun.val.link.is(val)){
-                (at.sea.own[rel] = at.sea.own[rel] || {})[pub] = true;
-              }
-              node[key] = JSON.stringify({':': SEA.opt.unpack(data.m), '~': data.s});
-              check['user'+soul+key] = 0;
-              each.end({ok: 1});
-            }, {check: SEA.opt.pack(tmp, key, node, soul), raw: 1});
-            return;
-          }
-          SEA.verify(SEA.opt.pack(val,key,node,soul), pub, function(data){ var rel, tmp;
-            data = SEA.opt.unpack(data, key, node);
-            if(u === data){ // make sure the signature matches the account it claims to be on.
-              return each.end({err: "Unverified data."}); // reject any updates that are signed with a mismatched account.
-            }
-            if((rel = Gun.val.link.is(data)) && pub === SEA.opt.pub(rel)){
-              (at.sea.own[rel] = at.sea.own[rel] || {})[pub] = true;
-            }
-            check['user'+soul+key] = 0;
-            each.end({ok: 1});
-          });
-        };
-        each.any = function(val, key, node, soul, user){ var tmp, pub;
-          if(!(pub = SEA.opt.pub(soul))){
-            if(at.opt.secure){
-              each.end({err: "Soul is missing public key at '" + key + "'."});
-              return;
-            }
-            // TODO: Ask community if should auto-sign non user-graph data.
-            check['any'+soul+key] = 1;
-            at.on('secure', function(msg){ this.off();
-              check['any'+soul+key] = 0;
-              if(at.opt.secure){ msg = null }
-              each.end(msg || {err: "Data cannot be modified."});
-            }).on.on('secure', msg);
-            //each.end({err: "Data cannot be modified."});
-            return;
-          }
-          if(Gun.is(msg.$) && user && user.is && pub === user.is.pub){
-            /*var other = Gun.obj.map(at.sea.own[soul], function(v, p){
-              if((user.is||{}).pub !== p){ return p }
-            });
-            if(other){
-              each.any(val, key, node, soul);
-              return;
-            }*/
-            check['any'+soul+key] = 1;
-            SEA.sign(SEA.opt.prep(tmp = SEA.opt.parse(val), key, node, soul), (user._).sea, function(data){
-              if(u === data){ return each.end({err: 'My signature fail.'}) }
-              node[key] = JSON.stringify({':': SEA.opt.unpack(data.m), '~': data.s});
-              check['any'+soul+key] = 0;
-              each.end({ok: 1});
-            }, {check: SEA.opt.pack(tmp, key, node, soul), raw: 1});
-            return;
-          }
-          check['any'+soul+key] = 1;
-          SEA.verify(SEA.opt.pack(val,key,node,soul), pub, function(data){ var rel;
-            data = SEA.opt.unpack(data, key, node);
-            if(u === data){ return each.end({err: "Mismatched owner on '" + key + "'."}) } // thanks @rogowski !
-            if((rel = Gun.val.link.is(data)) && pub === SEA.opt.pub(rel)){
-              (at.sea.own[rel] = at.sea.own[rel] || {})[pub] = true;
-            }
-            check['any'+soul+key] = 0;
-            each.end({ok: 1});
-          });
-        }
-        each.end = function(ctx){ // TODO: Can't you just switch this to each.end = cb?
-          if(each.err){ return }
-          if((each.err = ctx.err) || ctx.no){
-            console.log('NO!', each.err, msg.put); // 451 mistmached data FOR MARTTI
-            return;
-          }
-          if(!each.end.ed){ return }
-          if(Gun.obj.map(check, function(no){
-            if(no){ return true }
-          })){ return }
-          (msg._||{}).user = at.user || security; // already been through firewall, does not need to again on out.
-          to.next(msg);
-        };
-        Gun.obj.map(msg.put, each.node);
-        each.end({end: each.end.ed = true});
-        return; // need to manually call next after async.
-      }
-      to.next(msg); // pass forward any data we do not know how to handle or process (this allows custom security protocols).
-    }
-    SEA.opt.pub = function(s){
-      if(!s){ return }
-      s = s.split('~');
-      if(!s || !(s = s[1])){ return }
-      s = s.split('.');
-      if(!s || 2 > s.length){ return }
-      s = s.slice(0,2).join('.');
-      return s;
-    }
-    SEA.opt.prep = function(d,k, n,s){ // prep for signing
-      return {'#':s,'.':k,':':SEA.opt.parse(d),'>':Gun.state.is(n, k)};
-    }
-    SEA.opt.pack = function(d,k, n,s){ // pack for verifying
-      if(SEA.opt.check(d)){ return d }
-      var meta = (Gun.obj.ify(d)||noop), sig = meta['~'];
-      return sig? {m: {'#':s,'.':k,':':meta[':'],'>':Gun.state.is(n, k)}, s: sig} : d;
-    }
-    SEA.opt.unpack = function(d, k, n){ var tmp;
-      if(u === d){ return }
-      if(d && (u !== (tmp = d[':']))){ return tmp }
-      if(!k || !n){ return }
-      if(d === n[k]){ return d }
-      if(!SEA.opt.check(n[k])){ return d }
-      var soul = Gun.node.soul(n), s = Gun.state.is(n, k);
-      if(d && 4 === d.length && soul === d[0] && k === d[1] && fl(s) === fl(d[3])){
-        return d[2];
-      }
-      if(s < SEA.opt.shuffle_attack){
-        return d;
-      }
-    }
-    SEA.opt.shuffle_attack = 1546329600000; // Jan 1, 2019
-    var noop = function(){}, u;
-    var fl = Math.floor; // TODO: Still need to fix inconsistent state issue.
-    var rel_is = Gun.val.rel.is;
-    // TODO: Potential bug? If pub/priv key starts with `-`? IDK how possible.
-
-  })(USE, './index');
-}());
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module), __webpack_require__(/*! ./../buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
-
-/***/ }),
-
-/***/ "./node_modules/ieee754/index.js":
-/*!***************************************!*\
-  !*** ./node_modules/ieee754/index.js ***!
-  \***************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-exports.read = function (buffer, offset, isLE, mLen, nBytes) {
-  var e, m
-  var eLen = (nBytes * 8) - mLen - 1
-  var eMax = (1 << eLen) - 1
-  var eBias = eMax >> 1
-  var nBits = -7
-  var i = isLE ? (nBytes - 1) : 0
-  var d = isLE ? -1 : 1
-  var s = buffer[offset + i]
-
-  i += d
-
-  e = s & ((1 << (-nBits)) - 1)
-  s >>= (-nBits)
-  nBits += eLen
-  for (; nBits > 0; e = (e * 256) + buffer[offset + i], i += d, nBits -= 8) {}
-
-  m = e & ((1 << (-nBits)) - 1)
-  e >>= (-nBits)
-  nBits += mLen
-  for (; nBits > 0; m = (m * 256) + buffer[offset + i], i += d, nBits -= 8) {}
-
-  if (e === 0) {
-    e = 1 - eBias
-  } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity)
-  } else {
-    m = m + Math.pow(2, mLen)
-    e = e - eBias
-  }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
-}
-
-exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
-  var e, m, c
-  var eLen = (nBytes * 8) - mLen - 1
-  var eMax = (1 << eLen) - 1
-  var eBias = eMax >> 1
-  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
-  var i = isLE ? 0 : (nBytes - 1)
-  var d = isLE ? 1 : -1
-  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
-
-  value = Math.abs(value)
-
-  if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0
-    e = eMax
-  } else {
-    e = Math.floor(Math.log(value) / Math.LN2)
-    if (value * (c = Math.pow(2, -e)) < 1) {
-      e--
-      c *= 2
-    }
-    if (e + eBias >= 1) {
-      value += rt / c
-    } else {
-      value += rt * Math.pow(2, 1 - eBias)
-    }
-    if (value * c >= 2) {
-      e++
-      c /= 2
-    }
-
-    if (e + eBias >= eMax) {
-      m = 0
-      e = eMax
-    } else if (e + eBias >= 1) {
-      m = ((value * c) - 1) * Math.pow(2, mLen)
-      e = e + eBias
-    } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
-      e = 0
-    }
-  }
-
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
-
-  e = (e << mLen) | m
-  eLen += mLen
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
-
-  buffer[offset + i - d] |= s * 128
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/isarray/index.js":
-/*!***************************************!*\
-  !*** ./node_modules/isarray/index.js ***!
-  \***************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-var toString = {}.toString;
-
-module.exports = Array.isArray || function (arr) {
-  return toString.call(arr) == '[object Array]';
-};
-
-
-/***/ }),
-
-/***/ "./node_modules/node-libs-browser/node_modules/events/events.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/node-libs-browser/node_modules/events/events.js ***!
-  \**********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-
-var R = typeof Reflect === 'object' ? Reflect : null
-var ReflectApply = R && typeof R.apply === 'function'
-  ? R.apply
-  : function ReflectApply(target, receiver, args) {
-    return Function.prototype.apply.call(target, receiver, args);
-  }
-
-var ReflectOwnKeys
-if (R && typeof R.ownKeys === 'function') {
-  ReflectOwnKeys = R.ownKeys
-} else if (Object.getOwnPropertySymbols) {
-  ReflectOwnKeys = function ReflectOwnKeys(target) {
-    return Object.getOwnPropertyNames(target)
-      .concat(Object.getOwnPropertySymbols(target));
-  };
-} else {
-  ReflectOwnKeys = function ReflectOwnKeys(target) {
-    return Object.getOwnPropertyNames(target);
-  };
-}
-
-function ProcessEmitWarning(warning) {
-  if (console && console.warn) console.warn(warning);
-}
-
-var NumberIsNaN = Number.isNaN || function NumberIsNaN(value) {
-  return value !== value;
-}
-
-function EventEmitter() {
-  EventEmitter.init.call(this);
-}
-module.exports = EventEmitter;
-module.exports.once = once;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
-
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._eventsCount = 0;
-EventEmitter.prototype._maxListeners = undefined;
-
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-var defaultMaxListeners = 10;
-
-function checkListener(listener) {
-  if (typeof listener !== 'function') {
-    throw new TypeError('The "listener" argument must be of type Function. Received type ' + typeof listener);
-  }
-}
-
-Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
-  enumerable: true,
-  get: function() {
-    return defaultMaxListeners;
-  },
-  set: function(arg) {
-    if (typeof arg !== 'number' || arg < 0 || NumberIsNaN(arg)) {
-      throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received ' + arg + '.');
-    }
-    defaultMaxListeners = arg;
-  }
-});
-
-EventEmitter.init = function() {
-
-  if (this._events === undefined ||
-      this._events === Object.getPrototypeOf(this)._events) {
-    this._events = Object.create(null);
-    this._eventsCount = 0;
-  }
-
-  this._maxListeners = this._maxListeners || undefined;
-};
-
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
-  if (typeof n !== 'number' || n < 0 || NumberIsNaN(n)) {
-    throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received ' + n + '.');
-  }
-  this._maxListeners = n;
-  return this;
-};
-
-function _getMaxListeners(that) {
-  if (that._maxListeners === undefined)
-    return EventEmitter.defaultMaxListeners;
-  return that._maxListeners;
-}
-
-EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
-  return _getMaxListeners(this);
-};
-
-EventEmitter.prototype.emit = function emit(type) {
-  var args = [];
-  for (var i = 1; i < arguments.length; i++) args.push(arguments[i]);
-  var doError = (type === 'error');
-
-  var events = this._events;
-  if (events !== undefined)
-    doError = (doError && events.error === undefined);
-  else if (!doError)
-    return false;
-
-  // If there is no 'error' event listener then throw.
-  if (doError) {
-    var er;
-    if (args.length > 0)
-      er = args[0];
-    if (er instanceof Error) {
-      // Note: The comments on the `throw` lines are intentional, they show
-      // up in Node's output if this results in an unhandled exception.
-      throw er; // Unhandled 'error' event
-    }
-    // At least give some kind of context to the user
-    var err = new Error('Unhandled error.' + (er ? ' (' + er.message + ')' : ''));
-    err.context = er;
-    throw err; // Unhandled 'error' event
-  }
-
-  var handler = events[type];
-
-  if (handler === undefined)
-    return false;
-
-  if (typeof handler === 'function') {
-    ReflectApply(handler, this, args);
-  } else {
-    var len = handler.length;
-    var listeners = arrayClone(handler, len);
-    for (var i = 0; i < len; ++i)
-      ReflectApply(listeners[i], this, args);
-  }
-
-  return true;
-};
-
-function _addListener(target, type, listener, prepend) {
-  var m;
-  var events;
-  var existing;
-
-  checkListener(listener);
-
-  events = target._events;
-  if (events === undefined) {
-    events = target._events = Object.create(null);
-    target._eventsCount = 0;
-  } else {
-    // To avoid recursion in the case that type === "newListener"! Before
-    // adding it to the listeners, first emit "newListener".
-    if (events.newListener !== undefined) {
-      target.emit('newListener', type,
-                  listener.listener ? listener.listener : listener);
-
-      // Re-assign `events` because a newListener handler could have caused the
-      // this._events to be assigned to a new object
-      events = target._events;
-    }
-    existing = events[type];
-  }
-
-  if (existing === undefined) {
-    // Optimize the case of one listener. Don't need the extra array object.
-    existing = events[type] = listener;
-    ++target._eventsCount;
-  } else {
-    if (typeof existing === 'function') {
-      // Adding the second element, need to change to array.
-      existing = events[type] =
-        prepend ? [listener, existing] : [existing, listener];
-      // If we've already got an array, just append.
-    } else if (prepend) {
-      existing.unshift(listener);
-    } else {
-      existing.push(listener);
-    }
-
-    // Check for listener leak
-    m = _getMaxListeners(target);
-    if (m > 0 && existing.length > m && !existing.warned) {
-      existing.warned = true;
-      // No error code for this since it is a Warning
-      // eslint-disable-next-line no-restricted-syntax
-      var w = new Error('Possible EventEmitter memory leak detected. ' +
-                          existing.length + ' ' + String(type) + ' listeners ' +
-                          'added. Use emitter.setMaxListeners() to ' +
-                          'increase limit');
-      w.name = 'MaxListenersExceededWarning';
-      w.emitter = target;
-      w.type = type;
-      w.count = existing.length;
-      ProcessEmitWarning(w);
-    }
-  }
-
-  return target;
-}
-
-EventEmitter.prototype.addListener = function addListener(type, listener) {
-  return _addListener(this, type, listener, false);
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.prependListener =
-    function prependListener(type, listener) {
-      return _addListener(this, type, listener, true);
-    };
-
-function onceWrapper() {
-  if (!this.fired) {
-    this.target.removeListener(this.type, this.wrapFn);
-    this.fired = true;
-    if (arguments.length === 0)
-      return this.listener.call(this.target);
-    return this.listener.apply(this.target, arguments);
-  }
-}
-
-function _onceWrap(target, type, listener) {
-  var state = { fired: false, wrapFn: undefined, target: target, type: type, listener: listener };
-  var wrapped = onceWrapper.bind(state);
-  wrapped.listener = listener;
-  state.wrapFn = wrapped;
-  return wrapped;
-}
-
-EventEmitter.prototype.once = function once(type, listener) {
-  checkListener(listener);
-  this.on(type, _onceWrap(this, type, listener));
-  return this;
-};
-
-EventEmitter.prototype.prependOnceListener =
-    function prependOnceListener(type, listener) {
-      checkListener(listener);
-      this.prependListener(type, _onceWrap(this, type, listener));
-      return this;
-    };
-
-// Emits a 'removeListener' event if and only if the listener was removed.
-EventEmitter.prototype.removeListener =
-    function removeListener(type, listener) {
-      var list, events, position, i, originalListener;
-
-      checkListener(listener);
-
-      events = this._events;
-      if (events === undefined)
-        return this;
-
-      list = events[type];
-      if (list === undefined)
-        return this;
-
-      if (list === listener || list.listener === listener) {
-        if (--this._eventsCount === 0)
-          this._events = Object.create(null);
-        else {
-          delete events[type];
-          if (events.removeListener)
-            this.emit('removeListener', type, list.listener || listener);
-        }
-      } else if (typeof list !== 'function') {
-        position = -1;
-
-        for (i = list.length - 1; i >= 0; i--) {
-          if (list[i] === listener || list[i].listener === listener) {
-            originalListener = list[i].listener;
-            position = i;
-            break;
-          }
-        }
-
-        if (position < 0)
-          return this;
-
-        if (position === 0)
-          list.shift();
-        else {
-          spliceOne(list, position);
-        }
-
-        if (list.length === 1)
-          events[type] = list[0];
-
-        if (events.removeListener !== undefined)
-          this.emit('removeListener', type, originalListener || listener);
-      }
-
-      return this;
-    };
-
-EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
-
-EventEmitter.prototype.removeAllListeners =
-    function removeAllListeners(type) {
-      var listeners, events, i;
-
-      events = this._events;
-      if (events === undefined)
-        return this;
-
-      // not listening for removeListener, no need to emit
-      if (events.removeListener === undefined) {
-        if (arguments.length === 0) {
-          this._events = Object.create(null);
-          this._eventsCount = 0;
-        } else if (events[type] !== undefined) {
-          if (--this._eventsCount === 0)
-            this._events = Object.create(null);
-          else
-            delete events[type];
-        }
-        return this;
-      }
-
-      // emit removeListener for all listeners on all events
-      if (arguments.length === 0) {
-        var keys = Object.keys(events);
-        var key;
-        for (i = 0; i < keys.length; ++i) {
-          key = keys[i];
-          if (key === 'removeListener') continue;
-          this.removeAllListeners(key);
-        }
-        this.removeAllListeners('removeListener');
-        this._events = Object.create(null);
-        this._eventsCount = 0;
-        return this;
-      }
-
-      listeners = events[type];
-
-      if (typeof listeners === 'function') {
-        this.removeListener(type, listeners);
-      } else if (listeners !== undefined) {
-        // LIFO order
-        for (i = listeners.length - 1; i >= 0; i--) {
-          this.removeListener(type, listeners[i]);
-        }
-      }
-
-      return this;
-    };
-
-function _listeners(target, type, unwrap) {
-  var events = target._events;
-
-  if (events === undefined)
-    return [];
-
-  var evlistener = events[type];
-  if (evlistener === undefined)
-    return [];
-
-  if (typeof evlistener === 'function')
-    return unwrap ? [evlistener.listener || evlistener] : [evlistener];
-
-  return unwrap ?
-    unwrapListeners(evlistener) : arrayClone(evlistener, evlistener.length);
-}
-
-EventEmitter.prototype.listeners = function listeners(type) {
-  return _listeners(this, type, true);
-};
-
-EventEmitter.prototype.rawListeners = function rawListeners(type) {
-  return _listeners(this, type, false);
-};
-
-EventEmitter.listenerCount = function(emitter, type) {
-  if (typeof emitter.listenerCount === 'function') {
-    return emitter.listenerCount(type);
-  } else {
-    return listenerCount.call(emitter, type);
-  }
-};
-
-EventEmitter.prototype.listenerCount = listenerCount;
-function listenerCount(type) {
-  var events = this._events;
-
-  if (events !== undefined) {
-    var evlistener = events[type];
-
-    if (typeof evlistener === 'function') {
-      return 1;
-    } else if (evlistener !== undefined) {
-      return evlistener.length;
-    }
-  }
-
-  return 0;
-}
-
-EventEmitter.prototype.eventNames = function eventNames() {
-  return this._eventsCount > 0 ? ReflectOwnKeys(this._events) : [];
-};
-
-function arrayClone(arr, n) {
-  var copy = new Array(n);
-  for (var i = 0; i < n; ++i)
-    copy[i] = arr[i];
-  return copy;
-}
-
-function spliceOne(list, index) {
-  for (; index + 1 < list.length; index++)
-    list[index] = list[index + 1];
-  list.pop();
-}
-
-function unwrapListeners(arr) {
-  var ret = new Array(arr.length);
-  for (var i = 0; i < ret.length; ++i) {
-    ret[i] = arr[i].listener || arr[i];
-  }
-  return ret;
-}
-
-function once(emitter, name) {
-  return new Promise(function (resolve, reject) {
-    function eventListener() {
-      if (errorListener !== undefined) {
-        emitter.removeListener('error', errorListener);
-      }
-      resolve([].slice.call(arguments));
-    };
-    var errorListener;
-
-    // Adding an error listener is not optional because
-    // if an error is thrown on an event emitter we cannot
-    // guarantee that the actual event we are waiting will
-    // be fired. The result could be a silent way to create
-    // memory or file descriptor leaks, which is something
-    // we should avoid.
-    if (name !== 'error') {
-      errorListener = function errorListener(err) {
-        emitter.removeListener(name, eventListener);
-        reject(err);
-      };
-
-      emitter.once('error', errorListener);
-    }
-
-    emitter.once(name, eventListener);
-  });
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/process/browser.js":
-/*!*****************************************!*\
-  !*** ./node_modules/process/browser.js ***!
-  \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-
-/***/ }),
-
-/***/ "./node_modules/setimmediate/setImmediate.js":
-/*!***************************************************!*\
-  !*** ./node_modules/setimmediate/setImmediate.js ***!
-  \***************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
-    "use strict";
-
-    if (global.setImmediate) {
-        return;
-    }
-
-    var nextHandle = 1; // Spec says greater than zero
-    var tasksByHandle = {};
-    var currentlyRunningATask = false;
-    var doc = global.document;
-    var registerImmediate;
-
-    function setImmediate(callback) {
-      // Callback can either be a function or a string
-      if (typeof callback !== "function") {
-        callback = new Function("" + callback);
-      }
-      // Copy function arguments
-      var args = new Array(arguments.length - 1);
-      for (var i = 0; i < args.length; i++) {
-          args[i] = arguments[i + 1];
-      }
-      // Store and register the task
-      var task = { callback: callback, args: args };
-      tasksByHandle[nextHandle] = task;
-      registerImmediate(nextHandle);
-      return nextHandle++;
-    }
-
-    function clearImmediate(handle) {
-        delete tasksByHandle[handle];
-    }
-
-    function run(task) {
-        var callback = task.callback;
-        var args = task.args;
-        switch (args.length) {
-        case 0:
-            callback();
-            break;
-        case 1:
-            callback(args[0]);
-            break;
-        case 2:
-            callback(args[0], args[1]);
-            break;
-        case 3:
-            callback(args[0], args[1], args[2]);
-            break;
-        default:
-            callback.apply(undefined, args);
-            break;
-        }
-    }
-
-    function runIfPresent(handle) {
-        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
-        // So if we're currently running a task, we'll need to delay this invocation.
-        if (currentlyRunningATask) {
-            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
-            // "too much recursion" error.
-            setTimeout(runIfPresent, 0, handle);
-        } else {
-            var task = tasksByHandle[handle];
-            if (task) {
-                currentlyRunningATask = true;
-                try {
-                    run(task);
-                } finally {
-                    clearImmediate(handle);
-                    currentlyRunningATask = false;
-                }
-            }
-        }
-    }
-
-    function installNextTickImplementation() {
-        registerImmediate = function(handle) {
-            process.nextTick(function () { runIfPresent(handle); });
-        };
-    }
-
-    function canUsePostMessage() {
-        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
-        // where `global.postMessage` means something completely different and can't be used for this purpose.
-        if (global.postMessage && !global.importScripts) {
-            var postMessageIsAsynchronous = true;
-            var oldOnMessage = global.onmessage;
-            global.onmessage = function() {
-                postMessageIsAsynchronous = false;
-            };
-            global.postMessage("", "*");
-            global.onmessage = oldOnMessage;
-            return postMessageIsAsynchronous;
-        }
-    }
-
-    function installPostMessageImplementation() {
-        // Installs an event handler on `global` for the `message` event: see
-        // * https://developer.mozilla.org/en/DOM/window.postMessage
-        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
-
-        var messagePrefix = "setImmediate$" + Math.random() + "$";
-        var onGlobalMessage = function(event) {
-            if (event.source === global &&
-                typeof event.data === "string" &&
-                event.data.indexOf(messagePrefix) === 0) {
-                runIfPresent(+event.data.slice(messagePrefix.length));
-            }
-        };
-
-        if (global.addEventListener) {
-            global.addEventListener("message", onGlobalMessage, false);
-        } else {
-            global.attachEvent("onmessage", onGlobalMessage);
-        }
-
-        registerImmediate = function(handle) {
-            global.postMessage(messagePrefix + handle, "*");
-        };
-    }
-
-    function installMessageChannelImplementation() {
-        var channel = new MessageChannel();
-        channel.port1.onmessage = function(event) {
-            var handle = event.data;
-            runIfPresent(handle);
-        };
-
-        registerImmediate = function(handle) {
-            channel.port2.postMessage(handle);
-        };
-    }
-
-    function installReadyStateChangeImplementation() {
-        var html = doc.documentElement;
-        registerImmediate = function(handle) {
-            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
-            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
-            var script = doc.createElement("script");
-            script.onreadystatechange = function () {
-                runIfPresent(handle);
-                script.onreadystatechange = null;
-                html.removeChild(script);
-                script = null;
-            };
-            html.appendChild(script);
-        };
-    }
-
-    function installSetTimeoutImplementation() {
-        registerImmediate = function(handle) {
-            setTimeout(runIfPresent, 0, handle);
-        };
-    }
-
-    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
-    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
-    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
-
-    // Don't get fooled by e.g. browserify environments.
-    if ({}.toString.call(global.process) === "[object process]") {
-        // For Node.js before 0.9
-        installNextTickImplementation();
-
-    } else if (canUsePostMessage()) {
-        // For non-IE10 modern browsers
-        installPostMessageImplementation();
-
-    } else if (global.MessageChannel) {
-        // For web workers, where supported
-        installMessageChannelImplementation();
-
-    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
-        // For IE 6–8
-        installReadyStateChangeImplementation();
-
-    } else {
-        // For older browsers
-        installSetTimeoutImplementation();
-    }
-
-    attachTo.setImmediate = setImmediate;
-    attachTo.clearImmediate = clearImmediate;
-}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../process/browser.js */ "./node_modules/process/browser.js")))
-
-/***/ }),
-
 /***/ "./node_modules/timers-browserify/main.js":
 /*!************************************************!*\
   !*** ./node_modules/timers-browserify/main.js ***!
@@ -11535,9 +11193,11 @@ var config = [
     appPlugin.consumes = ["hub"];
     appPlugin.provides = ["app", "provable"];
     function appPlugin(options, imports, register) {
+        var app = new events.EventEmitter();
+        app.nw = window.nw;
         register(null, {
-            app: new events.EventEmitter(),
-            provable:provable
+            app: app,
+            provable:provable,
         });
     }
     
@@ -11617,7 +11277,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;var MYGUN;
         var peers = [];
 
 
-        peers.push("https://" + window.location.host + "/gun")
+        //peers.push("https://" + window.location.host + "/gun")
         // else
         //  if (thisHost != "www.peersocial.io")
         //      peers.push("https://www.peersocial.io/gun");
@@ -11701,7 +11361,7 @@ module.exports = "<div class=\"container\">\n\n    <div class=\"jumbotron p-4 p-
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n\n<img src=\"/peersocial/layout/tenor-12215996.gif\" alt=\"LOADING...\"></img>\n\n</div>";
+module.exports = "<div class=\"container\">\n\n<img src=\"peersocial/layout/tenor-12215996.gif\" alt=\"LOADING...\"></img>\n\n</div>";
 
 /***/ }),
 

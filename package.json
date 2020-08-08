@@ -2,11 +2,11 @@
   "name": "peersocial",
   "version": "0.0.1",
   "description": "peersocial dapp",
-  "main": "PeerSocial.js",
   "scripts": {
     "build": "cross-env NODE_ENV=development OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
     "build-production": "cross-env NODE_ENV=production OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
-    "start": "node ./PeerSocial.js"
+    "start": "node ./PeerSocial.js",
+    "bash": "bash"
   },
   "keywords": [
     "peersocial"
@@ -21,11 +21,16 @@
     "express": "*",
     "gun": "https://github.com/amark/gun/archive/master.tar.gz",
     "html-webpack-plugin": "^4.3.0",
+    "nw": "^0.47.2-sdk",
     "raw-loader": "^4.0.1",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
   },
   "engines": {
-    "node": "8.x"
+    "node": "12.x"
+  },
+  "main": "nwjs.html",
+  "window": {
+    "show": false
   }
 }

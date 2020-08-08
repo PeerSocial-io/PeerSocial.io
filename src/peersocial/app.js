@@ -30,9 +30,11 @@ var config = [
     appPlugin.consumes = ["hub"];
     appPlugin.provides = ["app", "provable"];
     function appPlugin(options, imports, register) {
+        var app = new events.EventEmitter();
+        app.nw = window.nw;
         register(null, {
-            app: new events.EventEmitter(),
-            provable:provable
+            app: app,
+            provable:provable,
         });
     }
     
