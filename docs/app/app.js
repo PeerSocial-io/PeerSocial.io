@@ -11280,7 +11280,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;var MYGUN;
         //peers.push("https://" + window.location.host + "/gun")
         // else
         //  if (thisHost != "www.peersocial.io")
-        //      peers.push("https://www.peersocial.io/gun");
+             peers.push("https://www.peersocial.io/gun");
 
         var gun = Gun({ super: false, peers: peers }); //"https://"+window.location.host+"/gun");
 
@@ -11290,10 +11290,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;var MYGUN;
 
         // gun.opt({ peers: peers });
 
-        if (thisHost != "www.peersocial.io") {
-            var mesh = gun.back('opt.mesh'); // DAM;
-            mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
-        }
+        // if (thisHost != "www.peersocial.io") {
+        //     var mesh = gun.back('opt.mesh'); // DAM;
+        //     mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
+        // }
 
         // }, 1)
 
