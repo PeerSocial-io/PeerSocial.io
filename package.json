@@ -4,7 +4,8 @@
   "description": "peersocial dapp",
   "main": "PeerSocial.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cross-env NODE_ENV=development OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
+    "build-production": "cross-env NODE_ENV=production OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
     "start": "node ./PeerSocial.js"
   },
   "keywords": [
@@ -14,8 +15,15 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.727.1",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.0.3",
+    "cross-env": "^7.0.2",
     "express": "*",
-    "gun": "https://github.com/amark/gun/archive/master.tar.gz"
+    "gun": "https://github.com/amark/gun/archive/master.tar.gz",
+    "html-webpack-plugin": "^4.3.0",
+    "raw-loader": "^4.0.1",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
   },
   "engines": {
     "node": "8.x"
