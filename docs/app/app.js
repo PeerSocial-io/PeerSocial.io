@@ -11184,7 +11184,9 @@ var config = [
     __webpack_require__(/*! ./peers/plugin */ "./src/peersocial/peers/plugin.js"),
     //"peerapp/plugin",
     __webpack_require__(/*! ./peerapp_v2/plugin */ "./src/peersocial/peerapp_v2/plugin.js"),
-    __webpack_require__(/*! ./gun-fs/plugin */ "./src/peersocial/gun-fs/plugin.js")
+    __webpack_require__(/*! ./gun-fs/plugin */ "./src/peersocial/gun-fs/plugin.js"),
+
+    __webpack_require__(/*! ./nw_app/nw_app */ "./src/peersocial/nw_app/nw_app.js"),
 ];
 
 
@@ -11192,30 +11194,32 @@ var config = [
 
     appPlugin.consumes = ["hub"];
     appPlugin.provides = ["app", "provable"];
+
     function appPlugin(options, imports, register) {
         var app = new events.EventEmitter();
         app.nw = window.nw;
         register(null, {
             app: app,
-            provable:provable,
+            provable: provable,
         });
     }
-    
+
     config.push(appPlugin);
 })();
 
+setTimeout(function() {
+    architect(config, function(err, app) {
+        if (err) return console.error(err.message);
+        for (var i in app.services) {
+            if (app.services[i].init) app.services[i].init(app);
+            app.services.app[i] = app.services[i];
+        }
 
-architect(config, function(err, app) {
-    if (err) return console.error(err.message);
-    for (var i in app.services) {
-        if (app.services[i].init) app.services[i].init(app);
-        app.services.app[i] = app.services[i];
-    }
-
-    app.services.app.emit("start");
+        app.services.app.emit("start");
 
 
-});
+    });
+}, 100)
 
 /***/ }),
 
@@ -11257,48 +11261,57 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_RESULT__;var MYGUN;
-!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
+var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
     appPlugin.consumes = ["app", "provable"];
     appPlugin.provides = ["gun"];
 
+    if (window.nw)
+        appPlugin.consumes.push("nw_app");
+
     return appPlugin;
 
     function appPlugin(options, imports, register) {
+        var Gun, gun;
 
-        /* global */
-        var Gun = __webpack_require__(/*! gun */ "./node_modules/gun/browser.js");
-        __webpack_require__(/*! gun/sea */ "./node_modules/gun/sea.js");
+        if (!imports.nw_app) {
+            /* global */
+            Gun = __webpack_require__(/*! gun */ "./node_modules/gun/browser.js");
+            __webpack_require__(/*! gun/sea */ "./node_modules/gun/sea.js");
 
-        if (!Gun.log.once)
-            Gun.log.once = function() {};
+            if (!Gun.log.once)
+                Gun.log.once = function() {};
 
-        var peers = [];
+            var peers = [];
 
 
-        //peers.push("https://" + window.location.host + "/gun")
-        // else
-        //  if (thisHost != "www.peersocial.io")
-             peers.push("https://www.peersocial.io/gun");
+            //peers.push("https://" + window.location.host + "/gun")
+            // else
+            //  if (thisHost != "www.peersocial.io")
+            peers.push("https://www.peersocial.io/gun");
 
-        var gun = Gun({ super: false, peers: peers }); //"https://"+window.location.host+"/gun");
+            gun = Gun({ super: false, peers: peers }); //"https://"+window.location.host+"/gun");
 
-        var thisHost = window.location.host;
+            // var thisHost = window.location.host;
 
-        // setTimeout(function() {
+            // setTimeout(function() {
 
-        // gun.opt({ peers: peers });
+            // gun.opt({ peers: peers });
 
-        // if (thisHost != "www.peersocial.io") {
-        //     var mesh = gun.back('opt.mesh'); // DAM;
-        //     mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
-        // }
+            // if (thisHost != "www.peersocial.io") {
+            //     var mesh = gun.back('opt.mesh'); // DAM;
+            //     mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
+            // }
 
-        // }, 1)
+            // }, 1)
+            // window.gun = gun;
 
-        // window.gun = gun;
-        MYGUN = gun;
+        }
+        else {
+            Gun = imports.nw_app.Gun;
+            gun = imports.nw_app.gun;
+        }
+
 
         function getPubData(pub) {
             return new Promise(resolve => {
@@ -11375,7 +11388,7 @@ module.exports = "<div class=\"container\">\n\n<img src=\"peersocial/layout/teno
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
     appPlugin.consumes = ["app","state"];
-    appPlugin.provides = ["layout"];
+    appPlugin.provides = ["layout", "ejs"];
     
     var ejs = __webpack_require__(/*! ../lib/ejs */ "./src/peersocial/lib/ejs.js");
     
@@ -11384,6 +11397,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     function appPlugin(options, imports, register) {
 
         register(null, {
+            ejs:ejs,
             layout: {
                 ejs:ejs,
                 
@@ -25797,6 +25811,121 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*! showdown v 1.9.1 - 02-11-2019 */
 
 /***/ }),
 
+/***/ "./src/peersocial/nw_app/nw_app.js":
+/*!*****************************************!*\
+  !*** ./src/peersocial/nw_app/nw_app.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
+
+    appPlugin.consumes = ["app"];
+    appPlugin.provides = ["nw_app"];
+
+    return appPlugin;
+
+    function appPlugin(options, imports, register) {
+
+        var nw = imports.app;
+        window.name = "testing_ID"
+        var nw_app_core = window.global.nw_app_core;
+        // // console.log(window.nw_app.test())
+        // var r = imports.app.nw.require("./nw_app_require.js");
+        // r.resolve("./nw_app");
+
+        // var server = r("../server.js");
+
+
+        // server.start(nw_app_core, console, function() {
+
+
+            register(null, {
+                nw_app: {
+                    Gun:nw_app_core.Gun,
+                    gun:nw_app_core.gun,
+                    init: function() {
+                        
+                        window.gun = nw_app_core.gun;
+                        window.Gun = nw_app_core.Gun;
+                        var gun = nw_app_core.gun;
+                        
+                        if(!nw_app_core.added_initPeers){
+                            nw_app_core.gun._.opt.wire({url:"https://onlykey.herokuapp.com/gun"});
+                            nw_app_core.gun._.opt.wire({url:"https://www.peersocial.io/gun"});
+                            nw_app_core.added_initPeers = true;
+                        }
+                        imports.app.on("nw-home", function() {
+
+                            $("#navbar-nav-right").hide();
+                            $("#app-footer").hide();
+
+                            imports.app.ejs.render(__webpack_require__(/*! ./services.html */ "./src/peersocial/nw_app/services.html"), {
+                                nw_app_core: nw_app_core
+                            }, { async: true }).then(function(pageOutput) {
+                                $("#main-container").html(pageOutput);
+                            });
+                            
+                            setInterval(function(){
+                                var content = $("#status-interval");
+                                var p = gun._.opt.peers;
+                                
+                                var output = "";
+                                
+                                for (var i in p){
+                                    if(!p[i].wire) continue;
+                                    
+                                    var type = (  p[i] instanceof gun._.opt.RTCPeerConnection ? "-RTCPeerConnection" : "");
+                                    
+                                    output += (p[i].url ? p[i].url : i) + type + " " ;
+                                    
+                                    output += "readyState:"+p[i].wire.readyState;
+                                    output += "<br/>";
+                                    
+                                }
+                                
+                                content.html(output);
+                                // console.log("gun",nw_app_core.gun); 
+                                
+                            },1000)
+
+
+                            // console.log(server)
+
+                            //console.log("app started", imports.app)
+
+                            // imports.app.state.on("anchorchange",()=>{
+                            //     console.log(imports.app.state.hash)
+                            // })
+
+                            // setInterval(()=>{
+                            //     imports.app.state.hash = Date.now().toString();
+                            // },1000)
+                        })
+
+                    }
+                }
+            });
+
+        // });
+    }
+
+}).call(exports, __webpack_require__, exports, module),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+/***/ }),
+
+/***/ "./src/peersocial/nw_app/services.html":
+/*!*********************************************!*\
+  !*** ./src/peersocial/nw_app/services.html ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"container\">\n        \n    <div>\n        <%\n        \n        var gunStatus = nw_app_core.gun_server.listening;\n        var activeColor = gunStatus ? \"green\" : \"red\";\n        var gunStatus = gunStatus ? \"Active\" : \"Down\";\n        \n        \n        %>\n        <h1>Gun Local Server Status: <font color=\"<%= activeColor %>\"><%= gunStatus %></font></h1>\n        <hr/>\n        \n        <br/>\n        \n        <div id=\"status-interval\"></div>\n        \n    </div>\n\n</div>\n\n";
+
+/***/ }),
+
 /***/ "./src/peersocial/peerapp_v2/ace_editor.html":
 /*!***************************************************!*\
   !*** ./src/peersocial/peerapp_v2/ace_editor.html ***!
@@ -27256,6 +27385,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         var hashSplit = _self.currentState.hash.split("?")[0].split("~")
         var _hash = hashSplit.shift().substring(1);
         hashSplit = hashSplit.join("~")
+        if(_hash == "index.html") _hash = "home";
         if(appState.$hash._events[_hash]){
             appState.$hash.emit(_hash, hashSplit, appState.currentState, appState.lastHash, function onDestroy(fn){
                 if(typeof fn == "function") _self.currentState_destructors.push(fn);
@@ -27665,10 +27795,14 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     
                     
                     imports.state.$hash.on("home",function(){
-                        if(!imports.gun.user().is){
-                            $("#main-container").html(__webpack_require__(/*! ./welcome.html */ "./src/peersocial/welcome/welcome.html"))
+                        if(!imports.app.nw){
+                            if(!imports.gun.user().is){
+                                $("#main-container").html(__webpack_require__(/*! ./welcome.html */ "./src/peersocial/welcome/welcome.html"))
+                            }else{
+                                $("#main-container").html(__webpack_require__(/*! ./welcome-user.html */ "./src/peersocial/welcome/welcome-user.html"))
+                            }
                         }else{
-                            $("#main-container").html(__webpack_require__(/*! ./welcome-user.html */ "./src/peersocial/welcome/welcome-user.html"))
+                            imports.app.emit("nw-home");
                         }
                     })
                     

@@ -22,15 +22,12 @@
     "gun": "https://github.com/amark/gun/archive/master.tar.gz",
     "html-webpack-plugin": "^4.3.0",
     "nw": "^0.47.2-sdk",
+    "nw-builder": "^3.5.7",
     "raw-loader": "^4.0.1",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
   },
   "engines": {
     "node": "12.x"
-  },
-  "main": "nwjs.html",
-  "window": {
-    "show": false
   }
 }

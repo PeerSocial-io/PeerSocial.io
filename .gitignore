@@ -10,3 +10,6 @@ radata*
 package-lock.json
 
 public/fido2-onlykey/
+
+build/
+cache/

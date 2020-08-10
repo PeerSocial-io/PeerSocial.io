@@ -1,0 +1,52 @@
+<div class="container bootstrap snippet">
+    <div class="row" style="padding-bottom:1px;">
+        <div class="col-sm-10"><div style="border: 1px solid #ddd;display:inline-block;"><h1 style="display: inline;"><%= me.alias %></h1>#<%= me.uid32 %></div></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="text-center">
+                <img src="<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" class="avatar img-circle img-thumbnail" alt="avatar">
+                <h6>Upload a different photo...</h6>
+                <input type="file" class="text-center center-block file-upload">
+            </div>
+            </hr><br>
+
+            <div>
+                <a class="btn btn-secondary btn-block" href="/peer~<%= me.uid32 %>@<%= me.alias %>">View Public Profile</a>
+            </div><br>
+            
+        </div>
+        <style>
+            .tab-content {
+                border-left: 1px solid #ddd;
+                border-right: 1px solid #ddd;
+                border-bottom: 1px solid #ddd;
+                padding: 10px;
+            }
+            
+            .nav-tabs > .nav-item > .nav-link {
+                border-top: 1px solid #ddd;
+                border-left: 1px solid #ddd;
+                border-right: 1px solid #ddd;
+            }
+
+            .nav-tabs {
+                margin-bottom: 0;
+            }
+        </style>
+        <div class="col-sm-9">
+            
+            <ul class="nav nav-tabs" id="profileTabs">
+                <!--<li class="nav-item">-->
+                <!--    <a class="nav-link" href="/profile">Profile</a>-->
+                <!--</li>-->
+            </ul>
+
+            <div class="tab-content">
+                <!--/tab-pane-->
+                <!--<div class="tab-pane" role="tabpanel" id="profile-main2">page2</div>-->
+                
+            </div>
+        </div>
+    </div>
+</div>

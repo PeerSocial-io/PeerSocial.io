@@ -1,0 +1,22 @@
+<div class="container">
+        
+    <div>
+        <%
+        
+        var gunStatus = nw_app_core.gun_server.listening;
+        var activeColor = gunStatus ? "green" : "red";
+        var gunStatus = gunStatus ? "Active" : "Down";
+        
+        
+        %>
+        <h1>Gun Local Server Status: <font color="<%= activeColor %>"><%= gunStatus %></font></h1>
+        <hr/>
+        
+        <br/>
+        
+        <div id="status-interval"></div>
+        
+    </div>
+
+</div>
+

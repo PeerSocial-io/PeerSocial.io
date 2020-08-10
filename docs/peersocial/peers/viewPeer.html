@@ -1,0 +1,130 @@
+<div class="container bootstrap snippet">
+    <div class="row">
+        <div class="col-sm-3">
+            <!--left col-->
+
+
+            <div class="text-center">
+                <img src="<%- (user.profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" class="avatar img-circle img-thumbnail" alt="avatar">
+            </div><br/>
+            <div class="row" style="padding-bottom:1px;">
+                <div class="col-sm-10"><div style="border: 1px solid #ddd;display:inline-block;"><h1 style="display: inline;"><%= user.alias %></h1>#<%= user.uid32 %></div></div>
+            </div><br/>
+            <ul class="list-group text-center">
+                <li class="list-group-item"><%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>
+                <li class="list-group-item"><%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>
+            </ul>
+            <hr/>
+
+            <!--<div class="panel panel-default">-->
+            <!--    <div class="panel-heading">-->
+            <!--        <span><%- (user.profile && user.profile.first_name ? user.profile.first_name :'') %></span>-->
+            <!--        <span><%- (user.profile && user.profile.last_name ? user.profile.last_name :'') %></span></div>-->
+            <!--    <div class="panel-body">-->
+
+            <!--        <span><%- (user.profile && user.profile.location ? user.profile.location :'') %></span>-->
+            <!--    </div>-->
+            <!--</div>-->
+
+            <% if(!notLoggedIn)
+                if(!isMyPeer){ %>
+                <a href="javascript:undefined;" class="btn btn-block btn-primary" id="addPeer">Add Peer</a>
+            <% }else{ %>
+                <a href="javascript:undefined;" class="btn btn-block btn-danger" id="removePeer">Remove Peer</a>
+            <% } %>
+            <br/>
+        </div>
+        <!--/col-3-->
+        <style>
+            .tab-content {
+                border-left: 1px solid #ddd;
+                border-right: 1px solid #ddd;
+                border-bottom: 1px solid #ddd;
+                padding: 10px;
+            }
+
+            .nav-tabs {
+                margin-bottom: 0;
+            }
+        </style>
+        <div class="col-sm-9">
+
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <!--<li class="nav-item">-->
+                <!--    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#profile-main1" role="tab" aria-controls="home" aria-selected="true">Profile</a>-->
+                <!--</li>-->
+                <!--<li class="nav-item">-->
+                <!--    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile-main2" role="tab" aria-controls="profile" aria-selected="false">Peer Apps</a>-->
+                <!--</li>-->
+                <li class="nav-item">
+                    <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile-apps" role="tab" aria-controls="profile-apps" aria-selected="false">Peer Apps V2</a>
+                </li>
+                <!--<li class="nav-item">-->
+                <!--    <a class="nav-link" id="messages-tab" data-toggle="tab" href="#profile-main3" role="tab" aria-controls="messages" aria-selected="false">Profile3</a>-->
+                <!--</li>-->
+            </ul>
+
+            <div class="tab-content">
+                <!--<div class="tab-pane active" role="tabpanel" id="profile-main1">-->
+
+                <!--    <div class="container">-->
+
+                <!--        <ul class="list-group">-->
+                <!--            <li class="list-group-item">Display Name: <%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>-->
+                <!--            <li class="list-group-item">Tagline: <%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>-->
+                <!--        </ul>-->
+
+                <!--    </div>-->
+
+                <!--</div>-->
+                <!--/tab-pane-->
+                <% if(false){ %>
+                <div class="tab-pan" role="tabpanel" id="profile-main2">
+                    <div class="container">
+                        <% if(user.peer_apps_dev){ 
+                            for(var i in user.peer_apps_dev){
+                            if(i == "_" || !user.peer_apps_dev[i]) continue;
+                                var peerapp = await $user.get("profile").get("peerappsDev").get(i);
+                                if(peerapp){
+                        %>
+                        <ul class="list-group">
+                            <li class="list-group-item"><%= (peerapp.title ? peerapp.title : "untitled") %>
+                            </span> <span class="float-right"><a class="btn btn-primary" target="about:blank" href="/peerapp-view~<%= user.uid32 %>@<%= user.alias %>~<%= (peerapp.title ? peerapp.title : "untitled") %>">View</a></span></li>
+                        </ul>
+                        <% }}} %>
+                    </div>
+
+                </div>
+                <% } %>
+                
+                <div class="tab-pane active" role="tabpanel" id="profile-apps">
+
+                    
+                    <div class="container">
+                        
+                        <% if(user.peer_apps_v2){ 
+                            for(var i in user.peer_apps_v2){
+                            if(i == "_" || !user.peer_apps_v2[i]) continue;
+                                var peerapp = await $user.get("profile").get("peerapps_v2").get(i);
+                                if(peerapp){
+                        %>
+                        <ul class="list-group">
+                            <li class="list-group-item"><%= (peerapp.title ? peerapp.title : "untitled") %>
+                            </span> <span class="float-right"><a class="btn btn-primary" target="about:blank" href="/peerapp2-open~<%= user.uid32 %>@<%= user.alias %>~<%= (peerapp.title ? peerapp.title : "ERROR!") %>">View</a></span></li>
+                        </ul><br/>
+                        <% }}} %>
+                    </div>
+
+                </div>
+                <!--/tab-pane-->
+                <!--<div class="tab-pane" role="tabpanel" id="profile-main3">page3</div>-->
+
+            </div>
+            <!--/tab-pane-->
+        </div>
+        <!--/tab-content-->
+
+    </div>
+    <!--/col-9-->
+</div>
+<!--/row-->
