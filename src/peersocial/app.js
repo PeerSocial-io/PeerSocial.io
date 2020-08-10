@@ -26,8 +26,9 @@ var config = [
     
 ];
 
-if(window.global && window.global.nw_app_core)
-    config.push(require("./nw_app/nw_app"))
+if(window.global && window.global.nw_app_core){
+    config.push(require("./nw_app/nw_app"));
+}
 
 (function() {
 
