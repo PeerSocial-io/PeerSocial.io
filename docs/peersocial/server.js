@@ -88,8 +88,12 @@ module.exports = {
                 };
             }
             var gun = Gun(gunOptions);
+            
+            var io = require('socket.io')(http)
 
-
+            io.on('connection', function(socket) {
+                console.log("socket.io connection")
+            });
             if (process.env.ISMASTERPEER) {}
             else {
                 // var mesh = gun.back('opt.mesh'); // DAM;

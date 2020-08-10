@@ -24,6 +24,7 @@
     "nw": "^0.47.2-sdk",
     "nw-builder": "^3.5.7",
     "raw-loader": "^4.0.1",
+    "socket.io": "^2.3.0",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
   },
