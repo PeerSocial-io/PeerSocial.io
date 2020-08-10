@@ -11268,7 +11268,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     appPlugin.consumes = ["app", "provable"];
     appPlugin.provides = ["gun"];
 
-    if (window.nw)
+    if(window.global && window.global.nw_app_core)
         appPlugin.consumes.push("nw_app");
 
     return appPlugin;
