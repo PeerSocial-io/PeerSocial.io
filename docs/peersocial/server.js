@@ -1,6 +1,6 @@
 module.exports = {
     start: function(nw_app, $console, nwCallback) {
-        var console;
+        // var console;
         if($console)
             console =  $console;
         // else
@@ -65,7 +65,7 @@ module.exports = {
             var app = express();
 
             app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), { maxAge: casheControl }));
-            app.use(express.static(__dirname + "/public", { maxAge: casheControl }));
+            app.use(express.static(require("path").join(__dirname, 'docs'), { maxAge: casheControl }));
             app.use(Gun.serve);
 
             var server = http.createServer(app).listen(port);
@@ -98,7 +98,7 @@ module.exports = {
             require("../../server_api/gunfs/gunfs.js")(gun, app);
 
             app.use(function(req, res, next) {
-                res.sendFile(require("path").join(__dirname, 'public', 'index.html'));
+                res.sendFile(require("path").join(__dirname, 'docs', 'index.html'));
             });
 
             console.log('Server started on port ' + port + ' with /gun');
