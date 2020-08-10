@@ -13,8 +13,8 @@ module.exports = {
         
         require("gun/sea"); 
 
-        Gun.log = console.log;
-        Gun.log.once = console.log;
+        // Gun.log = console.log;
+        // Gun.log.once = console.log;
 
 
         if (nw_app) {
