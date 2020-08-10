@@ -98,7 +98,7 @@ module.exports = {
             require("../../server_api/gunfs/gunfs.js")(gun, app);
 
             app.use(function(req, res, next) {
-                res.sendFile(require("path").join(__dirname, 'docs', 'index.html'));
+                res.sendFile(require("path").join(__dirname, '../../docs', 'index.html'));
             });
 
             console.log('Server started on port ' + port + ' with /gun');
