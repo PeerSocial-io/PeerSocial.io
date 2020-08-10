@@ -89,7 +89,7 @@ module.exports = {
                 // var mesh = gun.back('opt.mesh'); // DAM;
                 // mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
             }
-            require("./server_api/gunfs/gunfs.js")(gun, app);
+            require("../../server_api/gunfs/gunfs.js")(gun, app);
 
             app.use(function(req, res, next) {
                 res.sendFile(require("path").join(__dirname, 'public', 'index.html'));
