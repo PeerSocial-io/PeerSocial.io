@@ -3,8 +3,8 @@ module.exports = {
         var console;
         if($console)
             console =  $console;
-        else
-            console = window.console;
+        // else
+            // console = window.console;
             
             
         var port = process.env.PORT || 8765;

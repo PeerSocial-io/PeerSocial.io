@@ -1,6 +1,6 @@
 module.exports = {
     start: function(nw_app, $console, nwCallback) {
-        var console;
+        // var console;
         if($console)
             console =  $console;
         // else
