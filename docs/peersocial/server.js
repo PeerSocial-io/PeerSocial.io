@@ -65,7 +65,7 @@ module.exports = {
             var app = express();
 
             app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), { maxAge: casheControl }));
-            app.use(express.static(require("path").join(__dirname, 'docs'), { maxAge: casheControl }));
+            app.use(express.static(require("path").join(__dirname,'../../docs'), { maxAge: casheControl }));
             app.use(Gun.serve);
 
             var server = http.createServer(app).listen(port);
