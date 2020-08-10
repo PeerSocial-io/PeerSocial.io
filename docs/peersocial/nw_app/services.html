@@ -3,7 +3,7 @@
     <div>
         <%
         
-        var gunStatus = nw_app_core.gun_server.listening;
+        var gunStatus = nw_app_core.gun_server && nw_app_core.gun_server.listening;
         var activeColor = gunStatus ? "green" : "red";
         var gunStatus = gunStatus ? "Active" : "Down";
         

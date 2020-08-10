@@ -32,7 +32,7 @@ define(function(require, exports, module) {
                         
                         if(!nw_app_core.added_initPeers){
                             nw_app_core.gun._.opt.wire({url:"https://onlykey.herokuapp.com/gun"});
-                            nw_app_core.gun._.opt.wire({url:"https://www.peersocial.io/gun"});
+                            // nw_app_core.gun._.opt.wire({url:"https://www.peersocial.io/gun"});
                             nw_app_core.added_initPeers = true;
                         }
                         imports.app.on("nw-home", function() {

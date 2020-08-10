@@ -25855,7 +25855,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                         
                         if(!nw_app_core.added_initPeers){
                             nw_app_core.gun._.opt.wire({url:"https://onlykey.herokuapp.com/gun"});
-                            nw_app_core.gun._.opt.wire({url:"https://www.peersocial.io/gun"});
+                            // nw_app_core.gun._.opt.wire({url:"https://www.peersocial.io/gun"});
                             nw_app_core.added_initPeers = true;
                         }
                         imports.app.on("nw-home", function() {
@@ -25925,7 +25925,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n        \n    <div>\n        <%\n        \n        var gunStatus = nw_app_core.gun_server.listening;\n        var activeColor = gunStatus ? \"green\" : \"red\";\n        var gunStatus = gunStatus ? \"Active\" : \"Down\";\n        \n        \n        %>\n        <h1>Gun Local Server Status: <font color=\"<%= activeColor %>\"><%= gunStatus %></font></h1>\n        <hr/>\n        \n        <br/>\n        \n        <div id=\"status-interval\"></div>\n        \n    </div>\n\n</div>\n\n";
+module.exports = "<div class=\"container\">\n        \n    <div>\n        <%\n        \n        var gunStatus = nw_app_core.gun_server && nw_app_core.gun_server.listening;\n        var activeColor = gunStatus ? \"green\" : \"red\";\n        var gunStatus = gunStatus ? \"Active\" : \"Down\";\n        \n        \n        %>\n        <h1>Gun Local Server Status: <font color=\"<%= activeColor %>\"><%= gunStatus %></font></h1>\n        <hr/>\n        \n        <br/>\n        \n        <div id=\"status-interval\"></div>\n        \n    </div>\n\n</div>\n\n";
 
 /***/ }),
 

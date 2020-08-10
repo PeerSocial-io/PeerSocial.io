@@ -109,7 +109,7 @@ function gunServerSetup(cb) {
     var dataDir = global.__dirname + "/../radata";
     console.log(dataDir)
     var gunOptions = {
-      // peers: ["https://www.peersocial.io/gun"],
+      peers: ["https://www.peersocial.io/gun"],
       file: dataDir,
       radisk: true,
       // localStorage: true,
