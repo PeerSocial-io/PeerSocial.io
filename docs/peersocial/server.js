@@ -1,6 +1,12 @@
 module.exports = {
-    start: function(nw_app, console, nwCallback) {
-        
+    start: function(nw_app, $console, nwCallback) {
+        var console;
+        if($console)
+            console =  $console;
+        else
+            console = window.console;
+            
+            
         var port = process.env.PORT || 8765;
 
         var http = require('http');
