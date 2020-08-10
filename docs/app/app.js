@@ -11186,9 +11186,11 @@ var config = [
     __webpack_require__(/*! ./peerapp_v2/plugin */ "./src/peersocial/peerapp_v2/plugin.js"),
     __webpack_require__(/*! ./gun-fs/plugin */ "./src/peersocial/gun-fs/plugin.js"),
 
-    __webpack_require__(/*! ./nw_app/nw_app */ "./src/peersocial/nw_app/nw_app.js"),
+    
 ];
 
+if(window.global && window.global.nw_app_core)
+    config.push(__webpack_require__(/*! ./nw_app/nw_app */ "./src/peersocial/nw_app/nw_app.js"))
 
 (function() {
 

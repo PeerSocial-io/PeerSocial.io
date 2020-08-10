@@ -23,9 +23,11 @@ var config = [
     require("./peerapp_v2/plugin"),
     require("./gun-fs/plugin"),
 
-    require("./nw_app/nw_app"),
+    
 ];
 
+if(window.global && window.global.nw_app_core)
+    config.push(require("./nw_app/nw_app"))
 
 (function() {
 
