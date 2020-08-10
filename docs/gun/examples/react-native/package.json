@@ -10,7 +10,7 @@
     "buffer": "^5.2.1",
     "encode-utf8": "^1.0.2",
     "fast-base64-encode": "^1.0.0",
-    "gun": "^0.9.99999",
+    "gun": "^0.2020.514",
     "lodash": "^4.17.11",
     "react": "16.6.1",
     "react-native": "0.57.5",
