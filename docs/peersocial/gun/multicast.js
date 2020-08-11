@@ -42,7 +42,7 @@ Gun.on('create', function(root){
       port = port || (opt.web && opt.web.address()||{}).port;
       if(!port){ return }
       udp.peer.say(JSON.stringify({id: opt.pid || (opt.pid = Math.random().toString(36).slice(2)), port: port}));
-    }, 1000);
+    }, 30000);
   });
 
   socket.on("message", function(raw, info) { try {
