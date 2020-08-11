@@ -15,11 +15,11 @@ let plugins = [
             //Note:- No wildcard is specified hence will copy all files and folders
             from: './src', //Will resolve to RepoDir/src/assets 
             to: './' //Copies all files from above dest to dist/assets
-        },{
+        }, {
             //Note:- No wildcard is specified hence will copy all files and folders
             from: './node_modules/gun', //Will resolve to RepoDir/src/assets 
             to: './gun' //Copies all files from above dest to dist/assets
-        },]
+        }, ]
     }),
 
     new HtmlWebpackPlugin({
@@ -43,8 +43,9 @@ module.exports = {
         path: path.resolve(__dirname, './docs'),
         filename: './app/app.js'
     },
-    externals: {
-        'server': 'commonjs2 fs-extra',
+    externals: { 
+        fs: "commonjs fs",
+        path: "commonjs path",
     },
     plugins: plugins,
     module: {
