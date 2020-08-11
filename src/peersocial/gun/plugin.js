@@ -50,7 +50,9 @@ define(function(require, exports, module) {
             gun = imports.nw_app.gun;
         }
 
-
+        var mesh = gun.back('opt.mesh'); // DAM;
+        mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
+          
         function getPubData(pub) {
             return new Promise(resolve => {
                 gun.get(pub).once(resolve);
