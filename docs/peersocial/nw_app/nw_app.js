@@ -42,9 +42,11 @@ define(function(require, exports, module) {
                         $("#navbar-nav-right").hide();
                         $("#app-footer").hide();
                         
-                        var chart, areaSeries, areaSeriesData = {
+                        var chart, areaSeriesData = {
                             line1:[],
-                            line2:[]
+                            line2:[],
+                            line3:[],
+                            line4:[]
                         };
                         
                         imports.app.ejs.render(require("./services.html"), {
@@ -68,10 +70,23 @@ define(function(require, exports, module) {
                             });
 
 
-                            areaSeries = chart.addAreaSeries({
-                                topColor: 'rgba(245, 124, 0, 0.4)',
-                                bottomColor: 'rgba(245, 124, 0, 0.1)',
+                            var areaSeries1 = chart.addAreaSeries({
                                 lineColor: 'rgba(245, 124, 0, 1)',
+                                lineWidth: 2,
+                            });
+
+                            var areaSeries2 = chart.addAreaSeries({
+                                lineColor: 'rgba(124, 245,  0, 1)',
+                                lineWidth: 2,
+                            });
+                            
+                            var areaSeries3 = chart.addAreaSeries({
+                                lineColor: 'rgba(0, 245, 124, 1)',
+                                lineWidth: 2,
+                            });
+                            
+                            var areaSeries4 = chart.addAreaSeries({
+                                lineColor: 'rgba(0, 124, 245, 1)',
                                 lineWidth: 2,
                             });
 
@@ -91,10 +106,18 @@ define(function(require, exports, module) {
                                 
                                 var thisTime = data.up.time;
                                 
-                                areaSeriesData.line1.push({time:thisTime, value: data.memory.totalmem - data.memory.freemem })
+                                areaSeriesData.line1.push({time:thisTime, value: data.dam.in.count })
+                                areaSeriesData.line2.push({time:thisTime, value: data.dam.out.count })
                                 
                                 
-                                areaSeries.setData(areaSeriesData.line1);
+                                areaSeriesData.line3.push({time:thisTime, value: data.rad.get.count })
+                                areaSeriesData.line4.push({time:thisTime, value: data.rad.put.count })
+                                
+                                
+                                areaSeries1.setData(areaSeriesData.line1);
+                                areaSeries2.setData(areaSeriesData.line2);
+                                areaSeries3.setData(areaSeriesData.line3);
+                                areaSeries4.setData(areaSeriesData.line4);
                                 console.log(data)
                             }
                         });
