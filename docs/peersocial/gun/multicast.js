@@ -34,7 +34,10 @@ Gun.on('create', function(root){
       if(udp.pack <= buf.length){ // message too big!!!
         return;
       }
-      socket.send(buf, 0, buf.length, udp.port, udp.address, noop);
+      // socket.send(buf, 0, buf.length, udp.port, udp.address, noop);
+      try{
+        socket.send(buf, 0, buf.length, udp.port, udp.address, noop);
+      }catch(e){}
     }
     console.log('Multicast on', udp.peer.id);
     // return; // below code only needed for when WebSocket connections desired!
