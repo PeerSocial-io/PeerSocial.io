@@ -11426,7 +11426,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             // }
 
             // }, 1)
-            // window.gun = gun;
+            window.gun = gun;
 
         }
         else {
