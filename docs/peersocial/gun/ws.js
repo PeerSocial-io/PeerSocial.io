@@ -86,6 +86,7 @@ Gun.on('opt', function mount(ctx){
 	}
 	function open(peer, as){
 		if(!peer || !peer.url){ return }
+		if(!(peer.url.indexOf("http") == 0 || peer.url.indexOf("ws") == 0)){ return; }
 		var url = peer.url.replace('http', 'ws');
 		var wire = peer.wire = new WebSocket(url);
 		wire.on('close', function(){
