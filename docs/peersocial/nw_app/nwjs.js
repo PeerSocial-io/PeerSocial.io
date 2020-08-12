@@ -11,7 +11,7 @@ Object.defineProperty(nw_app_core, "stats", {
 
     var path = require("path");
     var __dirname = window.global.__dirname;
-    var fileName = path.resolve(__dirname, '../radata.stats');
+    var fileName = path.resolve(__dirname, '../store/radata.stats');
     var fs = require("fs");
 
     return JSON.parse(fs.readFileSync(fileName, "utf8"));
@@ -120,7 +120,7 @@ function gunServerSetup(cb) {
 
     console.log("Local HTTP. GunServer Started.")
     nw_app_core.gun_server = server;
-    var dataDir = global.__dirname + "/../radata";
+    var dataDir = global.__dirname + "/../store/radata";
     console.log(dataDir)
     var gunOptions = {
       peers: ["https://www.peersocial.io/gun"],

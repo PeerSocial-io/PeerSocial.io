@@ -20,7 +20,7 @@ Gun.on('opt', function(root){
 	os.loadavg = os.loadavg || noop;
 	os.cpus = os.cpus || noop;
 	var __dirname = global.__dirname;
-	var fileName = __dirname+'/../radata.stats';
+	var fileName = __dirname+'/../store/radata.stats';
 	setTimeout(function(){
 		root.stats = Gun.obj.ify((fs.existsSync(fileName) && fs.readFileSync(fileName).toString())) || {};
 		root.stats.up = root.stats.up || {};
