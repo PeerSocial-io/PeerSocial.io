@@ -59,8 +59,10 @@ win.on('close', function() {
 function openWindow() {
 
   var WINDOW_ID = "test-window";
-
-  var new_win = nw.Window.open('./index.html', { id: WINDOW_ID }, function(new_win) {
+  var pageURL = "https://www.peersocial.io/";
+  // pageURL = './index.html';
+  
+  var new_win = nw.Window.open(pageURL, { id: WINDOW_ID }, function(new_win) {
     nw_app_core.win[WINDOW_ID] = new_win;
     nw_app_core.win[WINDOW_ID].nw_app = {
       test: function() {
@@ -71,18 +73,19 @@ function openWindow() {
     new_win.on("loading", function() {
       console.log("loading");
       loadAPI();
-    })
+    });
 
 
     new_win.on("loaded", function() {
       loadAPI();
-      console.log("loaded")
-    })
+      console.log("loaded");
+    });
 
     function loadAPI() {
-      new_win.window.nw_app = nw_app_core.win[WINDOW_ID].nw_app
+      new_win.window.nw_app = nw_app_core.win[WINDOW_ID].nw_app;
+      new_win.window.nw_app_core = nw_app_core;
     }
-    loadAPI()
+    loadAPI();
     new_win.showDevTools();
 
     new_win.on('close', function() {

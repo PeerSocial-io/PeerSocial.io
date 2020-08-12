@@ -11307,28 +11307,29 @@ var config = [
     
 ];
 
-if(window.global && window.global.nw_app_core){
-    config.push(__webpack_require__(/*! ./nw_app/nw_app */ "./src/peersocial/nw_app/nw_app.js"));
-}
+setTimeout(function() {
 
-(function() {
-
-    appPlugin.consumes = ["hub"];
-    appPlugin.provides = ["app", "provable"];
-
-    function appPlugin(options, imports, register) {
-        var app = new events.EventEmitter();
-        app.nw = window.nw;
-        register(null, {
-            app: app,
-            provable: provable,
-        });
+    if(window.nw_app_core){
+        config.push(__webpack_require__(/*! ./nw_app/nw_app */ "./src/peersocial/nw_app/nw_app.js"));
     }
 
-    config.push(appPlugin);
-})();
+    (function() {
 
-setTimeout(function() {
+        appPlugin.consumes = ["hub"];
+        appPlugin.provides = ["app", "provable"];
+
+        function appPlugin(options, imports, register) {
+            var app = new events.EventEmitter();
+            app.nw = window.nw;
+            register(null, {
+                app: app,
+                provable: provable,
+            });
+        }
+
+        config.push(appPlugin);
+    })();
+
     architect(config, function(err, app) {
         if (err) return console.error(err.message);
         for (var i in app.services) {
@@ -11340,7 +11341,7 @@ setTimeout(function() {
 
 
     });
-}, 100)
+}, 10000)
 
 /***/ }),
 
@@ -36654,7 +36655,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         var nw = imports.app;
         window.name = "testing_ID"
-        var nw_app_core = window.global.nw_app_core;
+        
+        var nw_app_core = window.nw_app_core;
         // // console.log(window.nw_app.test())
         // var r = imports.app.nw.require("./nw_app_require.js");
         // r.resolve("./nw_app");
@@ -36823,7 +36825,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n        \n    <div>\n        <%\n        \n        var gunStatus = nw_app_core.gun_server && nw_app_core.gun_server.listening;\n        var activeColor = gunStatus ? \"green\" : \"red\";\n        var gunStatus = gunStatus ? \"Active\" : \"Down\";\n        \n        \n        %>\n        <h1>Gun Local Server Status: <font color=\"<%= activeColor %>\"><%= gunStatus %></font></h1>\n        <hr/>\n        \n        <br/>\n        \n        <div id=\"chart\"></div>\n        <div id=\"status-interval\"></div>\n        \n    </div>\n\n</div>\n\n";
+module.exports = "<div class=\"container\">\n\n    <div>\n        <%\n        \n        var gunStatus = nw_app_core.gun_server && nw_app_core.gun_server.listening;\n        var activeColor = gunStatus ? \"green\" : \"red\";\n        var gunStatus = gunStatus ? \"Active\" : \"Down\";\n        \n        \n        %>\n            <h1>Gun Local Server Status:\n                <font color=\"<%= activeColor %>\">\n                    <%= gunStatus %>\n                </font>\n            </h1>\n            <hr/>\n\n            <br/>\n            <style>\n                .floating-tooltip-2 {\n                    width: 96px;\n                    height: 80px;\n                    position: absolute;\n                    display: none;\n                    padding: 8px;\n                    box-sizing: border-box;\n                    font-size: 12px;\n                    color: #131722;\n                    background-color: rgba(255, 255, 255, 1);\n                    text-align: left;\n                    z-index: 1000;\n                    top: 12px;\n                    left: 12px;\n                    pointer-events: none;\n                    border: 1px solid rgba(0, 150, 136, 1);\n                    border-radius: 2px;\n                }\n            </style>\n            <div id=\"chart\"></div>\n            <div id=\"status-interval\"></div>\n\n    </div>\n\n</div>\n";
 
 /***/ }),
 

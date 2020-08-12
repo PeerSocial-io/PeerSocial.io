@@ -11,7 +11,8 @@ define(function(require, exports, module) {
 
         var nw = imports.app;
         window.name = "testing_ID"
-        var nw_app_core = window.global.nw_app_core;
+        
+        var nw_app_core = window.nw_app_core;
         // // console.log(window.nw_app.test())
         // var r = imports.app.nw.require("./nw_app_require.js");
         // r.resolve("./nw_app");

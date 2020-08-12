@@ -26,28 +26,29 @@ var config = [
     
 ];
 
-if(window.global && window.global.nw_app_core){
-    config.push(require("./nw_app/nw_app"));
-}
+setTimeout(function() {
 
-(function() {
-
-    appPlugin.consumes = ["hub"];
-    appPlugin.provides = ["app", "provable"];
-
-    function appPlugin(options, imports, register) {
-        var app = new events.EventEmitter();
-        app.nw = window.nw;
-        register(null, {
-            app: app,
-            provable: provable,
-        });
+    if(window.nw_app_core){
+        config.push(require("./nw_app/nw_app"));
     }
 
-    config.push(appPlugin);
-})();
+    (function() {
 
-setTimeout(function() {
+        appPlugin.consumes = ["hub"];
+        appPlugin.provides = ["app", "provable"];
+
+        function appPlugin(options, imports, register) {
+            var app = new events.EventEmitter();
+            app.nw = window.nw;
+            register(null, {
+                app: app,
+                provable: provable,
+            });
+        }
+
+        config.push(appPlugin);
+    })();
+
     architect(config, function(err, app) {
         if (err) return console.error(err.message);
         for (var i in app.services) {
@@ -59,4 +60,4 @@ setTimeout(function() {
 
 
     });
-}, 100)
+}, 10000)
