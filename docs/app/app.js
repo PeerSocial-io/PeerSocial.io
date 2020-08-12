@@ -36737,17 +36737,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
                             // areaSeries.setData([]);
                             
-                            var path = __webpack_require__(/*! path */ "path");
-                        	var __dirname = window.global.__dirname;
-                        	var fileName = path.resolve(__dirname, '../radata.stats');
-                            var fs = __webpack_require__(/*! fs */ "fs");
-                            
-                            
-                            setInterval(loadData,15000)
-                            loadData();
                             
                             function loadData(){
-                                var data = JSON.parse(fs.readFileSync(fileName,"utf8"));
+                                var data = nw_app_core.stats;
                                 
                                 var thisTime = data.up.time;
                                 
@@ -38756,28 +38748,6 @@ module.exports = "<div class=\"container\">\n        \n    <div class=\"jumbotro
 
 module.exports = __webpack_require__(/*! ./src/peersocial/app.js */"./src/peersocial/app.js");
 
-
-/***/ }),
-
-/***/ "fs":
-/*!*********************!*\
-  !*** external "fs" ***!
-  \*********************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = require("fs");
-
-/***/ }),
-
-/***/ "path":
-/*!***********************!*\
-  !*** external "path" ***!
-  \***********************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = require("path");
 
 /***/ })
 

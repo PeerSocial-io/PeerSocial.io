@@ -93,17 +93,9 @@ define(function(require, exports, module) {
 
                             // areaSeries.setData([]);
                             
-                            var path = require("path");
-                        	var __dirname = window.global.__dirname;
-                        	var fileName = path.resolve(__dirname, '../radata.stats');
-                            var fs = require("fs");
-                            
-                            
-                            setInterval(loadData,15000)
-                            loadData();
                             
                             function loadData(){
-                                var data = JSON.parse(fs.readFileSync(fileName,"utf8"));
+                                var data = nw_app_core.stats;
                                 
                                 var thisTime = data.up.time;
                                 

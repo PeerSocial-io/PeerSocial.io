@@ -6,6 +6,17 @@ window.global.nw_app_core = new events.EventEmitter();
 var nw_app_core = window.global.nw_app_core;
 nw_app_core.win = {};
 
+Object.defineProperty(nw_app_core, "stats", {
+  get: function() {
+
+    var path = require("path");
+    var __dirname = window.global.__dirname;
+    var fileName = path.resolve(__dirname, '../radata.stats');
+    var fs = require("fs");
+
+    return JSON.parse(fs.readFileSync(fileName, "utf8"));
+  }
+});
 
 var win = nw.Window.get();
 win.showDevTools();
@@ -61,7 +72,7 @@ function openWindow() {
   var WINDOW_ID = "test-window";
   var pageURL = "https://www.peersocial.io/";
   // pageURL = './index.html';
-  
+
   var new_win = nw.Window.open(pageURL, { id: WINDOW_ID }, function(new_win) {
     nw_app_core.win[WINDOW_ID] = new_win;
     nw_app_core.win[WINDOW_ID].nw_app = {
@@ -106,7 +117,7 @@ function gunServerSetup(cb) {
 
   var http = require('http');
   var server = http.createServer().listen(port, function() {
-    
+
     console.log("Local HTTP. GunServer Started.")
     nw_app_core.gun_server = server;
     var dataDir = global.__dirname + "/../radata";
@@ -121,17 +132,17 @@ function gunServerSetup(cb) {
 
     nw_app_core.Gun = Gun;
     nw_app_core.gun = Gun(gunOptions);
-    
-    if(cb) cb()
+
+    if (cb) cb()
   });
 
 }
 
-setTimeout(function(){
-gunServerSetup(function(){
-  lanucher(nw.App.argv);
-})
-},2000)
+setTimeout(function() {
+  gunServerSetup(function() {
+    lanucher(nw.App.argv);
+  })
+}, 2000)
 
 function lanucher(args) {
   // win.show();
