@@ -36658,7 +36658,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         
         var nw_app_core = window.nw_app_core;
         // // console.log(window.nw_app.test())
-        // var r = imports.app.nw.require("./nw_app_require.js");
+        // nw_app_core.require = imports.app.nw.require("./nw_app_require.js");
         // r.resolve("./nw_app");
 
         // var server = r("../server.js");
@@ -36678,7 +36678,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     var gun = nw_app_core.gun;
 
                     if (!nw_app_core.added_initPeers) {
-                        nw_app_core.gun._.opt.wire({ url: "https://onlykey.herokuapp.com/gun" });
+                        nw_app_core.gun._.$.opt("https://onlykey.herokuapp.com/gun"); 
                         // nw_app_core.gun._.opt.wire({url:"https://www.peersocial.io/gun"});
                         nw_app_core.added_initPeers = true;
                     }

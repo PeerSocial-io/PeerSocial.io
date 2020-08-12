@@ -18,6 +18,8 @@ Object.defineProperty(nw_app_core, "stats", {
   }
 });
 
+nw_app_core.require = require;
+
 var win = nw.Window.get();
 win.showDevTools();
 nw.App.on('open', lanucher);

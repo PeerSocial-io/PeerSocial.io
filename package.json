@@ -8,6 +8,7 @@
     "start": "node ./PeerSocial.js",
     "bash": "bash"
   },
+  "main": "./cli.js",
   "keywords": [
     "peersocial"
   ],
@@ -21,6 +22,7 @@
     "express": "*",
     "gun": "https://github.com/amark/gun/archive/master.tar.gz",
     "html-webpack-plugin": "^4.3.0",
+    "minimist": "^1.2.5",
     "nw": "^0.47.2-sdk",
     "nw-builder": "^3.5.7",
     "raw-loader": "^4.0.1",
