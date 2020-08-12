@@ -36737,6 +36737,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
                             // areaSeries.setData([]);
                             
+                            setInterval(loadData,15000);
                             
                             function loadData(){
                                 var data = nw_app_core.stats;

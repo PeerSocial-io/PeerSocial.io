@@ -93,6 +93,7 @@ define(function(require, exports, module) {
 
                             // areaSeries.setData([]);
                             
+                            setInterval(loadData,15000);
                             
                             function loadData(){
                                 var data = nw_app_core.stats;
