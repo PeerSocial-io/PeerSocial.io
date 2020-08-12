@@ -60,4 +60,4 @@ setTimeout(function() {
 
 
     });
-}, 10000)
+}, 500)

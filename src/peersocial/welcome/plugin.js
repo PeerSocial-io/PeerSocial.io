@@ -13,7 +13,7 @@ define(function(require, exports, module) {
                     
                     
                     imports.state.$hash.on("home",function(){
-                        if(!imports.app.nw){
+                        if(!imports.app.nw_app){
                             if(!imports.gun.user().is){
                                 $("#main-container").html(require("./welcome.html"))
                             }else{

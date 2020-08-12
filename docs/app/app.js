@@ -11341,7 +11341,7 @@ setTimeout(function() {
 
 
     });
-}, 10000)
+}, 500)
 
 /***/ }),
 
@@ -38698,7 +38698,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     
                     
                     imports.state.$hash.on("home",function(){
-                        if(!imports.app.nw){
+                        if(!imports.app.nw_app){
                             if(!imports.gun.user().is){
                                 $("#main-container").html(__webpack_require__(/*! ./welcome.html */ "./src/peersocial/welcome/welcome.html"))
                             }else{
