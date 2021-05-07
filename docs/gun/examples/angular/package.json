@@ -25,7 +25,7 @@
     "gun": "https://github.com/amark/gun.git#master",
     "ngx-pipes": "^2.0.5",
     "rxjs": "^5.3.0",
-    "underscore": "^1.8.3",
+    "underscore": "^1.12.1",
     "zone.js": "^0.8.9"
   },
   "devDependencies": {
