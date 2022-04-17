@@ -20,7 +20,7 @@
     "copy-webpack-plugin": "^6.0.3",
     "cross-env": "^7.0.2",
     "express": "*",
-    "gun": "https://github.com/amark/gun/archive/master.tar.gz",
+    "gun": "https://github.com/amark/gun#9d94b433d0e3ec95d29082f27572caa3b3a2505b",
     "html-webpack-plugin": "^4.3.0",
     "minimist": "^1.2.5",
     "node-forge": "^1.3.1",
