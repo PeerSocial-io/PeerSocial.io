@@ -1,5 +1,6 @@
 /* globals nw*/
 
+var DEBUG = false;
 
 
 var clog = console.log;
@@ -39,10 +40,9 @@ function exitHandler(options, exitCode) {
   // if (options.cleanup){
   //   console.log('clean');
   // } 
-  // if (exitCode)  console.log("exitCode",exitCode);
+  if (exitCode)  console.log("exitCode",exitCode);
   if (options.exit) {
 
-    console.log("EXITING");
     var nw_app_core = window.global.nw_app_core;
 
     for (var i in nw_app_core) {
@@ -50,11 +50,13 @@ function exitHandler(options, exitCode) {
       if (new_win && new_win.close)
         new_win.close(true);
     }
-
+  
+    // setTimeout(nw.App.quit,1000);
     // win = nw.Window.get();
-    // win.close(true);
+    win.close(true);
+    console.log("EXITING");
     // setTimeout(process.exit, 1000);
-    process.exit();
+    // return 1;
   }
 }
 
@@ -75,20 +77,13 @@ function openWindow(pageURL, server) {
   // if(!nw_app_core.win[WINDOW_ID])
   nw.Window.open(pageURL, { id: WINDOW_ID, show: true }, function(new_win) {
 
-    new_win.showDevTools();
+    if(DEBUG) new_win.showDevTools();
     nw_app_core.win[WINDOW_ID] = new_win;
-    nw_app_core.win[WINDOW_ID].nw_app = {
-      // Gun: Gun,
-      // gun: gun,
-      finished: async function(data) {
-        console.log("data", data)
-        new_win.close(true);
-        return true;
-      }
-    };
+    
 
     new_win.on("loaded", function() {
-      fire();
+      // fire();
+      loadAPI();
       console.log("loaded");
     });
 
@@ -112,19 +107,21 @@ function openWindow(pageURL, server) {
     }
 
     function loadAPI() {
-      new_win.window.nw_app = nw_app_core.win[WINDOW_ID].nw_app;
-      new_win.window.nw_app_core = nw_app_core;
+      new_win.window.nw_app = new_win;
     }
-    loadAPI();
+    // loadAPI();
 
     new_win.on('close', function() {
       console.log("closed window,", WINDOW_ID)
       this.hide(); // Pretend to be closed already
-      new_win.close(true);
       delete nw_app_core.win[WINDOW_ID];
       server.kill();
+      
+      // new_win.close(true);
       // delete nw_app_core.win[WINDOW_ID];
-      // win.close(); // then close it forcefully
+      win.close(true); // then close it forcefully
+      new_win.close(true);
+      nw.App.quit();
     });
 
   });
@@ -190,7 +187,7 @@ async function launch(args) {
 
   // var port = 8765;//await getPort();
   
-  win.showDevTools();
+  if(DEBUG) win.showDevTools();
 
   findPort(function(port) {
 
@@ -215,6 +212,9 @@ async function launch(args) {
   })
 }
 
+function quitApp(){
+  
+}
 
 setTimeout(function() {
   launch(nw.App.argv);

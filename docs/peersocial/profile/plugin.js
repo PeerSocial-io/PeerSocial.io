@@ -30,7 +30,7 @@ define(function(require, exports, module) {
 
         act.b = function() {
             var next = act.done;
-            user.get(peer_profile_image_key).once(function(peer_profile_image) {
+            user.get("profileImage").once(function(peer_profile_image) {
 
                 if (peer_profile_image && peer_profile_image.err) return next();
 
@@ -84,7 +84,7 @@ define(function(require, exports, module) {
 
                     imports.app.on("login", function() {
                         $("#navbar-nav-right").prepend(
-                            imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "MyProfile" })
+                            imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })
                         );
                     });
 

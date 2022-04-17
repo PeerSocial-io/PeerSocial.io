@@ -13,15 +13,17 @@ define(function(require, exports, module) {
                     
                     
                     imports.state.$hash.on("home",function(){
-                        if(!imports.app.nw_app){
-                            if(!imports.gun.user().is){
-                                $("#main-container").html(require("./welcome.html"))
-                            }else{
-                                $("#main-container").html(require("./welcome-user.html"))
-                            }
+                        // if(!imports.app.nw_app){
+                        if(!imports.gun.user().is){
+                            $("#main-container").html(require("./welcome.html"))
                         }else{
-                            imports.app.emit("nw-home");
+                            $("#main-container").html(require("./welcome-user.html"))
                         }
+                        // }else{
+                        //     imports.app.emit("nw-home");
+                        if(imports.app.nw_app) 
+                            imports.app.emit("nw_app");
+                        // }
                     })
                     
                     

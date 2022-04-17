@@ -93,7 +93,7 @@ module.exports = {
             var server = (use_https ? https : http).createServer(http_options, app).listen(port);
 
             var gunOptions = {
-                peers: ["https://www.peersocial.io/gun"],
+                peers: ["https://www.peersocial.io/gun", "https://dev.peersocial.io/gun"],
                 file: 'radata',
                 web: server,
                 super: false,

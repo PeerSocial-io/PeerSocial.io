@@ -7161,6 +7161,7 @@ var config = [
     __webpack_require__(/*! ./user/plugin */ "./src/peersocial/user/plugin.js"),
     __webpack_require__(/*! ./profile/plugin */ "./src/peersocial/profile/plugin.js"),
     __webpack_require__(/*! ./peers/plugin */ "./src/peersocial/peers/plugin.js"),
+    __webpack_require__(/*! ./posts/plugin */ "./src/peersocial/posts/plugin.js"),
     //"peerapp/plugin",
     // require("./peerapp_v2/plugin"),
     // require("./gun-fs/plugin"),
@@ -7170,9 +7171,9 @@ var config = [
 
 setTimeout(function() {
 
-    // if(window.nw_app_core){
-    //     config.push(require("./nw_app/nw_app"));
-    // }
+    if(window.nw_app){
+        config.push(__webpack_require__(/*! ./nw_app/nw_app */ "./src/peersocial/nw_app/nw_app.js"));
+    }
 
     (function() {
 
@@ -21753,6 +21754,51 @@ var assert=require("assert");exports.createSeed=function(t,e){var r="";t=t||32,e
 
 /***/ }),
 
+/***/ "./src/peersocial/nw_app/nw_app.js":
+/*!*****************************************!*\
+  !*** ./src/peersocial/nw_app/nw_app.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
+
+    appPlugin.consumes = ["app"];
+    appPlugin.provides = ["nw_app"];
+
+    return appPlugin;
+
+    function appPlugin(options, imports, register) {
+        
+        var nw = imports.app;
+        window.name = "PeerSocial"
+        
+        var nw_app = window.nw_app;
+        // // console.log(window.nw_app.test())
+        // nw_app_core.require = imports.app.nw.require("./nw_app_require.js");
+        // r.resolve("./nw_app");
+
+        // var server = r("../server.js");
+
+
+        // server.start(nw_app_core, console, function() {
+
+        register(null, {
+            nw_app: {
+                init: function() {
+                    console.log("nw-app loaded", nw_app)
+                }
+            }
+        });
+
+        // });
+    }
+
+}).call(exports, __webpack_require__, exports, module),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+/***/ }),
+
 /***/ "./src/peersocial/peers/loopupPeer.html":
 /*!**********************************************!*\
   !*** ./src/peersocial/peers/loopupPeer.html ***!
@@ -22120,6 +22166,48 @@ module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"
 
 /***/ }),
 
+/***/ "./src/peersocial/posts/plugin.js":
+/*!****************************************!*\
+  !*** ./src/peersocial/posts/plugin.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
+    /* global $ */
+    appPlugin.consumes = ["app", "user", "gun", "state", "user", "profile", "peer"];
+    appPlugin.provides = ["posts"];
+    
+    return appPlugin;
+
+    function appPlugin(options, imports, register) {
+
+        var _self;
+
+        register(null, {
+            posts: _self = {
+                init: function() {
+                    imports.state.$hash.on("posts", function() {
+                        
+                        loadPeersPosts();
+                        
+                    });
+
+                }
+            }
+        });
+
+    }
+    
+    function loadPeersPosts(){
+        
+    }
+
+}).call(exports, __webpack_require__, exports, module),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+/***/ }),
+
 /***/ "./src/peersocial/profile/basic_info.html":
 /*!************************************************!*\
   !*** ./src/peersocial/profile/basic_info.html ***!
@@ -22170,7 +22258,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         act.b = function() {
             var next = act.done;
-            user.get(peer_profile_image_key).once(function(peer_profile_image) {
+            user.get("profileImage").once(function(peer_profile_image) {
 
                 if (peer_profile_image && peer_profile_image.err) return next();
 
@@ -22224,7 +22312,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
                     imports.app.on("login", function() {
                         $("#navbar-nav-right").prepend(
-                            imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "MyProfile" })
+                            imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })
                         );
                     });
 
@@ -22338,7 +22426,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div></div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <img src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" alt=\"avatar\">\n                <h6>Upload a different photo...</h6>\n                <input type=\"file\" class=\"text-center center-block file-upload\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer~<%= me.uid32 %>@<%= me.alias %>\">View Public Profile</a>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
+module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div></div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <img src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avat r_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" class=\"avatar\" alt=\"avatar\">\n                <h6>Upload a different photo...</h6>\n                <input type=\"file\" class=\"text-center center-block file-upload\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer~<%= me.uid32 %>@<%= me.alias %>\">View Public Profile</a>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
 
 /***/ }),
 
@@ -22855,15 +22943,17 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     
                     
                     imports.state.$hash.on("home",function(){
-                        if(!imports.app.nw_app){
-                            if(!imports.gun.user().is){
-                                $("#main-container").html(__webpack_require__(/*! ./welcome.html */ "./src/peersocial/welcome/welcome.html"))
-                            }else{
-                                $("#main-container").html(__webpack_require__(/*! ./welcome-user.html */ "./src/peersocial/welcome/welcome-user.html"))
-                            }
+                        // if(!imports.app.nw_app){
+                        if(!imports.gun.user().is){
+                            $("#main-container").html(__webpack_require__(/*! ./welcome.html */ "./src/peersocial/welcome/welcome.html"))
                         }else{
-                            imports.app.emit("nw-home");
+                            $("#main-container").html(__webpack_require__(/*! ./welcome-user.html */ "./src/peersocial/welcome/welcome-user.html"))
                         }
+                        // }else{
+                        //     imports.app.emit("nw-home");
+                        if(imports.app.nw_app) 
+                            imports.app.emit("nw_app");
+                        // }
                     })
                     
                     
