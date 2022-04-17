@@ -25,6 +25,8 @@ define(function(require, exports, module) {
         // else
         //  if (thisHost != "www.peersocial.io")
         // peers.push("https://www.peersocial.io/gun");
+        peers.push("https://www.peersocial.io/gun");
+        peers.push("https://dev.peersocial.io/gun");
         peers.push("https://" + window.location.host + "/gun");
 
         gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
