@@ -7240,6 +7240,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // else
         //  if (thisHost != "www.peersocial.io")
         // peers.push("https://www.peersocial.io/gun");
+        peers.push("https://www.peersocial.io/gun");
+        peers.push("https://dev.peersocial.io/gun");
         peers.push("https://" + window.location.host + "/gun");
 
         gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
@@ -7256,12 +7258,12 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // }
 
         // }, 1)
-        // window.gun = gun;
+        window.gun = gun;
 
 
 
         var mesh = gun.back('opt.mesh'); // DAM;
-        mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
+        mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun'] } });
 
         function getPubData(pub) {
             return new Promise(resolve => {

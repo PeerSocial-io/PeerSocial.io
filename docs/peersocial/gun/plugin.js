@@ -25,6 +25,8 @@ define(function(require, exports, module) {
         // else
         //  if (thisHost != "www.peersocial.io")
         // peers.push("https://www.peersocial.io/gun");
+        peers.push("https://www.peersocial.io/gun");
+        peers.push("https://dev.peersocial.io/gun");
         peers.push("https://" + window.location.host + "/gun");
 
         gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
@@ -41,12 +43,12 @@ define(function(require, exports, module) {
         // }
 
         // }, 1)
-        // window.gun = gun;
+        window.gun = gun;
 
 
 
         var mesh = gun.back('opt.mesh'); // DAM;
-        mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
+        mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun'] } });
 
         function getPubData(pub) {
             return new Promise(resolve => {
