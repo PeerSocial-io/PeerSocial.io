@@ -7258,12 +7258,12 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // }
 
         // }, 1)
-        window.gun = gun;
+        window.gun = gun; 
 
 
 
         var mesh = gun.back('opt.mesh'); // DAM;
-        mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun'] } });
+        mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun', 'https://dev.peersocial.io/gun'] } });
 
         function getPubData(pub) {
             return new Promise(resolve => {
@@ -7296,11 +7296,15 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 next();
             });
         }
-        register(null, {
-            gun: gun,
-            gunUser: gun.user()
-        });
-
+        setTimeout(function(){
+                
+            register(null, {
+                gun: gun,
+                gunUser: gun.user()
+            });
+            
+            
+        },1000)
     }
 
 }).call(exports, __webpack_require__, exports, module),
