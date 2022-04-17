@@ -73,7 +73,7 @@ function openWindow(pageURL, server) {
 
 
   // if(!nw_app_core.win[WINDOW_ID])
-  nw.Window.open(pageURL, { id: WINDOW_ID, show: false }, function(new_win) {
+  nw.Window.open(pageURL, { id: WINDOW_ID, show: true }, function(new_win) {
 
     new_win.showDevTools();
     nw_app_core.win[WINDOW_ID] = new_win;
@@ -203,7 +203,7 @@ async function launch(args) {
 
       // var pageURL = "./app.html";
       var pageURL = "https://localhost:" + port + "/";
-      // var pageURL = "https://www.peersocial.io/";
+      // var pageURL = "https://dev.peersocial.io/";
       // var pageURL = "about:blank";
       // pageURL = './index.html';
 

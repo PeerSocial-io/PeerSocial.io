@@ -158,8 +158,8 @@ define(function(require, exports, module) {
                         
                         
                         $user.profile = await user.get('profile');
-                        $user.peer_apps_dev = await user.get('profile').get("peerappsDev");
-                        $user.peer_apps_v2 = await user.get('profile').get("peerapps_v2");
+                        // $user.peer_apps_dev = await user.get('profile').get("peerappsDev");
+                        // $user.peer_apps_v2 = await user.get('profile').get("peerapps_v2");
         
                         var profileLayout = $(await imports.app.layout.ejs.render(require("./viewPeer.html"), {
                             user: $user,

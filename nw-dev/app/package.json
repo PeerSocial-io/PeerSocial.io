@@ -8,5 +8,5 @@
     "icon": "./icon.png"
   },
   "domain": "www.peersocial.io",
-  "node-remote": ["*://www.peersocial.io/*", "*://localhost:*/*"]
+  "node-remote": ["*://*.peersocial.io/*", "*://localhost:*/*"]
 }

@@ -7225,48 +7225,44 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     function appPlugin(options, imports, register) {
         var Gun, gun;
 
-        if (!imports.nw_app) {
-            /* global */
-            Gun = __webpack_require__(/*! gun */ "./node_modules/gun/browser.js");
-            __webpack_require__(/*! gun/sea */ "./node_modules/gun/sea.js");
-            __webpack_require__(/*! gun/lib/webrtc */ "./node_modules/gun/lib/webrtc.js");
+        /* global */
+        Gun = __webpack_require__(/*! gun */ "./node_modules/gun/browser.js");
+        __webpack_require__(/*! gun/sea */ "./node_modules/gun/sea.js");
+        __webpack_require__(/*! gun/lib/webrtc */ "./node_modules/gun/lib/webrtc.js");
 
-            if (!Gun.log.once)
-                Gun.log.once = function() {};
+        if (!Gun.log.once)
+            Gun.log.once = function() {};
 
-            var peers = [];
+        var peers = [];
 
 
-            //peers.push("https://" + window.location.host + "/gun")
-            // else
-            //  if (thisHost != "www.peersocial.io")
-            peers.push("https://www.peersocial.io/gun");
+        //peers.push("https://" + window.location.host + "/gun")
+        // else
+        //  if (thisHost != "www.peersocial.io")
+        // peers.push("https://www.peersocial.io/gun");
+        peers.push("https://" + window.location.host + "/gun");
 
-            gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
+        gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
 
-            // var thisHost = window.location.host;
+        // var thisHost = window.location.host;
 
-            // setTimeout(function() {
+        // setTimeout(function() {
 
-            // gun.opt({ peers: peers });
+        // gun.opt({ peers: peers });
 
-            // if (thisHost != "www.peersocial.io") {
-            //     var mesh = gun.back('opt.mesh'); // DAM;
-            //     mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
-            // }
+        // if (thisHost != "www.peersocial.io") {
+        //     var mesh = gun.back('opt.mesh'); // DAM;
+        //     mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
+        // }
 
-            // }, 1)
-            window.gun = gun;
+        // }, 1)
+        // window.gun = gun;
 
-        }
-        else {
-            Gun = imports.nw_app.Gun;
-            gun = imports.nw_app.gun;
-        }
+
 
         var mesh = gun.back('opt.mesh'); // DAM;
         mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
-          
+
         function getPubData(pub) {
             return new Promise(resolve => {
                 gun.get(pub).once(resolve);
@@ -21961,8 +21957,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                         
                         
                         $user.profile = await user.get('profile');
-                        $user.peer_apps_dev = await user.get('profile').get("peerappsDev");
-                        $user.peer_apps_v2 = await user.get('profile').get("peerapps_v2");
+                        // $user.peer_apps_dev = await user.get('profile').get("peerappsDev");
+                        // $user.peer_apps_v2 = await user.get('profile').get("peerapps_v2");
         
                         var profileLayout = $(await imports.app.layout.ejs.render(__webpack_require__(/*! ./viewPeer.html */ "./src/peersocial/peers/viewPeer.html"), {
                             user: $user,
@@ -22107,7 +22103,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <!--left col-->\n\n\n            <div class=\"text-center\">\n                <img src=\"<%- (user.profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" alt=\"avatar\">\n            </div><br/>\n            <div class=\"row\" style=\"padding-bottom:1px;\">\n                <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= user.alias %></h1>#<%= user.uid32 %></div></div>\n            </div><br/>\n            <ul class=\"list-group text-center\">\n                <li class=\"list-group-item\"><%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>\n                <li class=\"list-group-item\"><%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>\n            </ul>\n            <hr/>\n\n            <!--<div class=\"panel panel-default\">-->\n            <!--    <div class=\"panel-heading\">-->\n            <!--        <span><%- (user.profile && user.profile.first_name ? user.profile.first_name :'') %></span>-->\n            <!--        <span><%- (user.profile && user.profile.last_name ? user.profile.last_name :'') %></span></div>-->\n            <!--    <div class=\"panel-body\">-->\n\n            <!--        <span><%- (user.profile && user.profile.location ? user.profile.location :'') %></span>-->\n            <!--    </div>-->\n            <!--</div>-->\n\n            <% if(!notLoggedIn)\n                if(!isMyPeer){ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-primary\" id=\"addPeer\">Add Peer</a>\n            <% }else{ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-danger\" id=\"removePeer\">Remove Peer</a>\n            <% } %>\n            <br/>\n        </div>\n        <!--/col-3-->\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n\n            <ul class=\"nav nav-tabs\" id=\"myTab\" role=\"tablist\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link active\" id=\"home-tab\" data-toggle=\"tab\" href=\"#profile-main1\" role=\"tab\" aria-controls=\"home\" aria-selected=\"true\">Profile</a>-->\n                <!--</li>-->\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" id=\"profile-tab\" data-toggle=\"tab\" href=\"#profile-main2\" role=\"tab\" aria-controls=\"profile\" aria-selected=\"false\">Peer Apps</a>-->\n                <!--</li>-->\n                <li class=\"nav-item\">\n                    <a class=\"nav-link active\" id=\"profile-tab\" data-toggle=\"tab\" href=\"#profile-apps\" role=\"tab\" aria-controls=\"profile-apps\" aria-selected=\"false\">Peer Apps V2</a>\n                </li>\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" id=\"messages-tab\" data-toggle=\"tab\" href=\"#profile-main3\" role=\"tab\" aria-controls=\"messages\" aria-selected=\"false\">Profile3</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--<div class=\"tab-pane active\" role=\"tabpanel\" id=\"profile-main1\">-->\n\n                <!--    <div class=\"container\">-->\n\n                <!--        <ul class=\"list-group\">-->\n                <!--            <li class=\"list-group-item\">Display Name: <%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>-->\n                <!--            <li class=\"list-group-item\">Tagline: <%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>-->\n                <!--        </ul>-->\n\n                <!--    </div>-->\n\n                <!--</div>-->\n                <!--/tab-pane-->\n                <% if(false){ %>\n                <div class=\"tab-pan\" role=\"tabpanel\" id=\"profile-main2\">\n                    <div class=\"container\">\n                        <% if(user.peer_apps_dev){ \n                            for(var i in user.peer_apps_dev){\n                            if(i == \"_\" || !user.peer_apps_dev[i]) continue;\n                                var peerapp = await $user.get(\"profile\").get(\"peerappsDev\").get(i);\n                                if(peerapp){\n                        %>\n                        <ul class=\"list-group\">\n                            <li class=\"list-group-item\"><%= (peerapp.title ? peerapp.title : \"untitled\") %>\n                            </span> <span class=\"float-right\"><a class=\"btn btn-primary\" target=\"about:blank\" href=\"/peerapp-view~<%= user.uid32 %>@<%= user.alias %>~<%= (peerapp.title ? peerapp.title : \"untitled\") %>\">View</a></span></li>\n                        </ul>\n                        <% }}} %>\n                    </div>\n\n                </div>\n                <% } %>\n                \n                <div class=\"tab-pane active\" role=\"tabpanel\" id=\"profile-apps\">\n\n                    \n                    <div class=\"container\">\n                        \n                        <% if(user.peer_apps_v2){ \n                            for(var i in user.peer_apps_v2){\n                            if(i == \"_\" || !user.peer_apps_v2[i]) continue;\n                                var peerapp = await $user.get(\"profile\").get(\"peerapps_v2\").get(i);\n                                if(peerapp){\n                        %>\n                        <ul class=\"list-group\">\n                            <li class=\"list-group-item\"><%= (peerapp.title ? peerapp.title : \"untitled\") %>\n                            </span> <span class=\"float-right\"><a class=\"btn btn-primary\" target=\"about:blank\" href=\"/peerapp2-open~<%= user.uid32 %>@<%= user.alias %>~<%= (peerapp.title ? peerapp.title : \"ERROR!\") %>\">View</a></span></li>\n                        </ul><br/>\n                        <% }}} %>\n                    </div>\n\n                </div>\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main3\">page3</div>-->\n\n            </div>\n            <!--/tab-pane-->\n        </div>\n        <!--/tab-content-->\n\n    </div>\n    <!--/col-9-->\n</div>\n<!--/row-->";
+module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <!--left col-->\n\n\n            <div class=\"text-center\">\n                <img src=\"<%- (user.profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" alt=\"avatar\">\n            </div><br/>\n            <div class=\"row\" style=\"padding-bottom:1px;\">\n                <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= user.alias %></h1>#<%= user.uid32 %></div></div>\n            </div><br/>\n            <ul class=\"list-group text-center\">\n                <li class=\"list-group-item\"><%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>\n                <li class=\"list-group-item\"><%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>\n            </ul>\n            <hr/>\n\n            <!--<div class=\"panel panel-default\">-->\n            <!--    <div class=\"panel-heading\">-->\n            <!--        <span><%- (user.profile && user.profile.first_name ? user.profile.first_name :'') %></span>-->\n            <!--        <span><%- (user.profile && user.profile.last_name ? user.profile.last_name :'') %></span></div>-->\n            <!--    <div class=\"panel-body\">-->\n\n            <!--        <span><%- (user.profile && user.profile.location ? user.profile.location :'') %></span>-->\n            <!--    </div>-->\n            <!--</div>-->\n\n            <% if(!notLoggedIn)\n                if(!isMyPeer){ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-primary\" id=\"addPeer\">Add Peer</a>\n            <% }else{ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-danger\" id=\"removePeer\">Remove Peer</a>\n            <% } %>\n            <br/>\n        </div>\n        <!--/col-3-->\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n\n            <ul class=\"nav nav-tabs\" id=\"myTab\" role=\"tablist\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link active\" id=\"home-tab\" data-toggle=\"tab\" href=\"#profile-main1\" role=\"tab\" aria-controls=\"home\" aria-selected=\"true\">Profile</a>-->\n                <!--</li>-->\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" id=\"profile-tab\" data-toggle=\"tab\" href=\"#profile-main2\" role=\"tab\" aria-controls=\"profile\" aria-selected=\"false\">Peer Apps</a>-->\n                <!--</li>-->\n                <li class=\"nav-item\">\n                    <a class=\"nav-link active\" id=\"profile-tab\" data-toggle=\"tab\" href=\"#profile-apps\" role=\"tab\" aria-controls=\"profile-apps\" aria-selected=\"false\">Peer Apps V2</a>\n                </li>\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" id=\"messages-tab\" data-toggle=\"tab\" href=\"#profile-main3\" role=\"tab\" aria-controls=\"messages\" aria-selected=\"false\">Profile3</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--<div class=\"tab-pane active\" role=\"tabpanel\" id=\"profile-main1\">-->\n\n                <!--    <div class=\"container\">-->\n\n                <!--        <ul class=\"list-group\">-->\n                <!--            <li class=\"list-group-item\">Display Name: <%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>-->\n                <!--            <li class=\"list-group-item\">Tagline: <%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>-->\n                <!--        </ul>-->\n\n                <!--    </div>-->\n\n                <!--</div>-->\n                <!--/tab-pane-->\n                \n                \n                <div class=\"tab-pane active\" role=\"tabpanel\" id=\"profile-apps\">\n\n                    \n\n                </div>\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main3\">page3</div>-->\n\n            </div>\n            <!--/tab-pane-->\n        </div>\n        <!--/tab-content-->\n\n    </div>\n    <!--/col-9-->\n</div>\n<!--/row-->";
 
 /***/ }),
 
@@ -22161,7 +22157,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         act.b = function() {
             user.get(peer_profile_image_key).once(function(peer_profile_image) {
-                var next = act.c;
+                var next = act.done;
                 if (peer_profile_image && peer_profile_image.err) return next();
 
                 profile_out.peer_profile_image = peer_profile_image;
@@ -22170,28 +22166,28 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             });
         };
 
-        act.c = function() {
-            user.get(peer_profile_key).get(peerApps_key).once(function(peer_apps_dev) {
-                var next = act.d;
-                if (peer_apps_dev && peer_apps_dev.err) return next();
+        // act.c = function() {
+        //     user.get(peer_profile_key).get(peerApps_key).once(function(peer_apps_dev) {
+        //         var next = act.d;
+        //         if (peer_apps_dev && peer_apps_dev.err) return next();
 
-                profile_out.peer_apps_dev = peer_apps_dev;
+        //         profile_out.peer_apps_dev = peer_apps_dev;
 
-                next();
-            });
-        };
+        //         next();
+        //     });
+        // };
 
 
-        act.d = function() {
-            user.get(peer_profile_key).get(peerApps_v2_key).once(function(peer_apps) {
-                var next = act.done;
-                if (peer_apps && peer_apps.err) return next();
+        // act.d = function() {
+        //     user.get(peer_profile_key).get(peerApps_v2_key).once(function(peer_apps) {
+        //         var next = act.done;
+        //         if (peer_apps && peer_apps.err) return next();
 
-                profile_out.peer_apps = peer_apps;
+        //         profile_out.peer_apps = peer_apps;
 
-                next();
-            });
-        };
+        //         next();
+        //     });
+        // };
 
         act.done = function() {
             done(profile_out);

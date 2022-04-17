@@ -30,7 +30,7 @@ define(function(require, exports, module) {
 
         act.b = function() {
             user.get(peer_profile_image_key).once(function(peer_profile_image) {
-                var next = act.c;
+                var next = act.done;
                 if (peer_profile_image && peer_profile_image.err) return next();
 
                 profile_out.peer_profile_image = peer_profile_image;
@@ -39,28 +39,28 @@ define(function(require, exports, module) {
             });
         };
 
-        act.c = function() {
-            user.get(peer_profile_key).get(peerApps_key).once(function(peer_apps_dev) {
-                var next = act.d;
-                if (peer_apps_dev && peer_apps_dev.err) return next();
+        // act.c = function() {
+        //     user.get(peer_profile_key).get(peerApps_key).once(function(peer_apps_dev) {
+        //         var next = act.d;
+        //         if (peer_apps_dev && peer_apps_dev.err) return next();
 
-                profile_out.peer_apps_dev = peer_apps_dev;
+        //         profile_out.peer_apps_dev = peer_apps_dev;
 
-                next();
-            });
-        };
+        //         next();
+        //     });
+        // };
 
 
-        act.d = function() {
-            user.get(peer_profile_key).get(peerApps_v2_key).once(function(peer_apps) {
-                var next = act.done;
-                if (peer_apps && peer_apps.err) return next();
+        // act.d = function() {
+        //     user.get(peer_profile_key).get(peerApps_v2_key).once(function(peer_apps) {
+        //         var next = act.done;
+        //         if (peer_apps && peer_apps.err) return next();
 
-                profile_out.peer_apps = peer_apps;
+        //         profile_out.peer_apps = peer_apps;
 
-                next();
-            });
-        };
+        //         next();
+        //     });
+        // };
 
         act.done = function() {
             done(profile_out);

@@ -10,48 +10,44 @@ define(function(require, exports, module) {
     function appPlugin(options, imports, register) {
         var Gun, gun;
 
-        if (!imports.nw_app) {
-            /* global */
-            Gun = require("gun");
-            require("gun/sea");
-            require("gun/lib/webrtc");
+        /* global */
+        Gun = require("gun");
+        require("gun/sea");
+        require("gun/lib/webrtc");
 
-            if (!Gun.log.once)
-                Gun.log.once = function() {};
+        if (!Gun.log.once)
+            Gun.log.once = function() {};
 
-            var peers = [];
+        var peers = [];
 
 
-            //peers.push("https://" + window.location.host + "/gun")
-            // else
-            //  if (thisHost != "www.peersocial.io")
-            peers.push("https://www.peersocial.io/gun");
+        //peers.push("https://" + window.location.host + "/gun")
+        // else
+        //  if (thisHost != "www.peersocial.io")
+        // peers.push("https://www.peersocial.io/gun");
+        peers.push("https://" + window.location.host + "/gun");
 
-            gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
+        gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
 
-            // var thisHost = window.location.host;
+        // var thisHost = window.location.host;
 
-            // setTimeout(function() {
+        // setTimeout(function() {
 
-            // gun.opt({ peers: peers });
+        // gun.opt({ peers: peers });
 
-            // if (thisHost != "www.peersocial.io") {
-            //     var mesh = gun.back('opt.mesh'); // DAM;
-            //     mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
-            // }
+        // if (thisHost != "www.peersocial.io") {
+        //     var mesh = gun.back('opt.mesh'); // DAM;
+        //     mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
+        // }
 
-            // }, 1)
-            window.gun = gun;
+        // }, 1)
+        // window.gun = gun;
 
-        }
-        else {
-            Gun = imports.nw_app.Gun;
-            gun = imports.nw_app.gun;
-        }
+
 
         var mesh = gun.back('opt.mesh'); // DAM;
         mesh.say({ dam: 'opt', opt: { peers: 'https://www.peersocial.io/gun' } });
-          
+
         function getPubData(pub) {
             return new Promise(resolve => {
                 gun.get(pub).once(resolve);
