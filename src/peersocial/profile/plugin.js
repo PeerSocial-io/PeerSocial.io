@@ -157,21 +157,25 @@ define(function(require, exports, module) {
                     profile: profile
                 }));
 
-                basicInfo.find("#display_name").on('change', function() {
+                basicInfo.find("#display_name").on('keyup', function() {
                     user.get("profile").get("display_name").put($(this).val(), function() {
                         console.log("saved profile display_name");
                     });
                 });
                 user.get("profile").get("display_name").on(function(display_name) {
                     console.log("update profile display_name", display_name);
+                    basicInfo.find("#display_name").val(display_name)
                 });
-                
-                basicInfo.find("#tagline").on('change', function() {
+
+                basicInfo.find("#tagline").on('keyup', function() {
                     user.get("profile").get("tagline").put($(this).val(), function() {
                         console.log("saved profile tagline");
                     });
                 });
-
+                user.get("profile").get("tagline").on(function(tagline) {
+                    console.log("update profile tagline", tagline);
+                    basicInfo.find("#tagline").val(tagline)
+                });
                 profileLayout.find("#profileTabs").append('<li class="nav-item"><a class="nav-link active" href="/profile">Profile</a></li>');
                 profileLayout.find(".tab-content").append(basicInfo);
             }
