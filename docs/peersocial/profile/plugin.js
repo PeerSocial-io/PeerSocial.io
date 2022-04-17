@@ -18,8 +18,8 @@ define(function(require, exports, module) {
         var act = {};
 
         act.a = function() {
+            var next = act.b;
             user.get(peer_profile_key).once(function(profile) {
-                var next = act.b;
                 if (!profile || profile.err) return act.done(profile_out);
 
                 profile_out = profile;
@@ -29,8 +29,9 @@ define(function(require, exports, module) {
         };
 
         act.b = function() {
+            var next = act.done;
             user.get(peer_profile_image_key).once(function(peer_profile_image) {
-                var next = act.done;
+
                 if (peer_profile_image && peer_profile_image.err) return next();
 
                 profile_out.peer_profile_image = peer_profile_image;
@@ -128,7 +129,7 @@ define(function(require, exports, module) {
                                         $("#main-container").find(".file-upload").on('change', function() {
                                             readURL(this);
                                         });
-                                        
+
                                     });
 
 
@@ -155,21 +156,26 @@ define(function(require, exports, module) {
                     user: user,
                     profile: profile
                 }));
-                
+
                 basicInfo.find("#display_name").on('change', function() {
                     user.get("profile").get("display_name").put($(this).val(), function() {
                         console.log("saved profile display_name");
                     });
                 });
+                user.get("profile").get("display_name").on(function(display_name) {
+                    console.log("update profile display_name", display_name);
+                });
+                
                 basicInfo.find("#tagline").on('change', function() {
                     user.get("profile").get("tagline").put($(this).val(), function() {
                         console.log("saved profile tagline");
                     });
                 });
-                
+
                 profileLayout.find("#profileTabs").append('<li class="nav-item"><a class="nav-link active" href="/profile">Profile</a></li>');
                 profileLayout.find(".tab-content").append(basicInfo);
-            }else{
+            }
+            else {
                 profileLayout.find("#profileTabs").append('<li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>');
             }
 

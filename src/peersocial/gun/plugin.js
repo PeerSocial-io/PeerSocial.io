@@ -89,7 +89,7 @@ define(function(require, exports, module) {
             });
             
             
-        },1)
+        },1000);
     }
 
 });

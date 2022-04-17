@@ -39,10 +39,11 @@ setTimeout(function() {
 
         function appPlugin(options, imports, register) {
             var app = new events.EventEmitter();
+            app.events = events;
             app.nw = window.nw;
             register(null, {
                 app: app,
-                provable: provable,
+                provable: provable
             });
         }
 
