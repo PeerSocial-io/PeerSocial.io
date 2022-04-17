@@ -11,8 +11,8 @@
                 <div class="col-sm-10"><div style="border: 1px solid #ddd;display:inline-block;"><h1 style="display: inline;"><%= user.alias %></h1>#<%= user.uid32 %></div></div>
             </div><br/>
             <ul class="list-group text-center">
-                <li class="list-group-item"><%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>
-                <li class="list-group-item"><%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>
+                <li class="list-group-item" id="display_name"><%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>
+                <li class="list-group-item" id="tagline"><%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>
             </ul>
             <hr/>
 
@@ -56,9 +56,11 @@
                 <!--<li class="nav-item">-->
                 <!--    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile-main2" role="tab" aria-controls="profile" aria-selected="false">Peer Apps</a>-->
                 <!--</li>-->
+                <!--
                 <li class="nav-item">
                     <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile-apps" role="tab" aria-controls="profile-apps" aria-selected="false">Peer Apps V2</a>
                 </li>
+                -->
                 <!--<li class="nav-item">-->
                 <!--    <a class="nav-link" id="messages-tab" data-toggle="tab" href="#profile-main3" role="tab" aria-controls="messages" aria-selected="false">Profile3</a>-->
                 <!--</li>-->

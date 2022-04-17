@@ -194,6 +194,12 @@ define(function(require, exports, module) {
                             });
                         });
                         
+                        user.get('profile').get("display_name").on(function(display_name){
+                            profileLayout.find("#display_name").text(display_name)
+                        });
+                        user.get('profile').get("tagline").on(function(tagline){
+                            profileLayout.find("#tagline").text(tagline)
+                        })
                         
         
                         $("#main-container").html(profileLayout);
