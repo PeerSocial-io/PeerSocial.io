@@ -43,7 +43,7 @@ define(function(require, exports, module) {
         // }
 
         // }, 1)
-        window.gun = gun;
+        window.gun = gun; 
 
 
 
