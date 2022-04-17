@@ -8,7 +8,7 @@ define(function(require, exports, module) {
     return appPlugin;
 
     function appPlugin(options, imports, register) {
-
+        
         var nw = imports.app;
         window.name = "testing_ID"
         
@@ -22,13 +22,12 @@ define(function(require, exports, module) {
 
         // server.start(nw_app_core, console, function() {
 
-
         register(null, {
             nw_app: {
                 Gun: nw_app_core.Gun,
                 gun: nw_app_core.gun,
                 init: function() {
-
+                    if(!nw_app_core) return;
                     window.gun = nw_app_core.gun;
                     window.Gun = nw_app_core.Gun;
                     var gun = nw_app_core.gun;

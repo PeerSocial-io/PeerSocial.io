@@ -1,9 +1,4 @@
 ;(function(){
-  var root;
-  if(typeof window !== "undefined"){ root = window }
-  if(typeof global !== "undefined"){ root = global }
-  root = root || {};
-  var console = root.console || {log: function(){}};
   function USE(arg, req){
     return req? require(arg) : arg.slice? USE[R(arg)] : function(mod, path){
       arg(mod = {exports: {}});
@@ -13,8 +8,8 @@
       return p.split('/').slice(-1).toString().replace('.js','');
     }
   }
-  if(typeof module !== "undefined"){ var common = module }
-  
+  if(typeof module !== "undefined"){ var MODULE = module }
+
 	/* UNBUILD */
 	;USE(function(module){
 		var noop = function(){}, u;
@@ -23,14 +18,6 @@
 		var k = m.key = {};
 		k.meta = {17:17, 91:17, 93:17, 224:17, 18: 17}; // ALT added
 		function withMeta(eve){ return eve.metaKey || eve.ctrlKey || eve.altKey } // ALT added
-		var defaults = {
-			8: { // backspace: close root or go back on submenu
-				on: () => k.at == m.edit ? m.flip(false) : m.check('down', 'back')
-			},
-			27: { // esc: close and reset menu
-			  up: () => k.wipe()
-			}
-		}
 		k.down = function(eve){
 			var key = (k.eve = m.eve = eve).which = eve.which || eve.fake || eve.keyCode;
 		  if(eve.repeat){ return }
@@ -38,8 +25,9 @@
 			  return m.flip(false)
 		  } // cancel and close when no action and "meta key" held down (e.g. ctrl+c)
 			if(!eve.fake && key === k.last){ return }; k.last = key; // jussi: polyfilling eve.repeat?
-			if(!eve.fake && $(eve.target).closest('input, textarea, [contenteditable=true]').length && !$(eve.target).closest('#meta').length){
-		    if(meta.flip.is() && !withMeta(eve)) eve.preventDefault()
+			if(!eve.fake && $(eve.target).closest('input, textarea, [contenteditable=true]').length/* && !$(eve.target).closest('#meta').get().length*/){
+				return;
+		    //if(meta.flip.is() && !withMeta(eve)) eve.preventDefault()
 			}
 			m.check('on', key, k.at || (k.at = m.edit));
 			if(k.meta[key]){ m.flip() }
@@ -54,8 +42,10 @@
 			}
 		}
 		m.flip = function(tmp){
+		  m.flip.active = true;
 			((tmp === false) || (!tmp && m.ui.board.is(':visible')))?
 				m.close() : m.open();
+		  m.flip.active = false;
 		}
 		m.open = function(){
 		  m.check.fired = null;
@@ -86,7 +76,7 @@
 					else            k.down.keys[key] = 1;
 			}
 			if('up' == how){ return }
-			if(at != next){ next.back = at }
+			if(at != next && !next.back){ next.back = at }
 			(k.combo || (k.combo = [])).push(key);
 			m.list(next, true);
 		}
@@ -112,20 +102,20 @@
 				if(k.styles) meta.ui.iniline($li[0], k.styles);
 			});
 			if(opt){ m.flip(true) }
-			$ul.append($('<li>').html('&larr;').on('click', function(){
-				m.list(at.back);
-			}));
+			$ul.append($('<li>').html('&larr;').on('click', back));
 		}
-		m.ask = function(help, cb){
+		m.ask = function(help, cb, opt){
 			var $ul = $('#meta .meta-menu ul').empty();
 			var $put = $('<input>').attr('id', 'meta-ask').attr('placeholder', help);
 			var $form = $('<form>').append($put).on('submit', function(eve){
 				eve.preventDefault();
 				cb($put.val());
 				$li.remove();
-				//k.wipe();
-				m.list(k.at);
+				k.wipe();
 			});
+			if(opt){
+				$form.on('keyup', function(eve){ cb($put.val()) })
+			}
 			var $li = $('<li>').append($form);
 			$ul.append($li);
 			m.flip(true);
@@ -139,7 +129,7 @@
 		m.tap = function(){
 			var on = $('.meta-on')
 				.or($($(document.querySelectorAll(':hover')).get().reverse()).first())
-				.or($(document.elementFromPoint(meta.tap.x||0, meta.tap.y||0)));
+				.or($(document.elementFromPoint(meta.tap.x, meta.tap.y)));
 			return on;
 		}
 		meta.edit = function(e){
@@ -153,6 +143,13 @@
 		  $.extend(at, e) // fixes overwriting when sub action is defined before parent
 			e.combow = path.join(','); // deprecate?
 			m.list(k.at || meta.edit);
+		}
+		function back(){ // close root or go back on submenu
+		  k.at == m.edit ? m.flip(false) : m.check('down', 'back')
+		}
+		var defaults = {
+			8:  { on: back },  // backspace
+			27: { up: k.wipe } // esc: close and reset menu
 		}
 		$.extend(meta.edit, defaults)
 	})(USE, './metaCore');
@@ -175,8 +172,17 @@
 			}
 		}
 		var $m = $('<div>').attr('id', 'meta');
-		$m.append($('<span>').html('&#9776;').addClass('meta-start'));
+		//$m.append($('<span>').html('&#9776;').addClass('meta-start'));
+		$m.append($('<span>').html('+').addClass('meta-start'));
 		$m.append($('<div>').addClass('meta-menu meta-none').append('<ul>'));
+		$m.on('mouseenter', function(){
+		  if (meta.flip.active || meta.flip.is()) return;
+		  meta.flip();
+		})
+		$m.on('mouseleave', function(){
+		  if (meta.flip.active || !meta.flip.is()) return;
+		  meta.flip(false);
+		})
 		$(document.body).append($m);
 		meta.ui.board = $('.meta-menu', $m);
 		css({
@@ -185,7 +191,6 @@
 				position: 'fixed',
 				bottom: '2em',
 				right: '2em',
-				background: 'white',
 				'font-size': '18pt',
 				'font-family': 'Tahoma, arial',
 				'border-radius': '1em',
@@ -196,15 +201,15 @@
 				width: '2em',
 				height: '2em',
 				outline: 'none',
-				color: '#000044',
 				overflow: 'visible',
+				background: 'rgba(0,0,0,0.5)', color: 'white',
 				transition: 'all 0.2s ease-in'
 			},
 			'#meta *': {outline: 'none'},
 			'#meta .meta-none': {display: 'none'},
 			'#meta span': {'line-height': '2em'},
 			'#meta .meta-menu': {
-				background: 'rgba(0,0,0,0.1)',
+				background: 'rgba(0,0,0,0.2)',
 				width: '12em',
 				right: '-2em',
 				bottom: '-2em',
@@ -223,18 +228,19 @@
 			'#meta .meta-menu ul li': {
 				display: 'block',
 				'float': 'right',
-				background: 'white',
-				opacity: 0.7,
 				padding: '0.5em 1em',
 				'border-radius': '1em',
 				'margin-left': '0.25em',
 				'margin-top': '0.25em',
+				background: 'rgba(0,0,0,0.2)', 'backdrop-filter': 'blur(10px)', color: 'white',
 				'cursor':  'pointer'
 			},
 			'#meta .meta-menu ul li:hover': {
-				opacity: 1
+				background: 'rgba(0,0,0,0.5)'
 			},
 			'#meta a': {color: 'black'},
+			'#meta:hover': {opacity: 1},
+			'#meta:hover .meta-menu': {display: 'block'},
 			'#meta .meta-menu ul:before': {
 				content: "' '",
 				display: 'block',
@@ -264,7 +270,7 @@
 	})(USE, './metaUI');
 	;USE(function(module){
 		var m = meta, k = m.key;
-		$(window).on('focus', k.wipe.bind(null, false)); // .on('blur', k.wipe.bind(null, false))
+		//$(window).on('focus', k.wipe.bind(null, false)); // .on('blur', k.wipe.bind(null, false))
 		$(document).on('mousedown mousemove mouseup', function(eve){
 			m.tap.eve = eve;
 			m.tap.x = eve.pageX||0;

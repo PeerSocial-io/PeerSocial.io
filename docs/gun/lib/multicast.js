@@ -35,8 +35,9 @@ Gun.on('create', function(root){
       }
       socket.send(buf, 0, buf.length, udp.port, udp.address, noop);
     }
+    //opt.mesh.hi(udp.peer);
 
-    console.log('Multicast on', udp.peer.id);
+    Gun.log.once('Multicast on', udp.peer.id);
     return; // below code only needed for when WebSocket connections desired!
     setInterval(function broadcast(){
       port = port || (opt.web && opt.web.address()||{}).port;

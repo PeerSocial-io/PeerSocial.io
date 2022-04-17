@@ -2,75 +2,78 @@ var events = require("events");
 
 console.log("Gun", window.Gun);
 
-window.global.nw_app_core = new events.EventEmitter();
-var nw_app_core = window.global.nw_app_core;
-nw_app_core.win = {};
+function setupWin() {
+  if (window.global.nw_app_core) return;
 
-Object.defineProperty(nw_app_core, "stats", {
-  get: function() {
+  window.global.nw_app_core = new events.EventEmitter();
+  var nw_app_core = window.global.nw_app_core;
+  nw_app_core.win = {};
 
-    var path = require("path");
-    var __dirname = window.global.__dirname;
-    var fileName = path.resolve(__dirname, '../store/radata.stats');
-    var fs = require("fs");
+  Object.defineProperty(nw_app_core, "stats", {
+    get: function() {
 
-    return JSON.parse(fs.readFileSync(fileName, "utf8"));
-  }
-});
+      var path = require("path");
+      var __dirname = window.global.__dirname;
+      var fileName = path.resolve(__dirname, '../store/radata.stats');
+      var fs = require("fs");
 
-nw_app_core.require = require;
+      return JSON.parse(fs.readFileSync(fileName, "utf8"));
+    }
+  });
 
-var win = nw.Window.get();
-win.showDevTools();
-nw.App.on('open', lanucher);
+  nw_app_core.require = require;
 
-var tray = new nw.Tray({ title: "App Tray", icon: './icon.png' });
-var traymenu = new nw.Menu();
-tray.menu = traymenu;
+  var win = nw.Window.get();
+  win.showDevTools();
+  nw.App.on('open', lanucher);
 
-traymenu.append(new nw.MenuItem({
-  type: 'normal',
-  label: 'Exit',
-  click: function() {
+  var tray = new nw.Tray({ title: "App Tray", icon: './icon.png' });
+  var traymenu = new nw.Menu();
+  tray.menu = traymenu;
 
-
-    nw.App.quit();
-
-  }
-}));
+  traymenu.append(new nw.MenuItem({
+    type: 'normal',
+    label: 'Exit',
+    click: function() {
 
 
-traymenu.append(new nw.MenuItem({
-  type: 'normal',
-  label: 'Open',
-  click: function() {
+      nw.App.quit();
 
-    openWindow();
-
-  }
-}));
-
-traymenu.append(new nw.MenuItem({
-  type: 'normal',
-  label: 'DevTools',
-  click: function() {
-
-    win.showDevTools();
-
-  }
-}));
-
-win.on('close', function() {
-  // Remove the tray
-  tray.remove();
-  tray = null;
-  win.close(true); // then close it forcefully
-});
+    }
+  }));
 
 
+  traymenu.append(new nw.MenuItem({
+    type: 'normal',
+    label: 'Open',
+    click: function() {
+
+      openWindow();
+
+    }
+  }));
+
+  traymenu.append(new nw.MenuItem({
+    type: 'normal',
+    label: 'DevTools',
+    click: function() {
+
+      win.showDevTools();
+
+    }
+  }));
+
+  win.on('close', function() {
+    // Remove the tray
+    tray.remove();
+    tray = null;
+    win.close(true); // then close it forcefully
+  });
+
+}
 
 function openWindow() {
-
+  var nw_app_core = window.global.nw_app_core;
   var WINDOW_ID = "test-window";
   var pageURL = "https://www.peersocial.io/";
   // pageURL = './index.html';
@@ -114,8 +117,13 @@ function openWindow() {
 
 
 function gunServerSetup(cb) {
+  var nw_app_core = window.global.nw_app_core;
+  if (nw_app_core) { 
+    if (cb) cb(); 
+    return; 
+  }
 
-  var port = process.env.PORT || 8765;
+  var port = 8766;
 
   var http = require('http');
   var server = http.createServer().listen(port, function() {
@@ -141,6 +149,7 @@ function gunServerSetup(cb) {
 }
 
 setTimeout(function() {
+  setupWin();
   gunServerSetup(function() {
     lanucher(nw.App.argv);
   })

@@ -3,8 +3,7 @@ define(function(require, exports, module) {
     appPlugin.consumes = ["app", "provable"];
     appPlugin.provides = ["gun"];
 
-    if(window.global && window.global.nw_app_core)
-        appPlugin.consumes.push("nw_app");
+    // if(window.global && window.global.nw_app_core)    appPlugin.consumes.push("nw_app");
 
     return appPlugin;
 

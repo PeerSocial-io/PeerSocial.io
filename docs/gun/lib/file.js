@@ -3,7 +3,7 @@
 // twas not designed for production use
 // only simple local development.
 
-var Gun = Gun || require('../gun'),
+var Gun = require('../gun'),
 fs = require('fs');
 
 Gun.on('create', function(root){

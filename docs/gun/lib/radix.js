@@ -15,7 +15,7 @@
 				k += key[++i];
 			}
 			if(!at){
-				if(!map(t, function(r, s){
+				if(!each(t, function(r, s){
 					var ii = 0, kk = '';
 					if((s||'').length){ while(s[ii] == key[ii]){
 						kk += s[ii++];
@@ -33,6 +33,7 @@
 						('' === ii)? (__[''] = val) : ((__[ii] = {})[''] = val);
 						//(__[_] = function $(){ $.sort = Object.keys(__).sort(); return $ }());
 						t[kk] = __;
+						if(Radix.debug && 'undefined' === ''+kk){ console.log(0, kk); debugger }
 						delete t[s];
 						//(t[_] = function $(){ $.sort = Object.keys(t).sort(); return $ }());
 						return true;
@@ -40,6 +41,7 @@
 				})){
 					if(u === val){ return; }
 					(t[k] || (t[k] = {}))[''] = val;
+					if(Radix.debug && 'undefined' === ''+k){ console.log(1, k); debugger }
 					//(t[_] = function $(){ $.sort = Object.keys(t).sort(); return $ }());
 				}
 				if(u === val){
@@ -64,6 +66,7 @@
 		var t = ('function' == typeof radix)? radix.$ || {} : radix;
 		//!opt && console.log("WHAT IS T?", JSON.stringify(t).length);
 		if(!t){ return }
+		if('string' == typeof t){ if(Radix.debug){ throw ['BUG:', radix, cb, opt, pre] } return; }
 		var keys = (t[_]||no).sort || (t[_] = function $(){ $.sort = Object.keys(t).sort(); return $ }()).sort, rev; // ONLY 17% of ops are pre-sorted!
 		//var keys = Object.keys(t).sort();
 		opt = (true === opt)? {branch: true} : (opt || {});
@@ -71,7 +74,7 @@
 		var start = opt.start, end = opt.end, END = '\uffff';
 		var i = 0, l = keys.length;
 		for(;i < l; i++){ var key = keys[i], tree = t[key], tmp, p, pt;
-			if(!tree || '' === key || _ === key){ continue }
+			if(!tree || '' === key || _ === key || 'undefined' === key){ continue }
 			p = pre.slice(0); p.push(key);
 			pt = p.join('');
 			if(u !== start && pt < (start||'').slice(0,pt.length)){ continue }
@@ -102,17 +105,17 @@
 		}
 	};
 
-	Object.keys = Object.keys || function(o){ return map(o, function(v,k,t){t(k)}) }
-
 	if(typeof window !== "undefined"){
-	  var Gun = window.Gun;
 	  window.Radix = Radix;
 	} else { 
-	  var Gun = require('../gun');
 		try{ module.exports = Radix }catch(e){}
 	}
-	
-	var map = Gun.obj.map, no = {}, u;
+	var each = Radix.object = function(o, f, r){
+		for(var k in o){
+			if(!o.hasOwnProperty(k)){ continue }
+			if((r = f(o[k], k)) !== u){ return r }
+		}
+	}, no = {}, u;
 	var _ = String.fromCharCode(24);
 	
 }());

@@ -14,13 +14,13 @@ Gun.on('create', function(root){
 
 	try{AWS = require('aws-sdk');
 	}catch(e){
-		console.log("aws-sdk is no longer included by default, you must add it to your package.json! `npm install aws-sdk`.");
+		console.log("Please `npm install aws-sdk` or add it to your package.json !");
 		AWS_SDK_NOT_INSTALLED;
 	}
 
 	var opts = opt.s3 || (opt.s3 = {});
 	opts.bucket = opts.bucket || process.env.AWS_S3_BUCKET;
-	opts.region = opts.region || process.AWS_REGION || "us-east-1";
+	opts.region = opts.region || process.env.AWS_REGION || "us-east-1";
 	opts.accessKeyId = opts.key = opts.key || opts.accessKeyId || process.env.AWS_ACCESS_KEY_ID;
 	opts.secretAccessKey = opts.secret = opts.secret || opts.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY;
 
@@ -33,7 +33,7 @@ Gun.on('create', function(root){
 	opts.config = new AWS.Config(opts);
 	opts.s3 = opts.s3 || new AWS.S3(opts.config);
 
-	opt.store = opt.store || Store(opt);
+	opt.store = Object.keys(opts.s3).length === 0 ? opt.store : Store(opt);
 });
 
 function Store(opt){
@@ -68,9 +68,10 @@ function Store(opt){
 		//console.log("RS3 GET ---->", file);
 		s3.getObject(params, function got(err, ack){
 			if(err && 'NoSuchKey' === err.code){ err = u }
-			//console.log("RS3 GOT <----", err, file, cbs.length, ((ack||{}).Body||'').toString().slice(0,20));
+			//console.log("RS3 GOT <----", err, file, cbs.length, ((ack||{}).Body||'').length);//.toString().slice(0,20));
 			delete c.g[file];//Gun.obj.del(c.g, file);
 			var data, data = (ack||'').Body;
+			//console.log(1, process.memoryUsage().heapUsed);
 			var i = 0, cba; while(cba = cbs[i++]){ cba && cba(err, data) }//Gun.obj.map(cbs, cbe);
 		});
 	};
@@ -100,7 +101,7 @@ function Store(opt){
     });
 	};
 	//store.list(function(){ return true });
-	require('./rfsmix')(opt, store); // ugly, but gotta move fast for now.
+	if(false !== opt.rfs){ require('./rfsmix')(opt, store) } // ugly, but gotta move fast for now.
 	return store;
 }
 

@@ -1,0 +1,12 @@
+{
+  "name": "peersocial-dev",
+  "version": "0.0.1",
+  "main": "./nwjs.html",
+  "chromium-args": "--enable-experimental-web-platform-features --allow-insecure-localhost",
+  "window": {
+    "show": false,
+    "icon": "./icon.png"
+  },
+  "domain": "www.peersocial.io",
+  "node-remote": ["*://www.peersocial.io/*", "*://localhost:*/*"]
+}

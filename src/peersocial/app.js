@@ -20,17 +20,17 @@ var config = [
     require("./profile/plugin"),
     require("./peers/plugin"),
     //"peerapp/plugin",
-    require("./peerapp_v2/plugin"),
-    require("./gun-fs/plugin"),
+    // require("./peerapp_v2/plugin"),
+    // require("./gun-fs/plugin"),
 
     
 ];
 
 setTimeout(function() {
 
-    if(window.nw_app_core){
-        config.push(require("./nw_app/nw_app"));
-    }
+    // if(window.nw_app_core){
+    //     config.push(require("./nw_app/nw_app"));
+    // }
 
     (function() {
 
