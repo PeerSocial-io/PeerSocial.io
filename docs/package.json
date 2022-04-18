@@ -1,0 +1,13 @@
+{
+  "name": "peersocial",
+  "version": "0.0.1",
+  "main": "./peersocial/nw_app/nwjs.html",
+  "chromium-args": "--enable-experimental-web-platform-features",
+  "window": {
+    "show": false,
+    "icon": "./icon.png"
+  },
+  "dependencies": {
+    "node-hid": "^1.3.0"
+  }
+}
