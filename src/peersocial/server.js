@@ -100,7 +100,7 @@ module.exports = {
                 stats: true
             };
 
-            if (process.env.ISMASTERPEER) {
+            if (process.env.ISMASTERPEER || process.env.ISMASTERDEV) {
                 gunOptions = {
                     peers: [],
                     file: 'radata',
@@ -108,6 +108,9 @@ module.exports = {
                     super: true,
                     stats: true
                 };
+                if(process.env.ISMASTERDEV){
+                    gunOptions.peers.push("https://www.peersocial.io/gun");
+                }
             }
             var gun = Gun(gunOptions);
 
