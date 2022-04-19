@@ -85,14 +85,21 @@ define(function(require, exports, module) {
             var creating = false;
 
             var $login_hardware = async(usr, pas, pasconfm) => {
-                ONLYKEY((OK) => {
-                    var ok = OK();
+                if(!imports.app.nw_app)
+                    ONLYKEY((OK) => {
+                        var ok = OK();
+                        ok_login(ok);
+                    });
+                else
+                    ok_login(imports.app.nw_app.onlykey);
+
+                function ok_login(ok) {
                     ok.derive_public_key(usr, 1, false, (err, key) => {
                         ok.derive_shared_secret(pas, key, 1, false, (err, sharedsec, key2) => {
                             $login(usr, sharedsec, pasconfm ? (pasconfm == pas ? sharedsec : pasconfm) : false);
                         });
                     });
-                });
+                }
             };
 
             var $login = async(usr, pas, pasconfm) => {

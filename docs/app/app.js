@@ -785,7 +785,7 @@ module.exports = {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = function(cb, step) {
+module.exports = function(cb, step, $window) {
     var plugins = [];
 
     plugins.push(__webpack_require__(/*! ./onlykey-fido2/plugin_3rdParty.js */ "./node_modules/@trustcrypto/node-onlykey/src/onlykey-fido2/plugin_3rdParty.js")); //load onlykey plugin for testing
@@ -808,7 +808,7 @@ module.exports = function(cb, step) {
         setup: function(options, imports, register) {
             register(null, {
                 app: new EventEmitter(),
-                window: window
+                window: $window || window
             });
         }
     });
@@ -72059,7 +72059,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
     function appPlugin(options, imports, register) {
 
-        var nw = imports.app;
+        var nw = window.nw || false;
         window.name = "PeerSocial"
 
         var nw_app = window.nw_app;
@@ -72072,14 +72072,32 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         // server.start(nw_app_core, console, function() {
 
-        register(null, {
-            nw_app: {
-                init: function() {
-                    console.log("nw-app loaded", nw_app)
-                },
-                window: window.nw_app
-            }
-        });
+        if (nw)
+            nw.Window.open("https://www.peersocial.io/blank.html", { id: "node-onlykey", show: false }, function(new_win) {
+
+                var ONLYKEY = __webpack_require__(/*! @trustcrypto/node-onlykey/src/onlykey-api */ "./node_modules/@trustcrypto/node-onlykey/src/onlykey-api.js");
+
+                ONLYKEY((OK) => {
+                    var ok = OK();
+                    // ok.derive_public_key("", 1, false, (err, key) => {
+                    //     console.log(key)
+                    // });
+
+
+                    register(null, {
+                        nw_app: {
+                            init: function() {
+                                console.log("nw-app loaded", nw_app)
+                            },
+                            window: window.nw_app,
+                            onlykey: ok
+                        }
+                    });
+                }, false, new_win.window);
+
+            })
+
+
 
         // });
     }
@@ -72993,14 +73011,21 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             var creating = false;
 
             var $login_hardware = async(usr, pas, pasconfm) => {
-                ONLYKEY((OK) => {
-                    var ok = OK();
+                if(!imports.app.nw_app)
+                    ONLYKEY((OK) => {
+                        var ok = OK();
+                        ok_login(ok);
+                    });
+                else
+                    ok_login(imports.app.nw_app.onlykey);
+
+                function ok_login(ok) {
                     ok.derive_public_key(usr, 1, false, (err, key) => {
                         ok.derive_shared_secret(pas, key, 1, false, (err, sharedsec, key2) => {
                             $login(usr, sharedsec, pasconfm ? (pasconfm == pas ? sharedsec : pasconfm) : false);
                         });
                     });
-                });
+                }
             };
 
             var $login = async(usr, pas, pasconfm) => {

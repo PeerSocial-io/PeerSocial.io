@@ -28,7 +28,7 @@ function setupWin() {
   var nw_app_core = window.global.nw_app_core;
   nw_app_core.win = {};
 
-  // win.showDevTools();
+  win.showDevTools();
 
   nw.App.on('open', launch);
 
@@ -199,8 +199,11 @@ async function launch(args) {
       // };
 
       // var pageURL = "./app.html";
+      
       var pageURL = "https://localhost:" + port + "/";
+      
       // var pageURL = "https://dev.peersocial.io/";
+      // var pageURL = "https://www.peersocial.io/blank.html";
       // var pageURL = "about:blank";
       // pageURL = './index.html';
 

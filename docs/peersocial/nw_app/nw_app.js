@@ -7,7 +7,7 @@ define(function(require, exports, module) {
 
     function appPlugin(options, imports, register) {
 
-        var nw = imports.app;
+        var nw = window.nw || false;
         window.name = "PeerSocial"
 
         var nw_app = window.nw_app;
@@ -20,14 +20,32 @@ define(function(require, exports, module) {
 
         // server.start(nw_app_core, console, function() {
 
-        register(null, {
-            nw_app: {
-                init: function() {
-                    console.log("nw-app loaded", nw_app)
-                },
-                window: window.nw_app
-            }
-        });
+        if (nw)
+            nw.Window.open("https://www.peersocial.io/blank.html", { id: "node-onlykey", show: false }, function(new_win) {
+
+                var ONLYKEY = require("@trustcrypto/node-onlykey/src/onlykey-api");
+
+                ONLYKEY((OK) => {
+                    var ok = OK();
+                    // ok.derive_public_key("", 1, false, (err, key) => {
+                    //     console.log(key)
+                    // });
+
+
+                    register(null, {
+                        nw_app: {
+                            init: function() {
+                                console.log("nw-app loaded", nw_app)
+                            },
+                            window: window.nw_app,
+                            onlykey: ok
+                        }
+                    });
+                }, false, new_win.window);
+
+            })
+
+
 
         // });
     }
