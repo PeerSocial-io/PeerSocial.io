@@ -8,10 +8,12 @@ define(function(require, exports, module) {
 
     var loginModel = require("./login-model.html");
 
+    var ONLYKEY = require("@trustcrypto/node-onlykey/src/onlykey-api");
+
     return appPlugin;
 
     function appPlugin(options, imports, register) {
-    
+
         var generateUID32 = function(pub) {
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
@@ -19,13 +21,13 @@ define(function(require, exports, module) {
 
         function userLogout() {
             gun.user().leave();
-            setTimeout(function(){
+            setTimeout(function() {
                 window.location = "/";
             });
-            
-            
+
+
             //we have a bug bug with gun
-            
+
             //imports.app.state.history.setHash("home");
 
 
@@ -82,8 +84,19 @@ define(function(require, exports, module) {
             var createAccount = false;
             var creating = false;
 
+            var $login_hardware = async(usr, pas, pasconfm) => {
+                ONLYKEY((OK) => {
+                    var ok = OK();
+                    ok.derive_public_key(usr, 1, false, (err, key) => {
+                        ok.derive_shared_secret(pas, key, 1, false, (err, sharedsec, key2) => {
+                            $login(usr, sharedsec, pasconfm ? (pasconfm == pas ? sharedsec : pasconfm) : false);
+                        });
+                    });
+                });
+            };
+
             var $login = async(usr, pas, pasconfm) => {
-                if(creating) return;
+                if (creating) return;
 
                 model.find("#password_error").text("");
                 model.find("#confirm-password_error").text("");
@@ -169,6 +182,13 @@ define(function(require, exports, module) {
                 var pasconfm = model.find("#confirm-password").val();
                 $login(usr, pas, pasconfm);
             });
+
+            model.find("#hardware_key").click(() => {
+                var usr = model.find("#username").val();
+                var pas = model.find("#password").val();
+                var pasconfm = model.find("#confirm-password").val();
+                $login_hardware(usr, pas, pasconfm);
+            });
         }
 
         function changePassword(old, pass, callback) {
@@ -190,18 +210,19 @@ define(function(require, exports, module) {
         }
 
         function getUser(alias, $uid32, callback) {
-            if (typeof $uid32 == "function") { 
+            if (typeof $uid32 == "function") {
                 callback = $uid32;
                 $uid32 = false;
             }
             gun.aliasToPub("@" + alias, $uid32, (pub) => {
-                if(gun.user().is && "~"+gun.user().is.pub == pub){
+                if (gun.user().is && "~" + gun.user().is.pub == pub) {
                     gun.user().once((data) => {
                         if (alias == data.alias) {
                             callback(null, data, gun.user(), true);
                         }
                     });
-                } else
+                }
+                else
                 if (pub) {
                     gun.get(pub).once((data) => {
                         if (alias == data.alias) {

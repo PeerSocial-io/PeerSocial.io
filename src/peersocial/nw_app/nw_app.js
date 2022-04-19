@@ -6,10 +6,10 @@ define(function(require, exports, module) {
     return appPlugin;
 
     function appPlugin(options, imports, register) {
-        
+
         var nw = imports.app;
         window.name = "PeerSocial"
-        
+
         var nw_app = window.nw_app;
         // // console.log(window.nw_app.test())
         // nw_app_core.require = imports.app.nw.require("./nw_app_require.js");
@@ -24,7 +24,8 @@ define(function(require, exports, module) {
             nw_app: {
                 init: function() {
                     console.log("nw-app loaded", nw_app)
-                }
+                },
+                window: window.nw_app
             }
         });
 

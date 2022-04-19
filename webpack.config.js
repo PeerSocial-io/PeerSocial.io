@@ -19,6 +19,10 @@ let plugins = [
             //Note:- No wildcard is specified hence will copy all files and folders
             from: './node_modules/gun', //Will resolve to RepoDir/src/assets 
             to: './gun' //Copies all files from above dest to dist/assets
+        }, {
+            //Note:- No wildcard is specified hence will copy all files and folders
+            from: './node_modules/@fortawesome/fontawesome-free', //Will resolve to RepoDir/src/assets 
+            to: './fontawesome' //Copies all files from above dest to dist/assets
         }, ]
     }),
 
