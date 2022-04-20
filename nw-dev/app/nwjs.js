@@ -28,7 +28,7 @@ function setupWin() {
   var nw_app_core = window.global.nw_app_core;
   nw_app_core.win = {};
 
-  win.showDevTools();
+  // win.showDevTools();
 
   nw.App.on('open', launch);
 
@@ -77,7 +77,8 @@ function openWindow(pageURL, server) {
   // if(!nw_app_core.win[WINDOW_ID])
   nw.Window.open(pageURL, { id: WINDOW_ID, show: true }, function(new_win) {
 
-    if(DEBUG) new_win.showDevTools();
+    // if(DEBUG) 
+      new_win.showDevTools();
     nw_app_core.win[WINDOW_ID] = new_win;
     
 

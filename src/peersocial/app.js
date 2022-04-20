@@ -29,7 +29,7 @@ var config = [
 
 setTimeout(function() {
 
-    if(window.nw_app){
+    if(window.nw_app || window.nw){
         config.push(require("./nw_app/nw_app"));
     }
 

@@ -9,8 +9,11 @@ define(function(require, exports, module) {
 
         var nw = window.nw || false;
         window.name = "PeerSocial"
-
+        
         var nw_app = window.nw_app;
+        
+        if(!nw_app && window.nw)
+         nw_app = nw.Window.get();
         // // console.log(window.nw_app.test())
         // nw_app_core.require = imports.app.nw.require("./nw_app_require.js");
         // r.resolve("./nw_app");

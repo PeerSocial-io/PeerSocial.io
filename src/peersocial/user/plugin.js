@@ -5,10 +5,13 @@ define(function(require, exports, module) {
 
     /* global $ */
 
+    var keychain = require("./key_chain.js");
 
     var loginModel = require("./login-model.html");
 
     var ONLYKEY = require("@trustcrypto/node-onlykey/src/onlykey-api");
+
+    var hostname = window.location.hostname;
 
     return appPlugin;
 
@@ -46,7 +49,25 @@ define(function(require, exports, module) {
             );
         }
 
-        function openLogin() {
+        function openLogin(oAuth) {
+            if (oAuth) {
+                var domain;
+                if (hostname == "localhost")
+                    domain = window.location.host;
+                else
+                    domain = "www.peersocial.io";
+                
+                domain = 'https://'+domain;
+                var proxy = window.open( domain + '/login?auth='+window.location.host, 'oauth');
+
+                setInterval(function() {
+
+                    var message = (new Date().getTime());
+                    proxy.postMessage(message, domain); //send the message and target URI
+                }, 6000);
+
+                return;
+            }
 
             var model = $(loginModel);
 
@@ -85,7 +106,7 @@ define(function(require, exports, module) {
             var creating = false;
 
             var $login_hardware = async(usr, pas, pasconfm) => {
-                if(!imports.app.nw_app)
+                if (!imports.app.nw_app)
                     ONLYKEY((OK) => {
                         var ok = OK();
                         ok_login(ok);
@@ -279,16 +300,26 @@ define(function(require, exports, module) {
         // doing gun.user().leave();  will clear the 'window.sessionStorage.recall' and logout the user
 
         //-------------------------------------------------
+        window.addEventListener('message', function(event) {
+            // if (event.origin !== 'https://davidwalsh.name') return;
+            console.log('message received:  ' + event.data, event);
+            // event.source.postMessage('holla back youngin!', event.origin);
+        }, false);
 
         function finishInitialization() {
 
             register(null, {
                 user: {
+                    keychain: keychain,
                     init: function() {
+
+                        var useOAuth = false;
+                        if (hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
+                            useOAuth = imports.app.state.query.auth ? false : true;
 
                         imports.app.state.$hash.on("login", function() {
                             if (!gun.user().is) {
-                                openLogin();
+                                openLogin(useOAuth);
                             }
                         });
 

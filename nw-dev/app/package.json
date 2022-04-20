@@ -2,7 +2,7 @@
   "name": "peersocial-dev",
   "version": "0.0.1",
   "main": "./nwjs.html",
-  "chromium-args": "--enable-experimental-web-platform-features --allow-insecure-localhost",
+  "chromium-args": "--user-data-dir='./user-data/' --enable-experimental-web-platform-features --allow-insecure-localhost",
   "window": {
     "show": false,
     "icon": "./icon.png"
