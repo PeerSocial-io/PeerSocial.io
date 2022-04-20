@@ -87619,7 +87619,7 @@ setTimeout(function() {
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
     appPlugin.consumes = ["app", "provable"];
-    appPlugin.provides = ["gun"];
+    appPlugin.provides = ["gun", "sea"];
 
     // if(window.global && window.global.nw_app_core)    appPlugin.consumes.push("nw_app");
 
@@ -87703,6 +87703,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 
             register(null, {
                 gun: gun,
+                sea: Gun.SEA,
                 gunUser: gun.user()
             });
             
@@ -103139,7 +103140,7 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
+/* WEBPACK VAR INJECTION */(function(Buffer) {var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
     appPlugin.consumes = ["app", "gun", "provable"];
     appPlugin.provides = ["user"];
@@ -103190,25 +103191,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             );
         }
 
-        function openLogin(oAuth) {
-            if (oAuth) {
-                var domain;
-                if (hostname == "localhost")
-                    domain = window.location.host;
-                else
-                    domain = "www.peersocial.io";
-                
-                domain = 'https://'+domain;
-                var proxy = window.open( domain + '/login?auth='+window.location.host, 'oauth');
-
-                setInterval(function() {
-
-                    var message = (new Date().getTime());
-                    proxy.postMessage(message, domain); //send the message and target URI
-                }, 6000);
-
-                return;
-            }
+        function openLogin() {
 
             var model = $(loginModel);
 
@@ -103441,11 +103424,76 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // doing gun.user().leave();  will clear the 'window.sessionStorage.recall' and logout the user
 
         //-------------------------------------------------
-        window.addEventListener('message', function(event) {
-            // if (event.origin !== 'https://davidwalsh.name') return;
-            console.log('message received:  ' + event.data, event);
-            // event.source.postMessage('holla back youngin!', event.origin);
-        }, false);
+
+        function authrize_auth() {
+            var useOAuth = false;
+            if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
+                useOAuth = true;
+
+
+            if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
+                if (!gun.user().is) {
+                    imports.app.on("login", ($me, $user)=>{
+                        authrize_auth();
+                    });
+                    openLogin();
+                }
+                else {
+                    keychain("test").then((room) => {
+                        imports.app.sea.certify(
+                            imports.app.state.query.pub, // everybody is allowed to write
+                            { "*": "notifications", "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
+                            room, //authority
+                            null, //no need for callback here
+                            { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
+                        ).then(async(cert) => {
+                            console.log(cert);
+                            var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, room)); // pair.epriv will be used as a passphrase
+                            //window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&cert=" + (new Buffer(d).toString("base64"));
+                        });
+                    });
+                }
+                return true;
+            }
+
+
+            if (useOAuth) {
+
+                keychain().then((room) => {
+
+                    var domain;
+                    if (hostname == "localhost")
+                        domain = window.location.host;
+                    else
+                        domain = "www.peersocial.io";
+
+                    domain = 'https://' + domain;
+                    var proxy = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth');
+
+                    var interval = setInterval(function() {
+
+                        // var message = (new Date().getTime());
+                        // proxy.postMessage(message, domain); //send the message and target URI
+                        if (proxy.location.pathname == "/blank.html") {
+                            var url = __webpack_require__(/*! url */ "./node_modules/node-libs-browser/node_modules/url/url.js");
+                            var query = url.parse(proxy.location.href, true).query;
+                            var cert = query.cert;
+                            if (cert) {
+                                (async() => {
+                                    cert = Buffer.from(cert, "base64").toString("utf8");
+                                    cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
+                                    console.log(cert);
+                                })();
+                            }
+                            clearInterval(interval);
+                            proxy.close();
+                        }
+                    }, 500);
+                });
+                return true;
+            }
+            return false;
+        }
 
         function finishInitialization() {
 
@@ -103454,14 +103502,12 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     keychain: keychain,
                     init: function() {
 
-                        var useOAuth = false;
-                        if (hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
-                            useOAuth = imports.app.state.query.auth ? false : true;
 
                         imports.app.state.$hash.on("login", function() {
-                            if (!gun.user().is) {
-                                openLogin(useOAuth);
+                            if (!authrize_auth() && !gun.user().is) {
+                                openLogin();
                             }
+
                         });
 
                         imports.app.state.$hash.on("logout", function() {
@@ -103476,11 +103522,14 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             prepLogout();
 
                         imports.app.on("start", () => {
-                            if (sessionRestored)
+                            if (sessionRestored) {
                                 me((err, $me, $user) => {
                                     if (err) console.log(err);
                                     imports.app.emit("login", $me, $user);
                                 });
+                            }
+
+
                         });
 
                     },
@@ -103500,6 +103549,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
 }).call(exports, __webpack_require__, exports, module),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 
