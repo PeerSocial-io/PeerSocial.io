@@ -103500,11 +103500,13 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 
                                         if (!res.err) {
                                             if (gun.user().is) {
+                                                prepLogout();
                                                 me((err, $me, $user) => {
                                                     if (err) console.log(err);
                                                     var uid32 = generateUID32("~" + $me.pub);
                                                     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
                                                     imports.app.emit("login", $me, $user);
+                                                    imports.app.state.history.back();
                                                 });
                                             }
                                         }

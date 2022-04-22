@@ -358,6 +358,7 @@ define(function(require, exports, module) {
 
                                         if (!res.err) {
                                             if (gun.user().is) {
+                                                prepLogout();
                                                 me((err, $me, $user) => {
                                                     if (err) console.log(err);
                                                     var uid32 = generateUID32("~" + $me.pub);
