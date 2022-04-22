@@ -327,7 +327,7 @@ define(function(require, exports, module) {
                         domain = "www.peersocial.io";
 
                     domain = 'https://' + domain;
-                    var popupOptions = { popup: true };
+                    var popupOptions = { popup: true , height: 800 };
                     var popup = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth', popupOptions);
 
                     var interval = setInterval(function() {

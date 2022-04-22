@@ -103433,25 +103433,25 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 
             if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
                 if (!gun.user().is) {
-                    imports.app.on("login", ($me, $user)=>{
+                    imports.app.on("login", ($me, $user) => {
                         authrize_auth();
                     });
                     openLogin();
                 }
                 else {
                     // keychain("test").then((room) => {
-                        var room = gun.user()._.sea;
-                        imports.app.sea.certify(
-                            imports.app.state.query.pub, // everybody is allowed to write
-                            { "*": "notifications", "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
-                            room, //authority
-                            null, //no need for callback here
-                            { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
-                        ).then(async(cert) => {
-                            console.log(cert);
-                            var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, gun.user()._.sea)); // pair.epriv will be used as a passphrase
-                            // window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&cert=" + (new Buffer(d).toString("base64"));
-                        });
+                    var room = gun.user()._.sea;
+                    imports.app.sea.certify(
+                        imports.app.state.query.pub, // everybody is allowed to write
+                        { "*": "notifications", "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
+                        room, //authority
+                        null, //no need for callback here
+                        { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
+                    ).then(async(cert) => {
+                        console.log(cert);
+                        var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, gun.user()._.sea)); // pair.epriv will be used as a passphrase
+                        window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&cert=" + (new Buffer(d).toString("base64"));
+                    });
                     // });
                 }
                 return true;
@@ -103469,15 +103469,16 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                         domain = "www.peersocial.io";
 
                     domain = 'https://' + domain;
-                    var proxy = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth');
+                    var popupOptions = { popup: true , height: 800 };
+                    var popup = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth', popupOptions);
 
                     var interval = setInterval(function() {
 
                         // var message = (new Date().getTime());
                         // proxy.postMessage(message, domain); //send the message and target URI
-                        if (proxy.location.pathname == "/blank.html") {
+                        if (popup.location.pathname == "/blank.html") {
                             var url = __webpack_require__(/*! url */ "./node_modules/node-libs-browser/node_modules/url/url.js");
-                            var query = url.parse(proxy.location.href, true).query;
+                            var query = url.parse(popup.location.href, true).query;
                             var cert = query.cert;
                             if (cert) {
                                 (async() => {
@@ -103485,11 +103486,11 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                                     cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
                                     query.cert = cert;
                                     console.log(query);
-                                    // gun.user().auth(usr, room, function(res) {})
+                                    gun.user().auth(room, function(res) {})
                                 })();
                             }
                             clearInterval(interval);
-                            proxy.close();
+                            popup.close();
                         }
                     }, 500);
                 });
