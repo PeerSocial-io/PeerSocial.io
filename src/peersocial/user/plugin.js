@@ -291,25 +291,25 @@ define(function(require, exports, module) {
 
             if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
                 if (!gun.user().is) {
-                    imports.app.on("login", ($me, $user)=>{
+                    imports.app.on("login", ($me, $user) => {
                         authrize_auth();
                     });
                     openLogin();
                 }
                 else {
                     // keychain("test").then((room) => {
-                        var room = gun.user()._.sea;
-                        imports.app.sea.certify(
-                            imports.app.state.query.pub, // everybody is allowed to write
-                            { "*": "notifications", "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
-                            room, //authority
-                            null, //no need for callback here
-                            { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
-                        ).then(async(cert) => {
-                            console.log(cert);
-                            var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, gun.user()._.sea)); // pair.epriv will be used as a passphrase
-                            // window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&cert=" + (new Buffer(d).toString("base64"));
-                        });
+                    var room = gun.user()._.sea;
+                    imports.app.sea.certify(
+                        imports.app.state.query.pub, // everybody is allowed to write
+                        { "*": "notifications", "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
+                        room, //authority
+                        null, //no need for callback here
+                        { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
+                    ).then(async(cert) => {
+                        console.log(cert);
+                        var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, gun.user()._.sea)); // pair.epriv will be used as a passphrase
+                        window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&cert=" + (new Buffer(d).toString("base64"));
+                    });
                     // });
                 }
                 return true;
@@ -327,7 +327,7 @@ define(function(require, exports, module) {
                         domain = "www.peersocial.io";
 
                     domain = 'https://' + domain;
-                    var proxy = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth');
+                    var proxy = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth', { popup: true });
 
                     var interval = setInterval(function() {
 
@@ -343,7 +343,7 @@ define(function(require, exports, module) {
                                     cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
                                     query.cert = cert;
                                     console.log(query);
-                                    gun.user().auth(false, room, function(res) {})
+                                    gun.user().auth(room, function(res) {})
                                 })();
                             }
                             clearInterval(interval);
