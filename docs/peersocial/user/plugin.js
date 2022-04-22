@@ -297,7 +297,8 @@ define(function(require, exports, module) {
                     openLogin();
                 }
                 else {
-                    keychain("test").then((room) => {
+                    // keychain("test").then((room) => {
+                        var room = gun.user()._.sea;
                         imports.app.sea.certify(
                             imports.app.state.query.pub, // everybody is allowed to write
                             { "*": "notifications", "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
@@ -306,10 +307,10 @@ define(function(require, exports, module) {
                             { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
                         ).then(async(cert) => {
                             console.log(cert);
-                            var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, room)); // pair.epriv will be used as a passphrase
-                            //window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&cert=" + (new Buffer(d).toString("base64"));
+                            var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, gun.user()._.sea)); // pair.epriv will be used as a passphrase
+                            // window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&cert=" + (new Buffer(d).toString("base64"));
                         });
-                    });
+                    // });
                 }
                 return true;
             }
@@ -340,7 +341,9 @@ define(function(require, exports, module) {
                                 (async() => {
                                     cert = Buffer.from(cert, "base64").toString("utf8");
                                     cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
-                                    console.log(cert);
+                                    query.cert = cert;
+                                    console.log(query);
+                                    // gun.user().auth(usr, room, function(res) {})
                                 })();
                             }
                             clearInterval(interval);
