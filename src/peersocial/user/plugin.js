@@ -395,7 +395,8 @@ define(function(require, exports, module) {
                             if (!authrize_auth() && !gun.user().is) {
                                 openLogin();
                             }
-
+                            if (gun.user().is)
+                                prepLogout();
                         });
 
                         imports.app.state.$hash.on("logout", function() {
