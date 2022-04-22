@@ -327,15 +327,16 @@ define(function(require, exports, module) {
                         domain = "www.peersocial.io";
 
                     domain = 'https://' + domain;
-                    var proxy = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth', { popup: true });
+                    var popupOptions = { popup: true };
+                    var popup = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth', popupOptions);
 
                     var interval = setInterval(function() {
 
                         // var message = (new Date().getTime());
                         // proxy.postMessage(message, domain); //send the message and target URI
-                        if (proxy.location.pathname == "/blank.html") {
+                        if (popup.location.pathname == "/blank.html") {
                             var url = require("url");
-                            var query = url.parse(proxy.location.href, true).query;
+                            var query = url.parse(popup.location.href, true).query;
                             var cert = query.cert;
                             if (cert) {
                                 (async() => {
@@ -347,7 +348,7 @@ define(function(require, exports, module) {
                                 })();
                             }
                             clearInterval(interval);
-                            proxy.close();
+                            popup.close();
                         }
                     }, 500);
                 });
