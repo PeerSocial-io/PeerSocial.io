@@ -327,12 +327,12 @@ define(function(require, exports, module) {
                         domain = "www.peersocial.io";
 
                     domain = 'https://' + domain;
-                    var popupOptions = { popup: true , height: 800 };
+                    var popupOptions = { popup: true, height: 800 };
                     var popup = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth', popupOptions);
 
                     var interval = setInterval(function() {
-                        if(popup.window == null){
-                            
+                        if (popup.window == null) {
+
                             clearInterval(interval);
                             imports.app.state.history.back();
                             return;
@@ -349,7 +349,21 @@ define(function(require, exports, module) {
                                     cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
                                     query.cert = cert;
                                     console.log(query);
-                                    gun.user().auth(room, function(res) {})
+                                    gun.user().auth(room, function(res) {
+
+                                        if (!res.err) {
+                                            if (gun.user().is) {
+                                                me((err, $me, $user) => {
+                                                    if (err) console.log(err);
+                                                    var uid32 = generateUID32("~" + $me.pub);
+                                                    if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
+                                                    imports.app.emit("login", $me, $user);
+                                                });
+                                            }
+                                        }
+
+
+                                    });
                                 })();
                             }
                             clearInterval(interval);
