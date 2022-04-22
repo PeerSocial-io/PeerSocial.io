@@ -331,7 +331,12 @@ define(function(require, exports, module) {
                     var popup = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth', popupOptions);
 
                     var interval = setInterval(function() {
-
+                        if(popup.window == null){
+                            
+                            clearInterval(interval);
+                            imports.app.state.history.back();
+                            return;
+                        }
                         // var message = (new Date().getTime());
                         // proxy.postMessage(message, domain); //send the message and target URI
                         if (popup.location.pathname == "/blank.html") {
