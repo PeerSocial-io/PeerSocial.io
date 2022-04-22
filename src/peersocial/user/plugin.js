@@ -161,6 +161,8 @@ define(function(require, exports, module) {
                                                     creating = false;
                                                     $login(usr, pas);
                                                 }
+                                            },{
+                                                already:true
                                             });
                                         }
                                         else {
@@ -308,7 +310,7 @@ define(function(require, exports, module) {
                     ).then(async(cert) => {
                         console.log(cert);
                         var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, gun.user()._.sea)); // pair.epriv will be used as a passphrase
-                        window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&cert=" + (new Buffer(d).toString("base64"));
+                        window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
                     });
                     // });
                 }
@@ -337,6 +339,9 @@ define(function(require, exports, module) {
                             imports.app.state.history.back();
                             return;
                         }
+                        
+                        try{(popup.location.pathname == "/blank.html")}catch(e){return;}
+                        
                         // var message = (new Date().getTime());
                         // proxy.postMessage(message, domain); //send the message and target URI
                         if (popup.location.pathname == "/blank.html") {

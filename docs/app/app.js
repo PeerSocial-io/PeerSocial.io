@@ -103303,6 +103303,8 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                                                     creating = false;
                                                     $login(usr, pas);
                                                 }
+                                            },{
+                                                already:true
                                             });
                                         }
                                         else {
@@ -103450,7 +103452,7 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                     ).then(async(cert) => {
                         console.log(cert);
                         var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, gun.user()._.sea)); // pair.epriv will be used as a passphrase
-                        window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&cert=" + (new Buffer(d).toString("base64"));
+                        window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
                     });
                     // });
                 }
@@ -103469,11 +103471,19 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                         domain = "www.peersocial.io";
 
                     domain = 'https://' + domain;
-                    var popupOptions = { popup: true , height: 800 };
+                    var popupOptions = { popup: true, height: 800 };
                     var popup = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth', popupOptions);
 
                     var interval = setInterval(function() {
+                        if (popup.window == null) {
 
+                            clearInterval(interval);
+                            imports.app.state.history.back();
+                            return;
+                        }
+                        
+                        try{(popup.location.pathname == "/blank.html")}catch(e){return;}
+                        
                         // var message = (new Date().getTime());
                         // proxy.postMessage(message, domain); //send the message and target URI
                         if (popup.location.pathname == "/blank.html") {
@@ -103486,7 +103496,21 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                                     cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
                                     query.cert = cert;
                                     console.log(query);
-                                    gun.user().auth(room, function(res) {})
+                                    gun.user().auth(room, function(res) {
+
+                                        if (!res.err) {
+                                            if (gun.user().is) {
+                                                me((err, $me, $user) => {
+                                                    if (err) console.log(err);
+                                                    var uid32 = generateUID32("~" + $me.pub);
+                                                    if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
+                                                    imports.app.emit("login", $me, $user);
+                                                });
+                                            }
+                                        }
+
+
+                                    });
                                 })();
                             }
                             clearInterval(interval);
