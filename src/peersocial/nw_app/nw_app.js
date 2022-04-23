@@ -9,11 +9,16 @@ define(function(require, exports, module) {
 
         var nw = window.nw || false;
         window.name = "PeerSocial"
-        
+
         var nw_app = window.nw_app;
-        
-        if(!nw_app && window.nw)
-         nw_app = nw.Window.get();
+
+
+        var hostname = window.location.hostname, is_localhost;
+        if ( hostname == "localhost" /*&& hostname != "localhost" */ )
+            is_localhost = true;
+
+        if (!nw_app && window.nw)
+            nw_app = nw.Window.get();
         // // console.log(window.nw_app.test())
         // nw_app_core.require = imports.app.nw.require("./nw_app_require.js");
         // r.resolve("./nw_app");
@@ -40,6 +45,7 @@ define(function(require, exports, module) {
                             init: function() {
                                 console.log("nw-app loaded", nw_app)
                             },
+                            is_localhost: is_localhost,
                             window: window.nw_app,
                             onlykey: ok
                         }

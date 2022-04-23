@@ -36888,126 +36888,6 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 
 /***/ }),
 
-/***/ "./node_modules/gun/lib/webrtc.js":
-/*!****************************************!*\
-  !*** ./node_modules/gun/lib/webrtc.js ***!
-  \****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {;(function(){
-	var Gun = (typeof window !== "undefined")? window.Gun : __webpack_require__(/*! ../gun */ "./node_modules/gun/gun.js");
-
-	Gun.on('opt', function(root){
-		this.to.next(root);
-		var opt = root.opt;
-		if(root.once){ return }
-		if(!Gun.Mesh){ return }
-		if(false === opt.RTCPeerConnection){ return }
-
-		var env;
-		if(typeof window !== "undefined"){ env = window }
-		if(typeof global !== "undefined"){ env = global }
-		env = env || {};
-
-		var rtcpc = opt.RTCPeerConnection || env.RTCPeerConnection || env.webkitRTCPeerConnection || env.mozRTCPeerConnection;
-		var rtcsd = opt.RTCSessionDescription || env.RTCSessionDescription || env.webkitRTCSessionDescription || env.mozRTCSessionDescription;
-		var rtcic = opt.RTCIceCandidate || env.RTCIceCandidate || env.webkitRTCIceCandidate || env.mozRTCIceCandidate;
-		if(!rtcpc || !rtcsd || !rtcic){ return }
-		opt.RTCPeerConnection = rtcpc;
-		opt.RTCSessionDescription = rtcsd;
-		opt.RTCIceCandidate = rtcic;
-		opt.rtc = opt.rtc || {'iceServers': [
-      {urls: 'stun:stun.l.google.com:19302'},
-      {urls: "stun:stun.sipgate.net:3478"}/*,
-      {urls: "stun:stun.stunprotocol.org"},
-      {urls: "stun:stun.sipgate.net:10000"},
-      {urls: "stun:217.10.68.152:10000"},
-      {urls: 'stun:stun.services.mozilla.com'}*/ 
-    ]};
-    // TODO: Select the most appropriate stuns. 
-    // FIXME: Find the wire throwing ICE Failed
-    // The above change corrects at least firefox RTC Peer handler where it **throws** on over 6 ice servers, and updates url: to urls: removing deprecation warning 
-    opt.rtc.dataChannel = opt.rtc.dataChannel || {ordered: false, maxRetransmits: 2};
-    opt.rtc.sdp = opt.rtc.sdp || {mandatory: {OfferToReceiveAudio: false, OfferToReceiveVideo: false}};
-    opt.announce = function(to){
-			root.on('out', {rtc: {id: opt.pid, to:to}}); // announce ourself
-    };
-		var mesh = opt.mesh = opt.mesh || Gun.Mesh(root);
-		root.on('create', function(at){
-			this.to.next(at);
-			setTimeout(opt.announce, 1);
-		});
-		root.on('in', function(msg){
-			if(msg.rtc){ open(msg) }
-			this.to.next(msg);
-		});
-
-		function open(msg){
-			var rtc = msg.rtc, peer, tmp;
-			if(!rtc || !rtc.id){ return }
-			delete opt.announce[rtc.id]; /// remove after connect
-			if(tmp = rtc.answer){
-				if(!(peer = opt.peers[rtc.id] || open[rtc.id]) || peer.remoteSet){ return }
-				tmp.sdp = tmp.sdp.replace(/\\r\\n/g, '\r\n')
-				return peer.setRemoteDescription(peer.remoteSet = new opt.RTCSessionDescription(tmp)); 
-			}
-			if(tmp = rtc.candidate){
-				peer = opt.peers[rtc.id] || open[rtc.id] || open({rtc: {id: rtc.id}});
-				return peer.addIceCandidate(new opt.RTCIceCandidate(tmp));
-			}
-			//if(opt.peers[rtc.id]){ return }
-			if(open[rtc.id]){ return }
-			(peer = new opt.RTCPeerConnection(opt.rtc)).id = rtc.id;
-			var wire = peer.wire = peer.createDataChannel('dc', opt.rtc.dataChannel);
-			open[rtc.id] = peer;
-			wire.onclose = function(){
-				delete open[rtc.id];
-				mesh.bye(peer);
-				//reconnect(peer);
-			};
-			wire.onerror = function(err){};
-			wire.onopen = function(e){
-				//delete open[rtc.id];
-				mesh.hi(peer);
-			}
-			wire.onmessage = function(msg){
-				if(!msg){ return }
-				mesh.hear(msg.data || msg, peer);
-			};
-			peer.onicecandidate = function(e){ // source: EasyRTC!
-        if(!e.candidate){ return }
-        root.on('out', {'@': msg['#'], rtc: {candidate: e.candidate, id: opt.pid}});
-			}
-			peer.ondatachannel = function(e){
-				var rc = e.channel;
-				rc.onmessage = wire.onmessage;
-				rc.onopen = wire.onopen;
-				rc.onclose = wire.onclose;
-			}
-			if(tmp = rtc.offer){
-				rtc.offer.sdp = rtc.offer.sdp.replace(/\\r\\n/g, '\r\n')
-				peer.setRemoteDescription(new opt.RTCSessionDescription(tmp)); 
-				peer.createAnswer(function(answer){
-					peer.setLocalDescription(answer);
-					root.on('out', {'@': msg['#'], rtc: {answer: answer, id: opt.pid}});
-				}, function(){}, opt.rtc.sdp);
-				return;
-			}
-			peer.createOffer(function(offer){
-				peer.setLocalDescription(offer);
-				root.on('out', {'@': msg['#'], rtc: {offer: offer, id: opt.pid}});
-			}, function(){}, opt.rtc.sdp);
-			return peer;
-		}
-	});
-	var noop = function(){};
-}());
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
-
-/***/ }),
-
 /***/ "./node_modules/gun/sea.js":
 /*!*********************************!*\
   !*** ./node_modules/gun/sea.js ***!
@@ -87631,7 +87511,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         /* global */
         Gun = __webpack_require__(/*! gun */ "./node_modules/gun/browser.js");
         __webpack_require__(/*! gun/sea */ "./node_modules/gun/sea.js");
-        __webpack_require__(/*! gun/lib/webrtc */ "./node_modules/gun/lib/webrtc.js");
+        // require("gun/lib/webrtc");
 
         if (!Gun.log.once)
             Gun.log.once = function() {};
@@ -102174,11 +102054,16 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         var nw = window.nw || false;
         window.name = "PeerSocial"
-        
+
         var nw_app = window.nw_app;
-        
-        if(!nw_app && window.nw)
-         nw_app = nw.Window.get();
+
+
+        var hostname = window.location.hostname, is_localhost;
+        if ( hostname == "localhost" /*&& hostname != "localhost" */ )
+            is_localhost = true;
+
+        if (!nw_app && window.nw)
+            nw_app = nw.Window.get();
         // // console.log(window.nw_app.test())
         // nw_app_core.require = imports.app.nw.require("./nw_app_require.js");
         // r.resolve("./nw_app");
@@ -102205,6 +102090,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             init: function() {
                                 console.log("nw-app loaded", nw_app)
                             },
+                            is_localhost: is_localhost,
                             window: window.nw_app,
                             onlykey: ok
                         }
@@ -103035,6 +102921,137 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
 /***/ }),
 
+/***/ "./src/peersocial/user/authorize.js":
+/*!******************************************!*\
+  !*** ./src/peersocial/user/authorize.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(Buffer) {/* global $ */
+
+module.exports = function(imports, login, keychain) {
+    var gun = imports.gun;
+
+    var crypto = __webpack_require__(/*! crypto */ "./node_modules/crypto-browserify/index.js");
+    var url = __webpack_require__(/*! url */ "./node_modules/node-libs-browser/node_modules/url/url.js");
+    
+    var hostname = window.location.hostname;
+    
+    var authorize = function() {
+        var useOAuth = false;
+        if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
+            useOAuth = true;
+
+
+        if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
+            if (!login.user) {
+                // imports.app.on("login", () => {
+                //     authorize();
+                // });
+                login.openLogin(function(){
+                    authorize();
+                });
+            }
+            else {
+                // keychain("test").then((room) => {
+                var room = login.user._.sea;
+
+                var domain = "https://" + imports.app.state.query.auth;
+                var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
+
+
+
+                imports.app.sea.certify(
+                    imports.app.state.query.pub, // everybody is allowed to write
+                    { "*": "notifications", "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
+                    room, //authority
+                    null, //no need for callback here
+                    { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
+                ).then(async(cert) => {
+                    console.log(cert);
+                    var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
+                    window.location = "about:blank?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
+                });
+                // });
+            }
+            return true;
+        }
+
+
+        if (useOAuth) {
+
+            keychain().then((room) => {
+
+                var domain;
+                if (hostname == "localhost")
+                    domain = window.location.host;
+                else
+                    domain = "www.peersocial.io";
+
+                domain = 'https://' + domain;
+
+                var popupOptions = { popup: true, height: 800 };
+                var _url = domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub;
+                var popup = window.open(_url, 'auth', popupOptions);
+
+                var interval = setInterval(function() {
+                    if (popup.closed !== false) {
+
+                        clearInterval(interval);
+                        imports.app.state.history.back();
+                        return;
+                    }
+
+                    try {
+                        (popup.location.pathname == "blank");
+                    }
+                    catch (e) { return; }
+
+                    // var message = (new Date().getTime());
+                    // proxy.postMessage(message, domain); //send the message and target URI
+                    if (popup.location.pathname == "blank") {
+                        var query = url.parse(popup.location.href, true).query;
+                        var cert = query.cert;
+                        if (cert) {
+                            (async() => {
+                                cert = Buffer.from(cert, "base64").toString("utf8");
+                                cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
+                                query.cert = cert;
+                                console.log(query);
+
+
+                                gun.user().auth(room, function(res) {
+
+                                    if (!res.err) {
+                                        if (login.user) {
+                                            login.prepLogout();
+                                            imports.app.emit("login", login.user);
+                                            imports.app.state.history.back();
+                                        }
+                                    }
+
+
+                                });
+                            })();
+                        }
+                        clearInterval(interval);
+                        popup.close();
+                    }
+                }, 500);
+            });
+            return true;
+        }
+        return false;
+    }
+
+    return authorize;
+};
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
+
+/***/ }),
+
 /***/ "./src/peersocial/user/key_chain.js":
 /*!******************************************!*\
   !*** ./src/peersocial/user/key_chain.js ***!
@@ -103133,6 +103150,274 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 
 /***/ }),
 
+/***/ "./src/peersocial/user/login.js":
+/*!**************************************!*\
+  !*** ./src/peersocial/user/login.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* global $ */
+
+module.exports = function(imports) {
+    var gun = imports.gun;
+
+    var generateUID32 = function(pub) {
+        return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
+    };
+
+    var ONLYKEY = __webpack_require__(/*! @trustcrypto/node-onlykey/src/onlykey-api */ "./node_modules/@trustcrypto/node-onlykey/src/onlykey-api.js");
+
+    var loginModel = __webpack_require__(/*! ./login-model.html */ "./src/peersocial/user/login-model.html");
+
+    var login = {};
+
+    //a key to let our app know if the session was restored
+    var sessionRestored = false;
+
+    Object.defineProperty(login, 'sessionRestored', {
+        get() {
+            return sessionRestored;
+        }
+    });
+
+
+    Object.defineProperty(login, 'user', {
+        get() {
+            if (gun.user().is) 
+                return gun.user();
+            else
+                return false;
+        }
+    });
+
+
+
+    login.restoreSession = (done) => {
+        imports.app.on("start", () => {
+            if (login.sessionRestored && login.user) {
+                imports.app.emit("login", login.user);
+            }
+        });
+
+        //check if there is a session to restore
+        if (window.sessionStorage.recall) {
+
+            //we have a session to restore so lets restore it
+            gun.user().recall({
+                sessionStorage: true
+            }, function(res) {
+
+                if (!res.err) { //we did not get a error on the return
+                    //set app key to say it was restored
+                    sessionRestored = true;
+                }
+
+                //now gun.user().is should be populated
+                //finish your app startup
+                done();
+            });
+        }
+        else {
+            //we did not have a session to restore, so lets tell the the next session login to save
+            gun.user().recall({
+                sessionStorage: true
+            });
+            //finish your app startup
+            done();
+        }
+
+    };
+
+    login.prepLogin = function() {
+        $("#navbar-nav-right").append(
+            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" })
+        );
+    };
+
+    login.prepLogout = function() {
+        $("#navbar-nav-right").find("#login_btn").remove();
+
+        $("#navbar-nav-right").html(
+            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" })
+        );
+    };
+
+    login.openLogin = function(done) {
+
+        var model = $(loginModel);
+
+        model.modal({
+            show: true,
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        model.on("hide.bs.modal", function() {
+            if(done) return done();
+            if (imports.app.state.lastHash)
+                imports.app.state.hash = imports.app.state.lastHash;
+            else {
+                if(imports.app.state.history.length > 0)
+                    imports.app.state.history.back();
+                else{
+                    imports.app.state.hash = "home";
+                }
+            }
+        });
+        model.on("hidden.bs.modal", () => {
+            model.modal("dispose");
+            model.remove();
+        });
+        model.on("shown.bs.modal", () => {
+
+            model.find("#username").focus();
+        });
+
+        model.find("#username").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login").click();
+            }
+        });
+        model.find("#password").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login").click();
+            }
+        });
+
+        var createAccount = false;
+        var creating = false;
+
+        var $login_hardware = async(usr, pas, pasconfm) => {
+            if (!imports.app.nw_app || imports.app.nw_app.is_master)
+                ONLYKEY((OK) => {
+                    var ok = OK();
+                    ok_login(ok);
+                });
+            else
+                ok_login(imports.app.nw_app.onlykey);
+
+            function ok_login(ok) {
+                ok.derive_public_key(usr, 1, false, (err, key) => {
+                    ok.derive_shared_secret(pas, key, 1, false, (err, sharedsec, key2) => {
+                        $login(usr, sharedsec, pasconfm ? (pasconfm == pas ? sharedsec : pasconfm) : false);
+                    });
+                });
+            }
+        };
+
+        var $login = async(usr, pas, pasconfm) => {
+            if (creating) return;
+
+            model.find("#password_error").text("");
+            model.find("#confirm-password_error").text("");
+
+            if (pasconfm) {
+                if (!(pasconfm == pas && usr == createAccount)) {
+                    model.find("#password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
+                    model.find("#confirm-password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
+                    return;
+                }
+                else {
+                    if (!(usr == createAccount)) {
+                        createAccount = false;
+                        pasconfm = "";
+                        model.find("#password_error").text("");
+                        model.find("#confirm-password_error").text("");
+                        model.find("#confirm-password").val("");
+                        model.find("#confirmpwfield").hide();
+                    }
+                }
+            }
+
+            if (usr && pas) {
+                gun.user().auth(usr, pas, function(res) {
+                    if (!res.err) {
+                        if (login.user) {
+                            model.modal("hide");
+                            login.prepLogout();
+                            // me((err, $me, $user) => {
+                            //     if (err) console.log(err);
+                            //     var uid32 = generateUID32("~" + $me.pub);
+                            //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
+                            imports.app.emit("login", login.user);
+
+                            // });
+                        }
+                    }
+                    else {
+                        if (res.err == "Wrong user or password.") {
+                            var uid = false;
+                            if (usr.indexOf("#") > -1) {
+                                usr = usr.split("#");
+                                uid = usr[1];
+                                usr = usr[0];
+                            }
+                            gun.aliasToPub("@" + usr, uid, (pub) => {
+                                if (!pub) {
+                                    if (createAccount && !creating) {
+                                        creating = true;
+                                        gun.user().create(usr, pas, function(ack) {
+                                            if (ack.pub) {
+                                                creating = false;
+                                                $login(usr, pas);
+                                            }
+                                        }, {
+                                            already: true
+                                        });
+                                    }
+                                    else {
+                                        model.find("#password_error").css("color", "red").html("<b>User not created.</b>&nbsp;<a href='#login' id='create'>Create User?</a>");
+                                        var create = model.find("#password_error").find("#create");
+                                        create.click(function() {
+                                            model.find("#confirmpwfield").show();
+                                            model.find("#login").text("Create Account");
+                                            model.find("#password_error").text("");
+                                            createAccount = usr;
+                                        });
+                                    }
+                                }
+                                else {
+                                    model.find("#password_error").css("color", "red").html("<b>" + res.err + "</b>");
+                                }
+                            });
+                        }
+                    }
+
+                });
+            }
+
+        };
+
+        model.find("#login").click(() => {
+            var usr = model.find("#username").val();
+            var pas = model.find("#password").val();
+            var pasconfm = model.find("#confirm-password").val();
+            $login(usr, pas, pasconfm);
+        });
+
+        model.find("#hardware_key").click(() => {
+            var usr = model.find("#username").val();
+            var pas = model.find("#password").val();
+            var pasconfm = model.find("#confirm-password").val();
+            $login_hardware(usr, pas, pasconfm);
+        });
+    };
+
+    login.userLogout = function() {
+        gun.user().leave();
+        setTimeout(function() {
+            window.location = "/";
+        });
+    };
+
+
+    return login;
+};
+
+
+/***/ }),
+
 /***/ "./src/peersocial/user/plugin.js":
 /*!***************************************!*\
   !*** ./src/peersocial/user/plugin.js ***!
@@ -103140,223 +103425,40 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(Buffer) {var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
+var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
     appPlugin.consumes = ["app", "gun", "provable"];
     appPlugin.provides = ["user"];
 
     /* global $ */
-
-    var keychain = __webpack_require__(/*! ./key_chain.js */ "./src/peersocial/user/key_chain.js");
-
-    var loginModel = __webpack_require__(/*! ./login-model.html */ "./src/peersocial/user/login-model.html");
-
-    var ONLYKEY = __webpack_require__(/*! @trustcrypto/node-onlykey/src/onlykey-api */ "./node_modules/@trustcrypto/node-onlykey/src/onlykey-api.js");
-
-    var hostname = window.location.hostname;
-
     return appPlugin;
 
     function appPlugin(options, imports, register) {
+
+        var keychain = __webpack_require__(/*! ./key_chain.js */ "./src/peersocial/user/key_chain.js");
+        var login = __webpack_require__(/*! ./login.js */ "./src/peersocial/user/login.js")(imports);
+        var authorize = __webpack_require__(/*! ./authorize.js */ "./src/peersocial/user/authorize.js")(imports, login, keychain);
 
         var generateUID32 = function(pub) {
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
         var gun = imports.gun;
 
-        function userLogout() {
-            gun.user().leave();
-            setTimeout(function() {
-                window.location = "/";
-            });
-
-
-            //we have a bug bug with gun
-
-            //imports.app.state.history.setHash("home");
-
-
-            // $("#navbar-nav-right").find("#logout_btn").remove();
-            // $("#navbar-nav-right").html(
-            //     imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="#login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" })
-            // );
-            // imports.app.emit("logout");
-        }
-
-        function prepLogout() {
-            $("#navbar-nav-right").find("#login_btn").remove();
-
-            $("#navbar-nav-right").html(
-                imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" })
-            );
-        }
-
-        function openLogin() {
-
-            var model = $(loginModel);
-
-            model.modal({
-                show: true
-            });
-
-            model.on("hide.bs.modal", function() {
-                if (imports.app.state.lastHash)
-                    imports.app.state.hash = imports.app.state.lastHash;
-                else imports.app.state.history.back();
-
-
-            });
-            model.on("hidden.bs.modal", () => {
-                model.modal("dispose");
-                model.remove()
-            });
-            model.on("shown.bs.modal", () => {
-
-                model.find("#username").focus();
-            });
-
-            model.find("#username").keyup(function(event) {
-                if (event.keyCode == 13) { //enter
-                    model.find("#login").click();
-                }
-            });
-            model.find("#password").keyup(function(event) {
-                if (event.keyCode == 13) { //enter
-                    model.find("#login").click();
-                }
-            });
-
-            var createAccount = false;
-            var creating = false;
-
-            var $login_hardware = async(usr, pas, pasconfm) => {
-                if (!imports.app.nw_app)
-                    ONLYKEY((OK) => {
-                        var ok = OK();
-                        ok_login(ok);
-                    });
-                else
-                    ok_login(imports.app.nw_app.onlykey);
-
-                function ok_login(ok) {
-                    ok.derive_public_key(usr, 1, false, (err, key) => {
-                        ok.derive_shared_secret(pas, key, 1, false, (err, sharedsec, key2) => {
-                            $login(usr, sharedsec, pasconfm ? (pasconfm == pas ? sharedsec : pasconfm) : false);
-                        });
-                    });
-                }
-            };
-
-            var $login = async(usr, pas, pasconfm) => {
-                if (creating) return;
-
-                model.find("#password_error").text("");
-                model.find("#confirm-password_error").text("");
-
-                if (pasconfm) {
-                    if (!(pasconfm == pas && usr == createAccount)) {
-                        model.find("#password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
-                        model.find("#confirm-password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
-                        return;
-                    }
-                    else {
-                        if (!(usr == createAccount)) {
-                            createAccount = false;
-                            pasconfm = "";
-                            model.find("#password_error").text("");
-                            model.find("#confirm-password_error").text("");
-                            model.find("#confirm-password").val("");
-                            model.find("#confirmpwfield").hide();
-                        }
-                    }
-                }
-
-                if (usr && pas) {
-                    gun.user().auth(usr, pas, function(res) {
-                        if (!res.err) {
-                            if (gun.user().is) {
-                                model.modal("hide");
-                                prepLogout();
-                                me((err, $me, $user) => {
-                                    if (err) console.log(err);
-                                    var uid32 = generateUID32("~" + $me.pub);
-                                    if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
-                                    imports.app.emit("login", $me, $user);
-
-                                });
-                            }
-                        }
-                        else {
-                            if (res.err == "Wrong user or password.") {
-                                var uid = false;
-                                if (usr.indexOf("#") > -1) {
-                                    usr = usr.split("#");
-                                    uid = usr[1];
-                                    usr = usr[0];
-                                }
-                                gun.aliasToPub("@" + usr, uid, (pub) => {
-                                    if (!pub) {
-                                        if (createAccount && !creating) {
-                                            creating = true;
-                                            gun.user().create(usr, pas, function(ack) {
-                                                if (ack.pub) {
-                                                    creating = false;
-                                                    $login(usr, pas);
-                                                }
-                                            }, {
-                                                already: true
-                                            });
-                                        }
-                                        else {
-                                            model.find("#password_error").css("color", "red").html("<b>User not created.</b>&nbsp;<a href='#login' id='create'>Create User?</a>");
-                                            var create = model.find("#password_error").find("#create");
-                                            create.click(function() {
-                                                model.find("#confirmpwfield").show();
-                                                model.find("#login").text("Create Account");
-                                                model.find("#password_error").text("");
-                                                createAccount = usr;
-                                            });
-                                        }
-                                    }
-                                    else {
-                                        model.find("#password_error").css("color", "red").html("<b>" + res.err + "</b>");
-                                    }
-                                });
-                            }
-                        }
-
-                    });
-                }
-
-            };
-
-            model.find("#login").click(() => {
-                var usr = model.find("#username").val();
-                var pas = model.find("#password").val();
-                var pasconfm = model.find("#confirm-password").val();
-                $login(usr, pas, pasconfm);
-            });
-
-            model.find("#hardware_key").click(() => {
-                var usr = model.find("#username").val();
-                var pas = model.find("#password").val();
-                var pasconfm = model.find("#confirm-password").val();
-                $login_hardware(usr, pas, pasconfm);
-            });
-        }
-
         function changePassword(old, pass, callback) {
-            gun.user().auth(gun.user().is.alias, old, (res) => {
-                callback(res.err || null, res.err ? null : true);
-            }, { change: pass });
+            if (login.user)
+                gun.user().auth(login.user.is.alias, old, (res) => {
+                    callback(res.err || null, res.err ? null : true);
+                }, { change: pass });
+            else{
+                callback(null);//fail
+            }
         }
 
         function me(callback) {
-            if (gun.user().is) {
-                var myPubid = "~" + gun.user().is.pub;
-                gun.get(myPubid).once((data) => {
+            if (login.user) {
+                gun.get("~" + login.user.is.pub).once((data) => {
                     if (data) {
-                        callback(null, data, gun.user());
+                        callback(null, data, login.user);
                     }
                 });
             }
@@ -103369,10 +103471,10 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                 $uid32 = false;
             }
             gun.aliasToPub("@" + alias, $uid32, (pub) => {
-                if (gun.user().is && "~" + gun.user().is.pub == pub) {
+                if (login.user && "~" + login.user.is.pub == pub) {
                     gun.user().once((data) => {
                         if (alias == data.alias) {
-                            callback(null, data, gun.user(), true);
+                            callback(null, data, login.user, true);
                         }
                     });
                 }
@@ -103391,145 +103493,7 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 
         }
 
-        //-------------------------------------------------
 
-        //a key to let our app know if the session was restored
-        var sessionRestored = false;
-
-        //check if there is a session to restore
-        if (window.sessionStorage.recall) {
-
-            //we have a session to restore so lets restore it
-            gun.user().recall({
-                sessionStorage: true
-            }, function(res) {
-
-                if (!res.err) { //we did not get a error on the return
-                    //set app key to say it was restored
-                    sessionRestored = true;
-                }
-
-                //now gun.user().is should be populated
-                //finish your app startup
-                finishInitialization();
-            });
-        }
-        else {
-            //we did not have a session to restore, so lets tell the the next session login to save
-            gun.user().recall({
-                sessionStorage: true
-            });
-            //finish your app startup
-            finishInitialization();
-        }
-
-        // doing gun.user().leave();  will clear the 'window.sessionStorage.recall' and logout the user
-
-        //-------------------------------------------------
-
-        function authrize_auth() {
-            var useOAuth = false;
-            if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
-                useOAuth = true;
-
-
-            if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
-                if (!gun.user().is) {
-                    imports.app.on("login", ($me, $user) => {
-                        authrize_auth();
-                    });
-                    openLogin();
-                }
-                else {
-                    // keychain("test").then((room) => {
-                    var room = gun.user()._.sea;
-                    imports.app.sea.certify(
-                        imports.app.state.query.pub, // everybody is allowed to write
-                        { "*": "notifications", "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
-                        room, //authority
-                        null, //no need for callback here
-                        { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
-                    ).then(async(cert) => {
-                        console.log(cert);
-                        var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, gun.user()._.sea)); // pair.epriv will be used as a passphrase
-                        window.location = "https://" + imports.app.state.query.auth + "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
-                    });
-                    // });
-                }
-                return true;
-            }
-
-
-            if (useOAuth) {
-
-                keychain().then((room) => {
-
-                    var domain;
-                    if (hostname == "localhost")
-                        domain = window.location.host;
-                    else
-                        domain = "www.peersocial.io";
-
-                    domain = 'https://' + domain;
-                    var popupOptions = { popup: true, height: 800 };
-                    var popup = window.open(domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub, 'oauth', popupOptions);
-
-                    var interval = setInterval(function() {
-                        if (popup.window == null) {
-
-                            clearInterval(interval);
-                            imports.app.state.history.back();
-                            return;
-                        }
-
-                        try {
-                            (popup.location.pathname == "/blank.html")
-                        }
-                        catch (e) { return; }
-
-                        // var message = (new Date().getTime());
-                        // proxy.postMessage(message, domain); //send the message and target URI
-                        if (popup.location.pathname == "/blank.html") {
-                            var url = __webpack_require__(/*! url */ "./node_modules/node-libs-browser/node_modules/url/url.js");
-                            var query = url.parse(popup.location.href, true).query;
-                            var cert = query.cert;
-                            if (cert) {
-                                (async() => {
-                                    cert = Buffer.from(cert, "base64").toString("utf8");
-                                    cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
-                                    query.cert = cert;
-                                    console.log(query);
-                                    
-                                    
-                                    gun.user().auth(room, function(res) {
-
-                                        if (!res.err) {
-                                            if (gun.user().is) {
-                                                prepLogout();
-                                                me((err, $me, $user) => {
-                                                    if (err) console.log(err);
-                                                    var uid32 = generateUID32("~" + $me.pub);
-                                                    if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
-                                                    imports.app.emit("login", $me, $user);
-                                                });
-                                                
-                                                imports.app.state.history.back();
-                                            }
-                                        }
-
-
-                                    });
-                                })();
-                            }
-                            clearInterval(interval);
-                            popup.close();
-                        }
-                    }, 500);
-                });
-                return true;
-            }
-            return false;
-        }
 
         function finishInitialization() {
 
@@ -103540,43 +103504,28 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 
 
                         imports.app.state.$hash.on("login", function() {
-                            if (!gun.user().is && !authrize_auth()) {
-                                openLogin();
+                            if (!login.user && !authorize()) {
+                                login.openLogin();
                             }
-                            if (gun.user().is) {
-                                
+                            if (login.user) {
+                                login.prepLogout();
                                 imports.app.state.history.back();
-                                prepLogout();
                             }
                         });
 
                         imports.app.state.$hash.on("logout", function() {
-                            userLogout();
+                            login.userLogout();
                         });
 
-                        $("#navbar-nav-right").append(
-                            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" })
-                        );
 
-                        if (gun.user().is)
-                            prepLogout();
+                        login.prepLogin();
 
-                        imports.app.on("start", () => {
-                            if (sessionRestored) {
-                                me((err, $me, $user) => {
-                                    if (err) console.log(err);
-                                    imports.app.emit("login", $me, $user);
-                                });
-                            }
-
-
-                        });
+                        if (login.user)
+                            login.prepLogout();
 
                     },
-                    login: function() {
-                        imports.gun;
-
-                    },
+                    uid: generateUID32,
+                    login: login,
                     changePassword: changePassword,
                     me: me,
                     getUser: getUser
@@ -103585,11 +103534,11 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 
         }
 
+        login.restoreSession(finishInitialization);
     }
 
 }).call(exports, __webpack_require__, exports, module),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 

@@ -13,7 +13,7 @@ define(function(require, exports, module) {
         /* global */
         Gun = require("gun");
         require("gun/sea");
-        require("gun/lib/webrtc");
+        // require("gun/lib/webrtc");
 
         if (!Gun.log.once)
             Gun.log.once = function() {};
