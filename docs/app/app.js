@@ -103303,8 +103303,8 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                                                     creating = false;
                                                     $login(usr, pas);
                                                 }
-                                            },{
-                                                already:true
+                                            }, {
+                                                already: true
                                             });
                                         }
                                         else {
@@ -103481,9 +103481,12 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                             imports.app.state.history.back();
                             return;
                         }
-                        
-                        try{(popup.location.pathname == "/blank.html")}catch(e){return;}
-                        
+
+                        try {
+                            (popup.location.pathname == "/blank.html")
+                        }
+                        catch (e) { return; }
+
                         // var message = (new Date().getTime());
                         // proxy.postMessage(message, domain); //send the message and target URI
                         if (popup.location.pathname == "/blank.html") {
@@ -103496,6 +103499,8 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                                     cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
                                     query.cert = cert;
                                     console.log(query);
+                                    
+                                    
                                     gun.user().auth(room, function(res) {
 
                                         if (!res.err) {
@@ -103506,8 +103511,9 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
                                                     var uid32 = generateUID32("~" + $me.pub);
                                                     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
                                                     imports.app.emit("login", $me, $user);
-                                                    imports.app.state.history.back();
                                                 });
+                                                
+                                                imports.app.state.history.back();
                                             }
                                         }
 
@@ -103534,10 +103540,14 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 
 
                         imports.app.state.$hash.on("login", function() {
-                            if (!authrize_auth() && !gun.user().is) {
+                            if (!gun.user().is && !authrize_auth()) {
                                 openLogin();
                             }
-
+                            if (gun.user().is) {
+                                
+                                imports.app.state.history.back();
+                                prepLogout();
+                            }
                         });
 
                         imports.app.state.$hash.on("logout", function() {
