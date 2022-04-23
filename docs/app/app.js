@@ -103289,7 +103289,7 @@ module.exports = function(imports) {
         var creating = false;
 
         var $login_hardware = async(usr, pas, pasconfm) => {
-            if (!imports.app.nw_app || imports.app.nw_app.is_master)
+            if (!imports.app.nw_app || !imports.app.nw_app.is_localhost)
                 ONLYKEY((OK) => {
                     var ok = OK();
                     ok_login(ok);
