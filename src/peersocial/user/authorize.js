@@ -74,13 +74,13 @@ module.exports = function(imports, login, keychain) {
                     }
 
                     try {
-                        (popup.location.pathname == "blank");
+                        (popup.location.pathname == "/blank.html");
                     }
                     catch (e) { return; }
 
                     // var message = (new Date().getTime());
                     // proxy.postMessage(message, domain); //send the message and target URI
-                    if (popup.location.pathname == "blank") {
+                    if (popup.location.pathname == "/blank.html" && popup.location.host == window.location.host) {
                         var query = url.parse(popup.location.href, true).query;
                         var cert = query.cert;
                         if (cert) {
