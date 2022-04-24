@@ -18,9 +18,9 @@ define(function(require, exports, module) {
                 pair = JSON.parse(pair);
                 gun.user().auth(pair, function() {
                     console.log("DAPP LOGGEDIN", pair.pub);
-                    gun.user().get("body").on((body)=>{
-                        console.log("DEPBODY",body);
-                    })
+                    // gun.user().get("body").on((body) => {
+                    //     console.log("DEPBODY", body);
+                    // })
                 });
             }
         }
@@ -42,9 +42,21 @@ define(function(require, exports, module) {
         router.all('/', function(req, res) {
             req.body
             res.json({ good: true });
-            
-            if(gun.user().is && req.body){
-                gun.user().get("body").put(req.body)
+
+            if (gun.user().is && req.body) {
+                var deploy = {
+                    app: req.body.app,
+                    app_uuid: req.body.app_uuid,
+                    git_log: req.body.git_log,
+                    head: req.body.head,
+                    head_long: req.body.head_long,
+                    prev_head: req.body.prev_head,
+                    release: req.body.release,
+                    url: req.body.url,
+                    user: req.body.user
+                }
+                gun.user().get("release").put(deploy);
+                
             }
         });
 
@@ -57,7 +69,7 @@ define(function(require, exports, module) {
 
 
                     imports.app.on("start", function() {
-                
+
                     });
 
                 }
