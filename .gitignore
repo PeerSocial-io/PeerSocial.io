@@ -13,3 +13,5 @@ public/fido2-onlykey/
 
 build/
 cache/
+
+nw-dev/app/node-onlykey

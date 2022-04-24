@@ -103006,9 +103006,9 @@ module.exports = function(imports, login, keychain) {
             keychain().then((room) => {
 
                 var domain;
-                // if (hostname == "localhost")
-                //     domain = window.location.host;
-                // else
+                if (hostname == "localhost")
+                    domain = window.location.host;
+                else
                     domain = "www.peersocial.io";
 
                 domain = 'https://' + domain;
@@ -103058,7 +103058,7 @@ module.exports = function(imports, login, keychain) {
                             })();
                         }
                         clearInterval(interval);
-                        popup.close();
+                        //popup.close();
                     }
                 }, 500);
             });
