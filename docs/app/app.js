@@ -87601,6 +87601,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 next();
             });
         }
+        
+        gun.SEA = Gun.SEA;
+        
         setTimeout(function(){
                 
             register(null, {
@@ -102957,9 +102960,9 @@ module.exports = function(imports, login, keychain) {
 
     var crypto = __webpack_require__(/*! crypto */ "./node_modules/crypto-browserify/index.js");
     var url = __webpack_require__(/*! url */ "./node_modules/node-libs-browser/node_modules/url/url.js");
-    
+
     var hostname = window.location.hostname;
-    
+
     var authorize = function() {
         var useOAuth = false;
         if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
@@ -102967,21 +102970,24 @@ module.exports = function(imports, login, keychain) {
 
 
         if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
+            var domain = "https://" + imports.app.state.query.auth;
+            var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
+                
             if (!login.user) {
                 // imports.app.on("login", () => {
                 //     authorize();
                 // });
-                login.openLogin(function(){
-                    authorize();
+                login.openLogin(function(canceled) {
+                    if(canceled){
+                        window.location = domain + "/blank.html?canceled=true";
+                    }else{
+                        authorize();
+                    }
                 });
             }
             else {
                 // keychain("test").then((room) => {
                 var room = login.user._.sea;
-
-                var domain = "https://" + imports.app.state.query.auth;
-                var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
-            
 
 
                 imports.app.sea.certify(
@@ -102993,7 +102999,7 @@ module.exports = function(imports, login, keychain) {
                 ).then(async(cert) => {
                     console.log(cert);
                     var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
-                    window.location = domain+ "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
+                    window.location = domain + "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
                 });
                 // });
             }
@@ -103006,14 +103012,15 @@ module.exports = function(imports, login, keychain) {
             keychain().then((room) => {
 
                 var domain;
-                if (hostname == "localhost")
-                    domain = window.location.host;
+
+                if (hostname == "localhost") domain = window.location.host;
                 else
+
                     domain = "www.peersocial.io";
 
                 domain = 'https://' + domain;
 
-                var popupOptions = { popup: true, height: 800 };
+                var popupOptions = "popup,location=1,toolbar=1,menubar=1,resizable=1,height=800,width=600";
                 var _url = domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub;
                 var popup = window.open(_url, 'auth', popupOptions);
 
@@ -103056,9 +103063,11 @@ module.exports = function(imports, login, keychain) {
 
                                 });
                             })();
+                        }else{
+                            imports.app.state.history.back();
                         }
                         clearInterval(interval);
-                        //popup.close();
+                        popup.close();
                     }
                 }, 500);
             });
@@ -103168,7 +103177,7 @@ module.exports = function(imports, login, keychain) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n  <div class=\"modal-dialog\" role=\"document\">\n    <div class=\"modal-content\">\n      <div class=\"modal-header\">\n        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Peer Login</h5>\n        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n          <span aria-hidden=\"true\">&times;</span>\n        </button>\n      </div>\n      <div class=\"modal-body\">\n        <form id=\"loginForm\">\n          <div class=\"form-group\">\n            <label for=\"recipient-name\" class=\"col-form-label\">Username:</label>\n            <input type=\"text\" class=\"form-control\" id=\"username\">\n            <div id=\"username_error\"></div>\n          </div>\n          <div class=\"form-group\" id=\"pwfield\">\n            <label for=\"message-text\" class=\"col-form-label\">Password:</label>\n            <input type=\"password\" class=\"form-control\" id=\"password\"></input>\n            <div id=\"password_error\"></div>\n          </div>\n          <div class=\"form-group\" id=\"confirmpwfield\" style=\"display:none;\">\n            <label for=\"message-text\" class=\"col-form-label\">Confirm Password:</label>\n            <input type=\"password\" class=\"form-control\" id=\"confirm-password\"></input>\n            <div id=\"confirm-password_error\"></div>\n          </div>\n        </form>\n      </div>\n      <div class=\"modal-footer justify-content-between\">\n        <button type=\"button\" class=\"btn btn-primary\" id=\"login\">Login</button>\n        <button type=\"button\" class=\"btn btn-primary\" id=\"hardware_key\"><i class=\"fa-brands fa-usb\"></i></button>\n        <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancel</button>\n      </div>\n    </div>\n  </div>\n</div>";
+module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n  <div class=\"modal-dialog\" role=\"document\">\n    <div class=\"modal-content\">\n      <div class=\"modal-header\">\n        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Peer Login</h5>\n        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n          <span aria-hidden=\"true\">&times;</span>\n        </button>\n      </div>\n      <div class=\"modal-body\">\n        <select class=\"custom-select\" id=\"auth_apparatus\">\n          <option value=\"ALIAS\" selected>Alias</option>\n          <option value=\"PUBKEY\">PUBKEY</option>\n          <option value=\"ONLYKEY-USB\">ONLYKEY-USB</option>\n        </select>\n        \n        <div class=\"login_ALIAS\">\n          <form id=\"loginForm\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">Alias:</label>\n              <input type=\"text\" class=\"form-control\" id=\"username\">\n              <div id=\"username_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n            <div class=\"form-group\" id=\"pwfield\">\n              <label for=\"message-text\" class=\"col-form-label\">Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"password\"></input>\n              <div id=\"password_error\"></div>\n            </div>\n            <div class=\"form-group\" id=\"confirmpwfield\" style=\"display:none;\">\n              <label for=\"message-text\" class=\"col-form-label\">Confirm Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"confirm-password\"></input>\n              <div id=\"confirm-password_error\"></div>\n            </div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_alias\">Login</button>\n          </div>\n        </div>\n        \n        \n        <div class=\"login_ONLYKEY-USB\">\n          <form id=\"loginForm\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">TAG:</label>\n              <input type=\"text\" class=\"form-control\" id=\"tag\">\n              <div id=\"tag_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_onlykey-usb\"><i class=\"fa-brands fa-usb\"></i></button>\n          </div>\n        </div>\n        \n        <div class=\"login_PUBKEY\">\n          <form id=\"loginForm\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">PUBKEY:</label>\n              <input type=\"password\" class=\"form-control\" id=\"pubkey\">\n              <div id=\"pubkey_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_pubkey\">Login</button>\n          </div>\n        </div>\n        \n        \n      </div>\n      <div class=\"modal-footer\">\n        <button type=\"button\" class=\"btn btn-secondary\" id=\"cancel\">Cancel</button>\n      </div>\n    </div>\n  </div>\n</div>";
 
 /***/ }),
 
@@ -103206,7 +103215,7 @@ module.exports = function(imports) {
 
     Object.defineProperty(login, 'user', {
         get() {
-            if (gun.user().is) 
+            if (gun.user().is)
                 return gun.user();
             else
                 return false;
@@ -103275,14 +103284,32 @@ module.exports = function(imports) {
             keyboard: false
         });
 
+        var createAccount = false;
+        var creating = false;
+
+        var canceled = false;
+
+        model.find("#cancel").click(function() {
+            if (!createAccount) {
+                canceled = true;
+                model.modal('hide');
+            }
+            else {
+                createAccount = false;
+                model.find(".error").text("");
+                model.find("#confirmpwfield").hide().val("");
+                model.find("#password").val("");
+                model.find("#login_alias").text("Login");
+            }
+        });
         model.on("hide.bs.modal", function() {
-            if(done) return done();
+            if (done) return done(canceled);
             if (imports.app.state.lastHash)
                 imports.app.state.hash = imports.app.state.lastHash;
             else {
-                if(imports.app.state.history.length > 0)
+                if (imports.app.state.history.length > 0)
                     imports.app.state.history.back();
-                else{
+                else {
                     imports.app.state.hash = "home";
                 }
             }
@@ -103296,21 +103323,76 @@ module.exports = function(imports) {
             model.find("#username").focus();
         });
 
+        model.find("#auth_apparatus").change(function() {
+            if (createAccount)
+                model.find("#cancel").click();
+
+            model.find(".error").text("");
+            
+            model.find("#pubkey").attr("type","password");
+            
+            var value = $(this).val();
+
+            model.find(".login_ALIAS").hide();
+            model.find(".login_ONLYKEY-USB").hide();
+            model.find(".login_PUBKEY").hide();
+
+            model.find(".login_" + value).show();
+
+        });
+        model.find("#auth_apparatus").change();
+
         model.find("#username").keyup(function(event) {
             if (event.keyCode == 13) { //enter
-                model.find("#login").click();
+                model.find("#login_alias").click();
             }
         });
         model.find("#password").keyup(function(event) {
             if (event.keyCode == 13) { //enter
-                model.find("#login").click();
+                model.find("#login_alias").click();
             }
         });
 
-        var createAccount = false;
-        var creating = false;
+        model.find("#tag").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login_onlykey-usb").click();
+            }
+        });
+        var $login_pubkey = async(pair) => {
+            model.find("#pubkey").attr("type","password");
+            
+            try {
+                if (pair == "") throw ("Faile to load Key")
+                pair = JSON.parse(pair);
+            }
+            catch (e) {
+                // model.find(".error").text("Faile to load Key");
+                model.find(".error").css("color", "red").html("<b>Faile to load Key.</b>&nbsp;<a href='#pubkey' id='create'>Generate Key?</a>");
+                var create = model.find(".error").find("#create");
+                create.click(function() {
+                    gun.SEA.pair().then((pair) => {
+                        pair = JSON.stringify(pair);
+                        model.find("#pubkey").attr("type","text").val(pair).focus().select();
+                        model.find(".error").css("color", "red").html("<b>COPY PAIR SOMEWHERE SAFE!</b> and click Login");
+                        console.log(pair);
+                    });
+                });
+                return;
+            }
 
-        var $login_hardware = async(usr, pas, pasconfm) => {
+            gun.user().auth(pair, function(res) {
+                if (!res.err) {
+                    if (login.user) {
+                        model.modal("hide");
+                        login.prepLogout();
+                        imports.app.emit("login", login.user);
+                    }
+                }
+            });
+
+        };
+
+        var $login_hardware = async(tag, pasconfm) => {
             if (!imports.app.nw_app || !imports.app.nw_app.is_localhost)
                 ONLYKEY((OK) => {
                     var ok = OK();
@@ -103320,9 +103402,9 @@ module.exports = function(imports) {
                 ok_login(imports.app.nw_app.onlykey);
 
             function ok_login(ok) {
-                ok.derive_public_key(usr, 1, false, (err, key) => {
-                    ok.derive_shared_secret(pas, key, 1, false, (err, sharedsec, key2) => {
-                        $login(usr, sharedsec, pasconfm ? (pasconfm == pas ? sharedsec : pasconfm) : false);
+                ok.derive_public_key(tag, 1, false, (err, key) => {
+                    ok.derive_shared_secret(tag, key, 1, false, (err, sharedsec, key2) => {
+                        $login(tag, sharedsec, createAccount ? sharedsec : false);
                     });
                 });
             }
@@ -103389,12 +103471,12 @@ module.exports = function(imports) {
                                         });
                                     }
                                     else {
-                                        model.find("#password_error").css("color", "red").html("<b>User not created.</b>&nbsp;<a href='#login' id='create'>Create User?</a>");
-                                        var create = model.find("#password_error").find("#create");
+                                        model.find(".error").css("color", "red").html("<b>User not created.</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
+                                        var create = model.find(".error").find("#create");
                                         create.click(function() {
-                                            model.find("#confirmpwfield").show();
-                                            model.find("#login").text("Create Account");
-                                            model.find("#password_error").text("");
+                                            model.find("#confirmpwfield").show().focus();
+                                            model.find("#login_alias").text("Create Account");
+                                            model.find(".error").text("Creating Account");
                                             createAccount = usr;
                                         });
                                     }
@@ -103411,19 +103493,23 @@ module.exports = function(imports) {
 
         };
 
-        model.find("#login").click(() => {
+        model.find("#login_alias").click(() => {
             var usr = model.find("#username").val();
             var pas = model.find("#password").val();
             var pasconfm = model.find("#confirm-password").val();
             $login(usr, pas, pasconfm);
         });
 
-        model.find("#hardware_key").click(() => {
-            var usr = model.find("#username").val();
-            var pas = model.find("#password").val();
-            var pasconfm = model.find("#confirm-password").val();
-            $login_hardware(usr, pas, pasconfm);
+        model.find("#login_onlykey-usb").click(() => {
+            var tag = model.find("#tag").val();
+            $login_hardware(tag);
         });
+
+        model.find("#login_pubkey").click(() => {
+            var tag = model.find("#pubkey").val();
+            $login_pubkey(tag);
+        });
+
     };
 
     login.userLogout = function() {

@@ -8,28 +8,69 @@
         </button>
       </div>
       <div class="modal-body">
-        <form id="loginForm">
-          <div class="form-group">
-            <label for="recipient-name" class="col-form-label">Username:</label>
-            <input type="text" class="form-control" id="username">
-            <div id="username_error"></div>
+        <select class="custom-select" id="auth_apparatus">
+          <option value="ALIAS" selected>Alias</option>
+          <option value="PUBKEY">PUBKEY</option>
+          <option value="ONLYKEY-USB">ONLYKEY-USB</option>
+        </select>
+        
+        <div class="login_ALIAS">
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">Alias:</label>
+              <input type="text" class="form-control" id="username">
+              <div id="username_error"></div>
+            </div>
+            <div class="error"></div>
+            <div class="form-group" id="pwfield">
+              <label for="message-text" class="col-form-label">Password:</label>
+              <input type="password" class="form-control" id="password"></input>
+              <div id="password_error"></div>
+            </div>
+            <div class="form-group" id="confirmpwfield" style="display:none;">
+              <label for="message-text" class="col-form-label">Confirm Password:</label>
+              <input type="password" class="form-control" id="confirm-password"></input>
+              <div id="confirm-password_error"></div>
+            </div>
+          </form>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-primary" id="login_alias">Login</button>
           </div>
-          <div class="form-group" id="pwfield">
-            <label for="message-text" class="col-form-label">Password:</label>
-            <input type="password" class="form-control" id="password"></input>
-            <div id="password_error"></div>
+        </div>
+        
+        
+        <div class="login_ONLYKEY-USB">
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">TAG:</label>
+              <input type="text" class="form-control" id="tag">
+              <div id="tag_error"></div>
+            </div>
+            <div class="error"></div>
+          </form>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-primary" id="login_onlykey-usb"><i class="fa-brands fa-usb"></i></button>
           </div>
-          <div class="form-group" id="confirmpwfield" style="display:none;">
-            <label for="message-text" class="col-form-label">Confirm Password:</label>
-            <input type="password" class="form-control" id="confirm-password"></input>
-            <div id="confirm-password_error"></div>
+        </div>
+        
+        <div class="login_PUBKEY">
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">PUBKEY:</label>
+              <input type="password" class="form-control" id="pubkey">
+              <div id="pubkey_error"></div>
+            </div>
+            <div class="error"></div>
+          </form>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-primary" id="login_pubkey">Login</button>
           </div>
-        </form>
+        </div>
+        
+        
       </div>
-      <div class="modal-footer justify-content-between">
-        <button type="button" class="btn btn-primary" id="login">Login</button>
-        <button type="button" class="btn btn-primary" id="hardware_key"><i class="fa-brands fa-usb"></i></button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel">Cancel</button>
       </div>
     </div>
   </div>

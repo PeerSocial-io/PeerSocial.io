@@ -84,6 +84,9 @@ define(function(require, exports, module) {
                 next();
             });
         }
+        
+        gun.SEA = Gun.SEA;
+        
         setTimeout(function(){
                 
             register(null, {

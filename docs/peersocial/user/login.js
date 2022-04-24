@@ -25,7 +25,7 @@ module.exports = function(imports) {
 
     Object.defineProperty(login, 'user', {
         get() {
-            if (gun.user().is) 
+            if (gun.user().is)
                 return gun.user();
             else
                 return false;
@@ -94,14 +94,32 @@ module.exports = function(imports) {
             keyboard: false
         });
 
+        var createAccount = false;
+        var creating = false;
+
+        var canceled = false;
+
+        model.find("#cancel").click(function() {
+            if (!createAccount) {
+                canceled = true;
+                model.modal('hide');
+            }
+            else {
+                createAccount = false;
+                model.find(".error").text("");
+                model.find("#confirmpwfield").hide().val("");
+                model.find("#password").val("");
+                model.find("#login_alias").text("Login");
+            }
+        });
         model.on("hide.bs.modal", function() {
-            if(done) return done();
+            if (done) return done(canceled);
             if (imports.app.state.lastHash)
                 imports.app.state.hash = imports.app.state.lastHash;
             else {
-                if(imports.app.state.history.length > 0)
+                if (imports.app.state.history.length > 0)
                     imports.app.state.history.back();
-                else{
+                else {
                     imports.app.state.hash = "home";
                 }
             }
@@ -115,21 +133,76 @@ module.exports = function(imports) {
             model.find("#username").focus();
         });
 
+        model.find("#auth_apparatus").change(function() {
+            if (createAccount)
+                model.find("#cancel").click();
+
+            model.find(".error").text("");
+            
+            model.find("#pubkey").attr("type","password");
+            
+            var value = $(this).val();
+
+            model.find(".login_ALIAS").hide();
+            model.find(".login_ONLYKEY-USB").hide();
+            model.find(".login_PUBKEY").hide();
+
+            model.find(".login_" + value).show();
+
+        });
+        model.find("#auth_apparatus").change();
+
         model.find("#username").keyup(function(event) {
             if (event.keyCode == 13) { //enter
-                model.find("#login").click();
+                model.find("#login_alias").click();
             }
         });
         model.find("#password").keyup(function(event) {
             if (event.keyCode == 13) { //enter
-                model.find("#login").click();
+                model.find("#login_alias").click();
             }
         });
 
-        var createAccount = false;
-        var creating = false;
+        model.find("#tag").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login_onlykey-usb").click();
+            }
+        });
+        var $login_pubkey = async(pair) => {
+            model.find("#pubkey").attr("type","password");
+            
+            try {
+                if (pair == "") throw ("Faile to load Key")
+                pair = JSON.parse(pair);
+            }
+            catch (e) {
+                // model.find(".error").text("Faile to load Key");
+                model.find(".error").css("color", "red").html("<b>Faile to load Key.</b>&nbsp;<a href='#pubkey' id='create'>Generate Key?</a>");
+                var create = model.find(".error").find("#create");
+                create.click(function() {
+                    gun.SEA.pair().then((pair) => {
+                        pair = JSON.stringify(pair);
+                        model.find("#pubkey").attr("type","text").val(pair).focus().select();
+                        model.find(".error").css("color", "red").html("<b>COPY PAIR SOMEWHERE SAFE!</b> and click Login");
+                        console.log(pair);
+                    });
+                });
+                return;
+            }
 
-        var $login_hardware = async(usr, pas, pasconfm) => {
+            gun.user().auth(pair, function(res) {
+                if (!res.err) {
+                    if (login.user) {
+                        model.modal("hide");
+                        login.prepLogout();
+                        imports.app.emit("login", login.user);
+                    }
+                }
+            });
+
+        };
+
+        var $login_hardware = async(tag, pasconfm) => {
             if (!imports.app.nw_app || !imports.app.nw_app.is_localhost)
                 ONLYKEY((OK) => {
                     var ok = OK();
@@ -139,9 +212,9 @@ module.exports = function(imports) {
                 ok_login(imports.app.nw_app.onlykey);
 
             function ok_login(ok) {
-                ok.derive_public_key(usr, 1, false, (err, key) => {
-                    ok.derive_shared_secret(pas, key, 1, false, (err, sharedsec, key2) => {
-                        $login(usr, sharedsec, pasconfm ? (pasconfm == pas ? sharedsec : pasconfm) : false);
+                ok.derive_public_key(tag, 1, false, (err, key) => {
+                    ok.derive_shared_secret(tag, key, 1, false, (err, sharedsec, key2) => {
+                        $login(tag, sharedsec, createAccount ? sharedsec : false);
                     });
                 });
             }
@@ -208,12 +281,12 @@ module.exports = function(imports) {
                                         });
                                     }
                                     else {
-                                        model.find("#password_error").css("color", "red").html("<b>User not created.</b>&nbsp;<a href='#login' id='create'>Create User?</a>");
-                                        var create = model.find("#password_error").find("#create");
+                                        model.find(".error").css("color", "red").html("<b>User not created.</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
+                                        var create = model.find(".error").find("#create");
                                         create.click(function() {
-                                            model.find("#confirmpwfield").show();
-                                            model.find("#login").text("Create Account");
-                                            model.find("#password_error").text("");
+                                            model.find("#confirmpwfield").show().focus();
+                                            model.find("#login_alias").text("Create Account");
+                                            model.find(".error").text("Creating Account");
                                             createAccount = usr;
                                         });
                                     }
@@ -230,19 +303,23 @@ module.exports = function(imports) {
 
         };
 
-        model.find("#login").click(() => {
+        model.find("#login_alias").click(() => {
             var usr = model.find("#username").val();
             var pas = model.find("#password").val();
             var pasconfm = model.find("#confirm-password").val();
             $login(usr, pas, pasconfm);
         });
 
-        model.find("#hardware_key").click(() => {
-            var usr = model.find("#username").val();
-            var pas = model.find("#password").val();
-            var pasconfm = model.find("#confirm-password").val();
-            $login_hardware(usr, pas, pasconfm);
+        model.find("#login_onlykey-usb").click(() => {
+            var tag = model.find("#tag").val();
+            $login_hardware(tag);
         });
+
+        model.find("#login_pubkey").click(() => {
+            var tag = model.find("#pubkey").val();
+            $login_pubkey(tag);
+        });
+
     };
 
     login.userLogout = function() {

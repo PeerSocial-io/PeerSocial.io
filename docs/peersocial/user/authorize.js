@@ -5,9 +5,9 @@ module.exports = function(imports, login, keychain) {
 
     var crypto = require("crypto");
     var url = require("url");
-    
+
     var hostname = window.location.hostname;
-    
+
     var authorize = function() {
         var useOAuth = false;
         if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
@@ -15,21 +15,24 @@ module.exports = function(imports, login, keychain) {
 
 
         if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
+            var domain = "https://" + imports.app.state.query.auth;
+            var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
+                
             if (!login.user) {
                 // imports.app.on("login", () => {
                 //     authorize();
                 // });
-                login.openLogin(function(){
-                    authorize();
+                login.openLogin(function(canceled) {
+                    if(canceled){
+                        window.location = domain + "/blank.html?canceled=true";
+                    }else{
+                        authorize();
+                    }
                 });
             }
             else {
                 // keychain("test").then((room) => {
                 var room = login.user._.sea;
-
-                var domain = "https://" + imports.app.state.query.auth;
-                var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
-            
 
 
                 imports.app.sea.certify(
@@ -41,7 +44,7 @@ module.exports = function(imports, login, keychain) {
                 ).then(async(cert) => {
                     console.log(cert);
                     var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
-                    window.location = domain+ "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
+                    window.location = domain + "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
                 });
                 // });
             }
@@ -54,14 +57,15 @@ module.exports = function(imports, login, keychain) {
             keychain().then((room) => {
 
                 var domain;
-                if (hostname == "localhost")
-                    domain = window.location.host;
+
+                if (hostname == "localhost") domain = window.location.host;
                 else
+
                     domain = "www.peersocial.io";
 
                 domain = 'https://' + domain;
 
-                var popupOptions = { popup: true, height: 800 };
+                var popupOptions = "popup,location=1,toolbar=1,menubar=1,resizable=1,height=800,width=600";
                 var _url = domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub;
                 var popup = window.open(_url, 'auth', popupOptions);
 
@@ -104,9 +108,11 @@ module.exports = function(imports, login, keychain) {
 
                                 });
                             })();
+                        }else{
+                            imports.app.state.history.back();
                         }
                         clearInterval(interval);
-                        //popup.close();
+                        popup.close();
                     }
                 }, 500);
             });

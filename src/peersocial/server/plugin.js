@@ -6,7 +6,7 @@ define(function($require, exports, module) {
     var https = require('https');
 
     appPlugin.consumes = ["app"];
-    appPlugin.provides = ["server", "gun"];
+    appPlugin.provides = ["server", "gun", "express"];
 
     var Gun = require('gun');
 
@@ -161,9 +161,12 @@ define(function($require, exports, module) {
             };
             if (process.env.ISMASTERDEV) {
                 gunOptions.peers.push("https://www.peersocial.io/gun");
+            }else{
+                gunOptions.peers.push("https://dev.peersocial.io/gun");
             }
         }
         var gun = Gun(gunOptions);
+        gun.SEA = Gun.SEA;
 
         var io = require('socket.io')(http);
 
@@ -177,11 +180,12 @@ define(function($require, exports, module) {
         }
         // require("../../server_api/gunfs/gunfs.js")(gun, app);
 
-        express_app.use(function(req, res, next) {
-            res.sendFile(require("path").join(__dirname, '../../../docs', 'index.html'));
-        });
         
-        server.app = express_app;
+        server.express_app = express_app;
+        
+        var bodyParser = require('body-parser');
+        express_app.use(bodyParser.json());
+        express_app.use(bodyParser.urlencoded({ extended: true }));
 
         // console.log('Server started on port ' + port + ' with /gun');
         server.init = function() {
@@ -190,6 +194,10 @@ define(function($require, exports, module) {
 
                 server.listen(port, function() {
                     console.log('Server started on port ' + port + ' with /gun');
+                    
+                    express_app.use(function(req, res, next) {
+                        res.sendFile(require("path").join(__dirname, '../../../docs', 'index.html'));
+                    });
                 });
 
 
@@ -198,7 +206,8 @@ define(function($require, exports, module) {
         };
         register(null, {
             gun: gun,
-            server: server
+            server: server,
+            express:express
         });
 
     }
