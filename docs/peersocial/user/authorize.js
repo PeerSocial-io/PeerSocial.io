@@ -29,7 +29,7 @@ module.exports = function(imports, login, keychain) {
 
                 var domain = "https://" + imports.app.state.query.auth;
                 var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
-
+            
 
 
                 imports.app.sea.certify(
@@ -41,7 +41,7 @@ module.exports = function(imports, login, keychain) {
                 ).then(async(cert) => {
                     console.log(cert);
                     var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
-                    window.location = "about:blank?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
+                    window.location = domain+ "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
                 });
                 // });
             }
@@ -54,9 +54,9 @@ module.exports = function(imports, login, keychain) {
             keychain().then((room) => {
 
                 var domain;
-                if (hostname == "localhost")
-                    domain = window.location.host;
-                else
+                // if (hostname == "localhost")
+                //     domain = window.location.host;
+                // else
                     domain = "www.peersocial.io";
 
                 domain = 'https://' + domain;

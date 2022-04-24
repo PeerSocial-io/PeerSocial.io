@@ -7,29 +7,13 @@ var provable = require("./lib/provable.min");
 window.jQuery = require("./lib/jquery");
 window.$ = window.jQuery;
 
+var config = [];
 
-var config = [
-    require("./welcome/plugin"),
-
-    //"start/start",
-
-    require("./state/plugin"),
-    require("./layout/plugin"),
-    require("./gun/plugin"),
-    require("./user/plugin"),
-    require("./profile/plugin"),
-    require("./peers/plugin"),
-    require("./posts/plugin"),
-    //"peerapp/plugin",
-    // require("./peerapp_v2/plugin"),
-    // require("./gun-fs/plugin"),
-
-    
-];
+require("./config.js")(config);
 
 setTimeout(function() {
 
-    if(window.nw_app || window.nw){
+    if (window.nw_app || window.nw) {
         config.push(require("./nw_app/nw_app"));
     }
 

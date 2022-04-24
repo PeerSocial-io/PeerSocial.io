@@ -25,7 +25,9 @@ define(function(require, exports, module) {
         // else
         //  if (thisHost != "www.peersocial.io")
         // peers.push("https://www.peersocial.io/gun");
-        peers.push("https://" + window.location.host + "/gun");
+        if(typeof window != "undefined")
+            peers.push("https://" + window.location.host + "/gun");
+            
         peers.push("https://dev.peersocial.io/gun");
         peers.push("https://www.peersocial.io/gun");
 
@@ -43,7 +45,8 @@ define(function(require, exports, module) {
         // }
 
         // }, 1)
-        window.gun = gun; 
+        if(typeof window != "undefined")
+            window.gun = gun; 
 
 
 

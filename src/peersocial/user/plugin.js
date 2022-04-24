@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
 
-    appPlugin.consumes = ["app", "gun", "provable"];
+    appPlugin.consumes = ["app", "gun", "provable", "layout"];
     appPlugin.provides = ["user"];
 
     /* global $ */
@@ -65,11 +65,9 @@ define(function(require, exports, module) {
             });
 
         }
-
-
-
+        
         function finishInitialization() {
-
+            
             register(null, {
                 user: {
                     keychain: keychain,

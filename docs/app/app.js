@@ -87430,29 +87430,13 @@ var provable = __webpack_require__(/*! ./lib/provable.min */ "./src/peersocial/l
 window.jQuery = __webpack_require__(/*! ./lib/jquery */ "./src/peersocial/lib/jquery.js");
 window.$ = window.jQuery;
 
+var config = [];
 
-var config = [
-    __webpack_require__(/*! ./welcome/plugin */ "./src/peersocial/welcome/plugin.js"),
-
-    //"start/start",
-
-    __webpack_require__(/*! ./state/plugin */ "./src/peersocial/state/plugin.js"),
-    __webpack_require__(/*! ./layout/plugin */ "./src/peersocial/layout/plugin.js"),
-    __webpack_require__(/*! ./gun/plugin */ "./src/peersocial/gun/plugin.js"),
-    __webpack_require__(/*! ./user/plugin */ "./src/peersocial/user/plugin.js"),
-    __webpack_require__(/*! ./profile/plugin */ "./src/peersocial/profile/plugin.js"),
-    __webpack_require__(/*! ./peers/plugin */ "./src/peersocial/peers/plugin.js"),
-    __webpack_require__(/*! ./posts/plugin */ "./src/peersocial/posts/plugin.js"),
-    //"peerapp/plugin",
-    // require("./peerapp_v2/plugin"),
-    // require("./gun-fs/plugin"),
-
-    
-];
+__webpack_require__(/*! ./config.js */ "./src/peersocial/config.js")(config);
 
 setTimeout(function() {
 
-    if(window.nw_app || window.nw){
+    if (window.nw_app || window.nw) {
         config.push(__webpack_require__(/*! ./nw_app/nw_app */ "./src/peersocial/nw_app/nw_app.js"));
     }
 
@@ -87486,6 +87470,41 @@ setTimeout(function() {
 
     });
 }, 500)
+
+/***/ }),
+
+/***/ "./src/peersocial/config.js":
+/*!**********************************!*\
+  !*** ./src/peersocial/config.js ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = (config, server) => {
+
+
+    if (server) {
+        
+    }
+    else {
+
+        //core
+        config.push(__webpack_require__(/*! ./layout/plugin */ "./src/peersocial/layout/plugin.js"));
+        config.push(__webpack_require__(/*! ./state/plugin */ "./src/peersocial/state/plugin.js"));
+        config.push(__webpack_require__(/*! ./gun/plugin */ "./src/peersocial/gun/plugin.js"));
+        config.push(__webpack_require__(/*! ./user/plugin */ "./src/peersocial/user/plugin.js"));
+        
+        //app
+        config.push(__webpack_require__(/*! ./welcome/plugin */ "./src/peersocial/welcome/plugin.js"));
+        config.push(__webpack_require__(/*! ./profile/plugin */ "./src/peersocial/profile/plugin.js"));
+        config.push(__webpack_require__(/*! ./peers/plugin */ "./src/peersocial/peers/plugin.js"));
+        config.push(__webpack_require__(/*! ./posts/plugin */ "./src/peersocial/posts/plugin.js"));
+
+    }
+
+
+
+};
 
 /***/ }),
 
@@ -87523,7 +87542,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // else
         //  if (thisHost != "www.peersocial.io")
         // peers.push("https://www.peersocial.io/gun");
-        peers.push("https://" + window.location.host + "/gun");
+        if(typeof window != "undefined")
+            peers.push("https://" + window.location.host + "/gun");
+            
         peers.push("https://dev.peersocial.io/gun");
         peers.push("https://www.peersocial.io/gun");
 
@@ -87541,7 +87562,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // }
 
         // }, 1)
-        window.gun = gun; 
+        if(typeof window != "undefined")
+            window.gun = gun; 
 
 
 
@@ -102959,7 +102981,7 @@ module.exports = function(imports, login, keychain) {
 
                 var domain = "https://" + imports.app.state.query.auth;
                 var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
-
+            
 
 
                 imports.app.sea.certify(
@@ -102971,7 +102993,7 @@ module.exports = function(imports, login, keychain) {
                 ).then(async(cert) => {
                     console.log(cert);
                     var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
-                    window.location = "about:blank?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
+                    window.location = domain+ "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
                 });
                 // });
             }
@@ -102984,9 +103006,9 @@ module.exports = function(imports, login, keychain) {
             keychain().then((room) => {
 
                 var domain;
-                if (hostname == "localhost")
-                    domain = window.location.host;
-                else
+                // if (hostname == "localhost")
+                //     domain = window.location.host;
+                // else
                     domain = "www.peersocial.io";
 
                 domain = 'https://' + domain;
@@ -103427,7 +103449,7 @@ module.exports = function(imports) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
-    appPlugin.consumes = ["app", "gun", "provable"];
+    appPlugin.consumes = ["app", "gun", "provable", "layout"];
     appPlugin.provides = ["user"];
 
     /* global $ */
@@ -103492,11 +103514,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             });
 
         }
-
-
-
+        
         function finishInitialization() {
-
+            
             register(null, {
                 user: {
                     keychain: keychain,
