@@ -5,11 +5,11 @@ module.exports = {
         var architect = require("./lib/architect");
         var events = require("events");
 
-        var config = [require("./server/plugin"),require("./server/REST/plugin")];
+        var config = [require("./server/plugin"), require("./server/REST/plugin")];
 
-        require("./config.js")(config , true);
+        require("./config.js")(config, true);
 
-        
+
         (function() {
             appPlugin.provides = ["app"];
             appPlugin.consumes = ["hub"];
@@ -36,10 +36,14 @@ module.exports = {
                     app.services.app[i] = app.services[i];
                 }
 
-                app.services.app.emit("start");
 
-                    
-                if (process.send) process.send("ready");
+                setTimeout(function() {
+                    app.services.app.emit("start");
+
+
+                    if (process.send) process.send("ready");
+                }, 1000);
+
             });
         })();
 

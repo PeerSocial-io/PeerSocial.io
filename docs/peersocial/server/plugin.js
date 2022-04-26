@@ -105,7 +105,7 @@ define(function($require, exports, module) {
     return appPlugin;
 
     function appPlugin(options, imports, register) {
-        
+
 
         var port = process.env.PORT || 8766;
 
@@ -161,7 +161,8 @@ define(function($require, exports, module) {
             };
             if (process.env.ISMASTERDEV) {
                 gunOptions.peers.push("https://www.peersocial.io/gun");
-            }else{
+            }
+            else {
                 gunOptions.peers.push("https://dev.peersocial.io/gun");
             }
         }
@@ -181,9 +182,9 @@ define(function($require, exports, module) {
         }
         // require("../../server_api/gunfs/gunfs.js")(gun, app);
 
-        
+
         server.express_app = express_app;
-        
+
         var bodyParser = require('body-parser');
         express_app.use(bodyParser.json());
         express_app.use(bodyParser.urlencoded({ extended: true }));
@@ -191,24 +192,26 @@ define(function($require, exports, module) {
         // console.log('Server started on port ' + port + ' with /gun');
         server.init = function() {
 
+            server.listen(port, function() {
+                console.log('Server started on port ' + port + ' with /gun');
+
+                express_app.use(function(req, res, next) {
+                    res.sendFile(require("path").join(__dirname, '../../../docs', 'index.html'));
+                });
+            });
+            
             imports.app.on("start", function() {
 
-                server.listen(port, function() {
-                    console.log('Server started on port ' + port + ' with /gun');
-                    
-                    express_app.use(function(req, res, next) {
-                        res.sendFile(require("path").join(__dirname, '../../../docs', 'index.html'));
-                    });
-                });
 
 
             });
 
         };
+
         register(null, {
             gun: gun,
             server: server,
-            express:express
+            express: express
         });
 
     }

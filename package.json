@@ -3,10 +3,14 @@
   "version": "0.0.1",
   "description": "peersocial dapp",
   "scripts": {
-    "build": "cross-env NODE_ENV=development OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
+    "build" : "./run-build.sh",
+    "build-app": "cross-env NODE_ENV=development OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
     "build-production": "cross-env NODE_ENV=production OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
-    "start": "node ./PeerSocial.js",
-    "bash": "bash"
+    "start": "node ./server.js",
+    "bash": "bash",
+    "heroku-prebuild": "echo This runs before Heroku installs dependencies.",
+    "heroku-postbuild": "echo This runs after Heroku installs dependencies, but before Heroku prunes and caches dependencies.",
+    "heroku-cleanup": "echo This runs after Heroku prunes and caches dependencies."
   },
   "main": "./cli.js",
   "keywords": [

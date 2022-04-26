@@ -15,3 +15,5 @@ build/
 cache/
 
 nw-dev/app/node-onlykey 
+
+GIT_HEAD
