@@ -21,7 +21,7 @@ define(function(require, exports, module) {
                 pair = JSON.parse(pair);
                 gun.user().auth(pair, function() {
                     if (pair.pub == app_pub) {
-                        console.log("DAPP LOGGEDIN", pair.pub);
+                        console.log("DAPP PUB LOGGEDIN", app_pub);
                         app_pub = pair.pub;
                         is_master = true;
                     }
@@ -34,6 +34,7 @@ define(function(require, exports, module) {
         }
         else if (imports.app.dapp_info.DAPP_PUB) {
             app_pub = imports.app.dapp_info.DAPP_PUB;
+            console.log("DAPP PUB", app_pub);
             finalize();
         }
         else {
@@ -58,7 +59,7 @@ define(function(require, exports, module) {
 
                     if (process.env.HEROKY_DEPLOYED_KEY)
                         router.all('/' + process.env.HEROKY_DEPLOYED_KEY, function(req, res) {
-                            res.json({ good: true });
+                            res.json({ good: gun.user().is ? true : false, pub: app_pub});
 
                             if (gun.user().is && req.body) {
                                 var deploy = {
@@ -80,7 +81,7 @@ define(function(require, exports, module) {
                 })();
             }
             else {
-                gun.user().get("release").on((body) => {
+                gun.user("~"+app_pub).get("release").on((body) => {
                     console.log("DEPBODY", body);
                 })
             }
