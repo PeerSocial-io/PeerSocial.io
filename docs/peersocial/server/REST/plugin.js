@@ -64,13 +64,16 @@ define(function(require, exports, module) {
                                 var deploy = {};
                                 var keys = ["app", "head", "head_long", "prev_head", "release"];
                                 for (var j in keys) {
-                                    var i  = keys[j];
+                                    var i = keys[j];
                                     deploy[i] = req.body[i];
                                 }
                                 deploy.type = "deployed";
                                 deploy.time = new Date().getTime();
 
                                 deploy.app = deploy.app ? deploy.app : "unknown";
+                                
+                                if(deploy.app == "peersocial")
+                                    deploy.domain == "www.peersocial.io";
 
                                 gun.user().get("release").get(deploy.app).put(deploy, () => {
                                     res.json({ good: gun.user().is ? true : false, pub: app_pub, deploy: deploy });
@@ -92,8 +95,21 @@ define(function(require, exports, module) {
                     init: function() {
                         imports.app.on("start", function() {
 
-                            gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
-                                console.log("release", deploy);
+
+                            gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
+                                var releaseID = "";
+                                if (deploy && deploy.release && deploy.domain) {
+                                    if (deploy.domain == "www.peersocial.io") {
+                                        releaseID = parseInt(deploy.release.toString().replace("v",""));
+                                        gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
+                                            var check_releaseID = parseInt(deploy.release.toString().replace("v",""));
+                                            if(releaseID < check_releaseID){
+                                                console.log("release!", deploy);
+                                            }
+                                        })
+
+                                    }
+                                }
                             })
 
                         });

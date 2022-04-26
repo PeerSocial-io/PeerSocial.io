@@ -102686,6 +102686,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                 loadProfileData(user, function(profile) {
 
                                     if (!profile) profile = {};
+                                    
+                                    if (me.uid32 && !me.alias)
+                                        profile.url = me.uid32 + "@" + me.alias;
 
                                     imports.app.layout.ejs.render(__webpack_require__(/*! ./profile.html */ "./src/peersocial/profile/profile.html"), {
                                         query: query,
@@ -103738,8 +103741,23 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     
                     imports.app.on("start",function(){
                         
-                            imports.gun.user("~" + imports.app.dapp_info.DAPP_PUB).get("release").on((deploy) => {
-                                console.log("release", deploy);
+                            var app_pub = imports.app.dapp_info.DAPP_PUB;
+                            var gun = imports.gun;
+                            
+                            gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
+                                var releaseID = "";
+                                if (deploy && deploy.release && deploy.domain) {
+                                    if (deploy.domain == "www.peersocial.io") {
+                                        releaseID = parseInt(deploy.release.toString().replace("v",""));
+                                        gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
+                                            var check_releaseID = parseInt(deploy.release.toString().replace("v",""));
+                                            if(releaseID < check_releaseID){
+                                                console.log("release!", deploy);
+                                            }
+                                        })
+
+                                    }
+                                }
                             })
 
                     });

@@ -96,6 +96,9 @@ define(function(require, exports, module) {
                                 loadProfileData(user, function(profile) {
 
                                     if (!profile) profile = {};
+                                    
+                                    if (me.uid32 && !me.alias)
+                                        profile.url = me.uid32 + "@" + me.alias;
 
                                     imports.app.layout.ejs.render(require("./profile.html"), {
                                         query: query,

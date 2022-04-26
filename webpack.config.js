@@ -41,6 +41,7 @@ let plugins = [
 
 
 module.exports = {
+    stats: 'minimal',
     mode: process.env.NODE_ENV,
     entry: ['./src/peersocial/app.js'],
     output: {
