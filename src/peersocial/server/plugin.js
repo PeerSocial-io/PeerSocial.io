@@ -167,6 +167,7 @@ define(function($require, exports, module) {
         }
         var gun = Gun(gunOptions);
         gun.SEA = Gun.SEA;
+        global.gun = gun;
 
         var io = require('socket.io')(http);
 

@@ -57,39 +57,42 @@ define(function(require, exports, module) {
                 (() => { //add deployed hook to announce updates from heroku
                     var router = express.Router();
 
-                    if (process.env.HEROKY_DEPLOYED_KEY)
+                    if (process.env.HEROKY_DEPLOYED_KEY) {
                         router.all('/' + process.env.HEROKY_DEPLOYED_KEY, function(req, res) {
-                            res.json({ good: gun.user().is ? true : false, pub: app_pub});
 
                             if (gun.user().is && req.body) {
                                 var deploy = {
-                                    app: req.body.app,
-                                    app_uuid: req.body.app_uuid,
-                                    git_log: req.body.git_log,
-                                    head: req.body.head,
-                                    head_long: req.body.head_long,
-                                    prev_head: req.body.prev_head,
-                                    release: req.body.release,
-                                    url: req.body.url,
-                                    user: req.body.user
                                 };
-                                gun.user().get("release").put(deploy);
+                                for(var i in req.body){
+                                    deploy[i] = req.body[i];
+                                }
+                                deploy.type = "deployed";
+                                
+                                gun.user().get("deploy").put(deploy, () => {
+                                    res.json({ good: gun.user().is ? true : false, pub: app_pub, deploy: deploy });
+                                });
+                            }
+                            else {
+                                res.json({ good: false });
                             }
                         });
 
+                    }
+
                     app.use('/api/heroku', router);
                 })();
-            }
-            else {
-                gun.user("~"+app_pub).get("release").on((body) => {
-                    console.log("DEPBODY", body);
-                })
             }
 
             register(null, {
                 REST: {
                     init: function() {
-                        imports.app.on("start", function() {});
+                        imports.app.on("start", function() {
+
+                            gun.user().get("deploy").on((deploy) => {
+                                console.log("release", deploy);
+                            })
+
+                        });
                     }
                 }
             });

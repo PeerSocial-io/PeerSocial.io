@@ -29,6 +29,10 @@ define(function(require, exports, module) {
                     
                     imports.app.on("start",function(){
                         
+                            imports.gun.user("~" + imports.app.dapp_info.DAPP_PUB).get("release").on((deploy) => {
+                                console.log("release", deploy);
+                            })
+
                     });
                     
                 }

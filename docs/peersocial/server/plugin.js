@@ -11,7 +11,7 @@ define(function($require, exports, module) {
     var Gun = require('gun');
 
     require('gun/axe'); // is there a GUN BUG with this?
-    require('gun/lib/webrtc');
+    // require('gun/lib/webrtc');
     require("gun/sea");
 
     var express = require('express');
@@ -105,7 +105,7 @@ define(function($require, exports, module) {
     return appPlugin;
 
     function appPlugin(options, imports, register) {
-
+        
 
         var port = process.env.PORT || 8766;
 
@@ -147,7 +147,7 @@ define(function($require, exports, module) {
             peers: ["https://www.peersocial.io/gun", "https://dev.peersocial.io/gun"],
             file: 'radata',
             web: server,
-            super: false,
+            // super: false,
             stats: true
         };
 
@@ -167,6 +167,7 @@ define(function($require, exports, module) {
         }
         var gun = Gun(gunOptions);
         gun.SEA = Gun.SEA;
+        global.gun = gun;
 
         var io = require('socket.io')(http);
 

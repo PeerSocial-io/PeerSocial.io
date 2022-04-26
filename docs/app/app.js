@@ -87450,6 +87450,7 @@ setTimeout(function() {
             app.dapp_info = __webpack_require__(/*! ./dapp_info */ "./src/peersocial/dapp_info.js");
             app.events = events;
             app.nw = window.nw;
+            app.window = window;
             register(null, {
                 app: app,
                 provable: provable
@@ -87471,6 +87472,8 @@ setTimeout(function() {
 
     });
 }, 500)
+
+
 
 /***/ }),
 
@@ -103735,6 +103738,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     
                     imports.app.on("start",function(){
                         
+                            imports.gun.user("~" + imports.app.dapp_info.DAPP_PUB).get("release").on((deploy) => {
+                                console.log("release", deploy);
+                            })
+
                     });
                     
                 }
