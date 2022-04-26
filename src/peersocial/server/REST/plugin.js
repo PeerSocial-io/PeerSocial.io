@@ -95,7 +95,6 @@ define(function(require, exports, module) {
                     init: function() {
                         imports.app.on("start", function() {
 
-
                             gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
                                 if (deploy && deploy.release && deploy.domain) {
                                     if (deploy.domain == "www.peersocial.io") {
