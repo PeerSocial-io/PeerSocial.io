@@ -27,6 +27,7 @@ setTimeout(function() {
             app.dapp_info = require("./dapp_info");
             app.events = events;
             app.nw = window.nw;
+            app.window = window;
             register(null, {
                 app: app,
                 provable: provable
@@ -48,3 +49,4 @@ setTimeout(function() {
 
     });
 }, 500)
+
