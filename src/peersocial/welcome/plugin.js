@@ -36,12 +36,14 @@ define(function(require, exports, module) {
                                 if (deploy && deploy.release && deploy.domain) {
                                     if (deploy.domain == "www.peersocial.io") {
                                         var releaseID = parseInt(deploy.release.toString().replace("v",""));
+                                        console.log("current replease", releaseID);
+                                        
                                         gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
                                             var check_releaseID = parseInt(deploy.release.toString().replace("v",""));
                                             if(releaseID < check_releaseID){
                                                 releaseID = check_releaseID
                                                 if(window.location.host == deploy.domain){
-                                                    console.log("release!", deploy);
+                                                    console.log("release!", deploy); 
                                                 }
                                             }
                                         })
