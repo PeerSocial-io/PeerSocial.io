@@ -71,9 +71,9 @@ define(function(require, exports, module) {
                                 deploy.time = new Date().getTime();
 
                                 deploy.app = deploy.app ? deploy.app : "unknown";
-                                
-                                if(deploy.app == "peersocial")
-                                    deploy.domain = "www.peersocial.io"; 
+
+                                if (deploy.app == "peersocial")
+                                    deploy.domain = "www.peersocial.io";
 
                                 gun.user().get("release").get(deploy.app).put(deploy, () => {
                                     res.json({ good: gun.user().is ? true : false, pub: app_pub, deploy: deploy });
@@ -97,13 +97,12 @@ define(function(require, exports, module) {
 
 
                             gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
-                                var releaseID = parseInt(deploy.release.toString().replace("v",""));
                                 if (deploy && deploy.release && deploy.domain) {
                                     if (deploy.domain == "www.peersocial.io") {
-                                        releaseID = parseInt(deploy.release.toString().replace("v",""));
+                                        var releaseID = parseInt(deploy.release.toString().replace("v", ""));
                                         gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
-                                            var check_releaseID = parseInt(deploy.release.toString().replace("v",""));
-                                            if(releaseID < check_releaseID){
+                                            var check_releaseID = parseInt(deploy.release.toString().replace("v", ""));
+                                            if (releaseID < check_releaseID) {
                                                 console.log("release!", deploy);
                                             }
                                         })
