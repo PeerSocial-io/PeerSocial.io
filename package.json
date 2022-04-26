@@ -12,6 +12,7 @@
     "heroku-postbuild": "echo This runs after Heroku installs dependencies, but before Heroku prunes and caches dependencies.",
     "heroku-cleanup": "echo This runs after Heroku prunes and caches dependencies."
   },
+  "heroku-run-build-script": true,
   "main": "./cli.js",
   "keywords": [
     "peersocial"
