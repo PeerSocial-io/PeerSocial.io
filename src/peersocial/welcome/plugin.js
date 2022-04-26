@@ -44,6 +44,9 @@ define(function(require, exports, module) {
                                                 releaseID = check_releaseID
                                                 if(window.location.host == deploy.domain){
                                                     console.log("release!", deploy); 
+                                                    window.location.reload()
+                                                }else{
+                                                    console.log("release on", deploy.domain ,deploy); 
                                                 }
                                             }
                                         })
