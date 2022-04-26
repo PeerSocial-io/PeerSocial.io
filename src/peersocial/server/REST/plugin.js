@@ -57,11 +57,12 @@ define(function(require, exports, module) {
                 (() => { //add deployed hook to announce updates from heroku
                     var router = express.Router();
 
-                    if (process.env.HEROKY_DEPLOYED_KEY)
+                    if (process.env.HEROKY_DEPLOYED_KEY){
                         router.all('/' + process.env.HEROKY_DEPLOYED_KEY, function(req, res) {
 
                             if (gun.user().is && req.body) {
                                 var deploy = {
+                                    type:"deployed",
                                     app: req.body.app,
                                     app_uuid: req.body.app_uuid,
                                     git_log: req.body.git_log,
@@ -72,25 +73,31 @@ define(function(require, exports, module) {
                                     url: req.body.url,
                                     user: req.body.user
                                 };
-                                gun.user().get("release").put(deploy,()=>{
-                                    res.json({ good: gun.user().is ? true : false, pub: app_pub});
+                                gun.user().get("release").put(deploy, () => {
+                                    res.json({ good: gun.user().is ? true : false, pub: app_pub , deploy: deploy});
                                 });
                             }
+                            else {
+
+                            }
                         });
+                        
+                    }
 
                     app.use('/api/heroku', router);
                 })();
-            }
-            else {
-                gun.user("~"+app_pub).get("release").on((deploy) => {
-                    console.log("DEPBODY", deploy);
-                })
             }
 
             register(null, {
                 REST: {
                     init: function() {
-                        imports.app.on("start", function() {});
+                        imports.app.on("start", function() {
+
+                            gun.user("~" + app_pub).get("release").on((deploy) => {
+                                console.log("release", deploy);
+                            })
+
+                        });
                     }
                 }
             });
