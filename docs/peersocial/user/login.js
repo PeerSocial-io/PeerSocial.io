@@ -168,6 +168,7 @@ module.exports = function(imports) {
                 model.find("#login_onlykey-usb").click();
             }
         });
+        
         var $login_pubkey = async(pair) => {
             model.find("#pubkey").attr("type","password");
             
@@ -212,9 +213,11 @@ module.exports = function(imports) {
                 ok_login(imports.app.nw_app.onlykey);
 
             function ok_login(ok) {
+                if(!tag) tag = "";
+                
                 ok.derive_public_key(tag, 1, false, (err, key) => {
                     ok.derive_shared_secret(tag, key, 1, false, (err, sharedsec, key2) => {
-                        $login(tag, sharedsec, createAccount ? sharedsec : false);
+                        $login(tag, sharedsec, createAccount == tag ? sharedsec : false);
                     });
                 });
             }
@@ -236,6 +239,9 @@ module.exports = function(imports) {
                     if (!(usr == createAccount)) {
                         createAccount = false;
                         pasconfm = "";
+                        model.find(".error").text("");
+                        model.find("#tag_error").text("");
+                        model.find("#pubkey_error").text("");
                         model.find("#password_error").text("");
                         model.find("#confirm-password_error").text("");
                         model.find("#confirm-password").val("");
@@ -261,14 +267,14 @@ module.exports = function(imports) {
                     }
                     else {
                         if (res.err == "Wrong user or password.") {
-                            var uid = false;
-                            if (usr.indexOf("#") > -1) {
-                                usr = usr.split("#");
-                                uid = usr[1];
-                                usr = usr[0];
-                            }
-                            gun.aliasToPub("@" + usr, uid, (pub) => {
-                                if (!pub) {
+                            // var uid = false;
+                            // if (usr.indexOf("#") > -1) {
+                            //     usr = usr.split("#");
+                            //     uid = usr[1];
+                            //     usr = usr[0];
+                            // }
+                            // gun.aliasToPub("@" + usr, uid, (pub) => {
+                            //     if (!pub) {
                                     if (createAccount && !creating) {
                                         creating = true;
                                         gun.user().create(usr, pas, function(ack) {
@@ -281,7 +287,7 @@ module.exports = function(imports) {
                                         });
                                     }
                                     else {
-                                        model.find(".error").css("color", "red").html("<b>User not created.</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
+                                        model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
                                         var create = model.find(".error").find("#create");
                                         create.click(function() {
                                             model.find("#confirmpwfield").show().focus();
@@ -290,11 +296,11 @@ module.exports = function(imports) {
                                             createAccount = usr;
                                         });
                                     }
-                                }
-                                else {
-                                    model.find("#password_error").css("color", "red").html("<b>" + res.err + "</b>");
-                                }
-                            });
+                            //     }
+                            //     else {
+                            //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
+                            //     }
+                            // });
                         }
                     }
 

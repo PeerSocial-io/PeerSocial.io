@@ -5,7 +5,7 @@ module.exports = function(imports, login, keychain) {
 
     var crypto = require("crypto");
     var url = require("url");
-
+    var querystring = require('querystring');
     var hostname = window.location.hostname;
 
     var authorize = function() {
@@ -17,15 +17,16 @@ module.exports = function(imports, login, keychain) {
         if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
             var domain = "https://" + imports.app.state.query.auth;
             var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
-                
+
             if (!login.user) {
                 // imports.app.on("login", () => {
                 //     authorize();
                 // });
                 login.openLogin(function(canceled) {
-                    if(canceled){
+                    if (canceled) {
                         window.location = domain + "/blank.html?canceled=true";
-                    }else{
+                    }
+                    else {
                         authorize();
                     }
                 });
@@ -44,7 +45,15 @@ module.exports = function(imports, login, keychain) {
                 ).then(async(cert) => {
                     console.log(cert);
                     var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
-                    window.location = domain + "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
+
+                    var query = {
+                        cert: new Buffer(d).toString("base64"),
+                        pub: room.pub,
+                        epub: room.epub,
+                    };
+                    query = querystring.stringify(query);
+
+                    window.location = domain + "/blank.html?" + query;
                 });
                 // });
             }
@@ -66,7 +75,13 @@ module.exports = function(imports, login, keychain) {
                 domain = 'https://' + domain;
 
                 var popupOptions = "popup,location=1,toolbar=1,menubar=1,resizable=1,height=800,width=600";
-                var _url = domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub;
+                var query = {
+                    auth: window.location.host,
+                    pub: room.pub,
+                    epub: room.epub,
+                };
+                query = querystring.stringify(query);
+                var _url = domain + '/login?' + query;
                 var popup = window.open(_url, 'auth', popupOptions);
 
                 var interval = setInterval(function() {
@@ -99,16 +114,20 @@ module.exports = function(imports, login, keychain) {
 
                                     if (!res.err) {
                                         if (login.user) {
-                                            login.prepLogout();
-                                            imports.app.emit("login", login.user);
-                                            imports.app.state.history.back();
+                                            gun.user().get("last").get("seen").put(new Date().getTime(), function() {
+
+                                                login.prepLogout();
+                                                imports.app.emit("login", login.user);
+                                                imports.app.state.history.back();
+                                            });
                                         }
                                     }
 
 
                                 });
                             })();
-                        }else{
+                        }
+                        else {
                             imports.app.state.history.back();
                         }
                         clearInterval(interval);

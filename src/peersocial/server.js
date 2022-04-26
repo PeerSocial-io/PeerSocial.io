@@ -16,8 +16,10 @@ module.exports = {
 
             function appPlugin(options, imports, register) {
                 var app = new events.EventEmitter();
+                app.dapp_info = require("./dapp_info");
                 app.server = true;
                 app.events = events;
+                app.window = typeof window != "undefined" ? window : global;
                 register(null, {
                     app: app
                 });

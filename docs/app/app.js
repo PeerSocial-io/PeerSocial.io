@@ -87447,6 +87447,7 @@ setTimeout(function() {
 
         function appPlugin(options, imports, register) {
             var app = new events.EventEmitter();
+            app.dapp_info = __webpack_require__(/*! ./dapp_info */ "./src/peersocial/dapp_info.js");
             app.events = events;
             app.nw = window.nw;
             register(null, {
@@ -87505,6 +87506,29 @@ module.exports = (config, server) => {
 
 
 };
+
+/***/ }),
+
+/***/ "./src/peersocial/dapp_info.js":
+/*!*************************************!*\
+  !*** ./src/peersocial/dapp_info.js ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(process) {var dapp_info  = {
+    DAPP_KEY : process.env.DAPP_KEY,
+    DAPP_PUB : "SRmb-SMPPB_5NU13ncuOh5LgHL1alp6jfZcjZKSIunE.8J_26wW0sTF1fW-6bCQhMVtYftYHoDTKw27o0n1u3h4",
+}
+
+
+dapp_info.name= "peersocial.io";
+dapp_info.peers = ["www.peersocial.io", "dev.peersocial.io"];
+
+
+module.exports = dapp_info;
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -102960,7 +102984,7 @@ module.exports = function(imports, login, keychain) {
 
     var crypto = __webpack_require__(/*! crypto */ "./node_modules/crypto-browserify/index.js");
     var url = __webpack_require__(/*! url */ "./node_modules/node-libs-browser/node_modules/url/url.js");
-
+    var querystring = __webpack_require__(/*! querystring */ "./node_modules/querystring-es3/index.js");
     var hostname = window.location.hostname;
 
     var authorize = function() {
@@ -102972,15 +102996,16 @@ module.exports = function(imports, login, keychain) {
         if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
             var domain = "https://" + imports.app.state.query.auth;
             var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
-                
+
             if (!login.user) {
                 // imports.app.on("login", () => {
                 //     authorize();
                 // });
                 login.openLogin(function(canceled) {
-                    if(canceled){
+                    if (canceled) {
                         window.location = domain + "/blank.html?canceled=true";
-                    }else{
+                    }
+                    else {
                         authorize();
                     }
                 });
@@ -102999,7 +103024,15 @@ module.exports = function(imports, login, keychain) {
                 ).then(async(cert) => {
                     console.log(cert);
                     var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
-                    window.location = domain + "/blank.html?epub=" + room.epub + "&pub=" + room.pub + "&cert=" + (new Buffer(d).toString("base64"));
+
+                    var query = {
+                        cert: new Buffer(d).toString("base64"),
+                        pub: room.pub,
+                        epub: room.epub,
+                    };
+                    query = querystring.stringify(query);
+
+                    window.location = domain + "/blank.html?" + query;
                 });
                 // });
             }
@@ -103021,7 +103054,13 @@ module.exports = function(imports, login, keychain) {
                 domain = 'https://' + domain;
 
                 var popupOptions = "popup,location=1,toolbar=1,menubar=1,resizable=1,height=800,width=600";
-                var _url = domain + '/login?' + 'auth=' + window.location.host + "&" + "pub=" + room.pub + "&" + "epub=" + room.epub;
+                var query = {
+                    auth: window.location.host,
+                    pub: room.pub,
+                    epub: room.epub,
+                };
+                query = querystring.stringify(query);
+                var _url = domain + '/login?' + query;
                 var popup = window.open(_url, 'auth', popupOptions);
 
                 var interval = setInterval(function() {
@@ -103054,16 +103093,20 @@ module.exports = function(imports, login, keychain) {
 
                                     if (!res.err) {
                                         if (login.user) {
-                                            login.prepLogout();
-                                            imports.app.emit("login", login.user);
-                                            imports.app.state.history.back();
+                                            gun.user().get("last").get("seen").put(new Date().getTime(), function() {
+
+                                                login.prepLogout();
+                                                imports.app.emit("login", login.user);
+                                                imports.app.state.history.back();
+                                            });
                                         }
                                     }
 
 
                                 });
                             })();
-                        }else{
+                        }
+                        else {
                             imports.app.state.history.back();
                         }
                         clearInterval(interval);
@@ -103358,6 +103401,7 @@ module.exports = function(imports) {
                 model.find("#login_onlykey-usb").click();
             }
         });
+        
         var $login_pubkey = async(pair) => {
             model.find("#pubkey").attr("type","password");
             
@@ -103402,9 +103446,11 @@ module.exports = function(imports) {
                 ok_login(imports.app.nw_app.onlykey);
 
             function ok_login(ok) {
+                if(!tag) tag = "";
+                
                 ok.derive_public_key(tag, 1, false, (err, key) => {
                     ok.derive_shared_secret(tag, key, 1, false, (err, sharedsec, key2) => {
-                        $login(tag, sharedsec, createAccount ? sharedsec : false);
+                        $login(tag, sharedsec, createAccount == tag ? sharedsec : false);
                     });
                 });
             }
@@ -103426,6 +103472,9 @@ module.exports = function(imports) {
                     if (!(usr == createAccount)) {
                         createAccount = false;
                         pasconfm = "";
+                        model.find(".error").text("");
+                        model.find("#tag_error").text("");
+                        model.find("#pubkey_error").text("");
                         model.find("#password_error").text("");
                         model.find("#confirm-password_error").text("");
                         model.find("#confirm-password").val("");
@@ -103451,14 +103500,14 @@ module.exports = function(imports) {
                     }
                     else {
                         if (res.err == "Wrong user or password.") {
-                            var uid = false;
-                            if (usr.indexOf("#") > -1) {
-                                usr = usr.split("#");
-                                uid = usr[1];
-                                usr = usr[0];
-                            }
-                            gun.aliasToPub("@" + usr, uid, (pub) => {
-                                if (!pub) {
+                            // var uid = false;
+                            // if (usr.indexOf("#") > -1) {
+                            //     usr = usr.split("#");
+                            //     uid = usr[1];
+                            //     usr = usr[0];
+                            // }
+                            // gun.aliasToPub("@" + usr, uid, (pub) => {
+                            //     if (!pub) {
                                     if (createAccount && !creating) {
                                         creating = true;
                                         gun.user().create(usr, pas, function(ack) {
@@ -103471,7 +103520,7 @@ module.exports = function(imports) {
                                         });
                                     }
                                     else {
-                                        model.find(".error").css("color", "red").html("<b>User not created.</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
+                                        model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
                                         var create = model.find(".error").find("#create");
                                         create.click(function() {
                                             model.find("#confirmpwfield").show().focus();
@@ -103480,11 +103529,11 @@ module.exports = function(imports) {
                                             createAccount = usr;
                                         });
                                     }
-                                }
-                                else {
-                                    model.find("#password_error").css("color", "red").html("<b>" + res.err + "</b>");
-                                }
-                            });
+                            //     }
+                            //     else {
+                            //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
+                            //     }
+                            // });
                         }
                     }
 

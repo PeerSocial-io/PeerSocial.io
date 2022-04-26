@@ -142,7 +142,8 @@ function setupServer(port, cb) {
   var http_server = fork('server.js', [], {
     env: {
       PORT: port,
-      GEN_HTTPS: true
+      GEN_HTTPS: true,
+      DAPP_KEY: process.env.DAPP_KEY
     },
     cwd: path.resolve("./", '../..')
   })
