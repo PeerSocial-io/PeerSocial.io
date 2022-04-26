@@ -67,6 +67,7 @@ define(function(require, exports, module) {
                                     deploy[i] = req.body[i];
                                 }
                                 deploy.type = "deployed";
+                                deploy.time = new Date().getTime();
                                 
                                 gun.user().get("release").put(deploy, () => {
                                     res.json({ good: gun.user().is ? true : false, pub: app_pub, deploy: deploy });
@@ -88,7 +89,7 @@ define(function(require, exports, module) {
                     init: function() {
                         imports.app.on("start", function() {
 
-                            gun.user().get("release").on((deploy) => {
+                            gun.get("~"+app_pub).get("release").on((deploy) => {
                                 console.log("release", deploy);
                             })
 
