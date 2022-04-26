@@ -73,7 +73,7 @@ define(function(require, exports, module) {
                                 deploy.app = deploy.app ? deploy.app : "unknown";
                                 
                                 if(deploy.app == "peersocial")
-                                    deploy.domain == "www.peersocial.io";
+                                    deploy.domain = "www.peersocial.io";
 
                                 gun.user().get("release").get(deploy.app).put(deploy, () => {
                                     res.json({ good: gun.user().is ? true : false, pub: app_pub, deploy: deploy });
