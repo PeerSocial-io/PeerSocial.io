@@ -33,7 +33,7 @@ define(function(require, exports, module) {
                             var gun = imports.gun;
                             
                             gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
-                                var releaseID = "";
+                                var releaseID = parseInt(deploy.release.toString().replace("v",""));
                                 if (deploy && deploy.release && deploy.domain) {
                                     if (deploy.domain == "www.peersocial.io") {
                                         releaseID = parseInt(deploy.release.toString().replace("v",""));
