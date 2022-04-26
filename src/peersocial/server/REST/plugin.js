@@ -59,7 +59,6 @@ define(function(require, exports, module) {
 
                     if (process.env.HEROKY_DEPLOYED_KEY)
                         router.all('/' + process.env.HEROKY_DEPLOYED_KEY, function(req, res) {
-                            res.json({ good: gun.user().is ? true : false, pub: app_pub});
 
                             if (gun.user().is && req.body) {
                                 var deploy = {
@@ -73,7 +72,9 @@ define(function(require, exports, module) {
                                     url: req.body.url,
                                     user: req.body.user
                                 };
-                                gun.user().get("release").put(deploy);
+                                gun.user().get("release").put(deploy,()=>{
+                                    res.json({ good: gun.user().is ? true : false, pub: app_pub});
+                                });
                             }
                         });
 
@@ -81,8 +82,8 @@ define(function(require, exports, module) {
                 })();
             }
             else {
-                gun.user("~"+app_pub).get("release").on((body) => {
-                    console.log("DEPBODY", body);
+                gun.user("~"+app_pub).get("release").on((deploy) => {
+                    console.log("DEPBODY", deploy);
                 })
             }
 
