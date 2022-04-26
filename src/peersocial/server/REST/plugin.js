@@ -90,8 +90,8 @@ define(function(require, exports, module) {
                 REST: {
                     init: function() {
                         imports.app.on("start", function() {
-
-                            gun.get("~"+app_pub).get("release").on((deploy) => {
+                            
+                            gun.get("~"+app_pub).get("release").get("peersocial").on((deploy) => {
                                 console.log("release", deploy);
                             })
 
