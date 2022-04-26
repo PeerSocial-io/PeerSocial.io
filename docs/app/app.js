@@ -103745,14 +103745,16 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             var gun = imports.gun;
                             
                             gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
-                                var releaseID = parseInt(deploy.release.toString().replace("v",""));
                                 if (deploy && deploy.release && deploy.domain) {
                                     if (deploy.domain == "www.peersocial.io") {
-                                        releaseID = parseInt(deploy.release.toString().replace("v",""));
+                                        var releaseID = parseInt(deploy.release.toString().replace("v",""));
                                         gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
                                             var check_releaseID = parseInt(deploy.release.toString().replace("v",""));
                                             if(releaseID < check_releaseID){
-                                                console.log("release!", deploy);
+                                                releaseID = check_releaseID
+                                                if(window.location.host == deploy.domain){
+                                                    console.log("release!", deploy);
+                                                }
                                             }
                                         })
 
