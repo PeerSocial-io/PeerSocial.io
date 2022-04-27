@@ -22,6 +22,7 @@
     "@fortawesome/fontawesome-free": "^6.1.1",
     "@trustcrypto/node-onlykey": "github:bmatusiak/node-onlykey",
     "amd-loader": "^0.0.8",
+    "aws-sdk": "^2.1123.0",
     "body-parser": "^1.20.0",
     "clean-webpack-plugin": "^3.0.0",
     "client-oauth2": "^4.3.3",
