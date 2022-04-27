@@ -86,7 +86,7 @@ define(function(require, exports, module) {
 
                     }
 
-                    app.use('/api/heroku', router);
+                    app.use('/api/heroku', router); 
                 })();
             }
 
