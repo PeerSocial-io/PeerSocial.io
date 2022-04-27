@@ -53,8 +53,8 @@ define(function(require, exports, module) {
 
 
 
-        var mesh = gun.back('opt.mesh'); // DAM;
-        mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun', 'https://dev.peersocial.io/gun'] } });
+        // var mesh = gun.back('opt.mesh'); // DAM;
+        // mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun', 'https://dev.peersocial.io/gun'] } });
 
         function getPubData(pub) {
             return new Promise(resolve => {
