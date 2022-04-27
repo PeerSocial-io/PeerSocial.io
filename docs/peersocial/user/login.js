@@ -40,6 +40,8 @@ module.exports = function(imports) {
                 imports.app.emit("login", login.user);
             }
         });
+        
+        if(login.will_authorize) return done();
 
         //check if there is a session to restore
         if (window.sessionStorage.recall) {

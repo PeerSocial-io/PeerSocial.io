@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
 
-    appPlugin.consumes = ["app", "gun", "provable", "layout"];
+    appPlugin.consumes = ["app", "gun", "provable", "layout", "state"];
     appPlugin.provides = ["user"];
 
     /* global $ */
@@ -78,7 +78,7 @@ define(function(require, exports, module) {
                             if (!login.user && !authorize()) {
                                 login.openLogin();
                             }
-                            if (login.user) {
+                            if (login.user && !authorize()) {
                                 login.prepLogout();
                                 imports.app.state.history.back();
                             }

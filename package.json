@@ -3,12 +3,12 @@
   "version": "0.0.1",
   "description": "peersocial dapp",
   "scripts": {
-    "build" : "./run-build.sh",
+    "build": "./run-build.sh",
     "build-app": "cross-env NODE_ENV=development OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
     "build-production": "cross-env NODE_ENV=production OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
     "start": "node ./server.js",
     "bash": "bash",
-    "heroku-prebuild": "echo This runs before Heroku installs dependencies.", 
+    "heroku-prebuild": "echo This runs before Heroku installs dependencies.",
     "heroku-cleanup": "echo This runs after Heroku prunes and caches dependencies."
   },
   "heroku-run-build-script": true,
@@ -30,7 +30,7 @@
     "cross-env": "^7.0.2",
     "elliptic": "^6.5.4",
     "express": "*",
-    "gun": "https://github.com/amark/gun#9d94b433d0e3ec95d29082f27572caa3b3a2505b",
+    "gun": "github:amark/gun#a092f5a725c7b0e38e653d53400f62adc7e65fd7",
     "html-webpack-plugin": "^4.3.0",
     "minimist": "^1.2.5",
     "node-forge": "^1.3.1",

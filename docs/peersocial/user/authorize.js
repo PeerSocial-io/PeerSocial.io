@@ -13,18 +13,24 @@ module.exports = function(imports, login, keychain) {
         if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
             useOAuth = true;
 
+        var domain_hash = crypto.createHash('sha256').update(window.location.host).digest('hex');
 
         if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
-            var domain = "https://" + imports.app.state.query.auth;
-            var domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
+            var domain = imports.app.state.query.auth;
+            domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
 
             if (!login.user) {
                 // imports.app.on("login", () => {
                 //     authorize();
                 // });
+                gun.user().recall({
+                    sessionStorage: false
+                });
+                gun.user().leave();
+
                 login.openLogin(function(canceled) {
                     if (canceled) {
-                        window.location = domain + "/blank.html?canceled=true";
+                        window.location = "https://" + domain + "/blank.html?canceled=true";
                     }
                     else {
                         authorize();
@@ -38,7 +44,7 @@ module.exports = function(imports, login, keychain) {
 
                 imports.app.sea.certify(
                     imports.app.state.query.pub, // everybody is allowed to write
-                    { "*": "notifications", "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
+                    { "*": domain_hash, "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
                     room, //authority
                     null, //no need for callback here
                     { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
@@ -46,14 +52,29 @@ module.exports = function(imports, login, keychain) {
                     console.log(cert);
                     var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
 
-                    var query = {
-                        cert: new Buffer(d).toString("base64"),
-                        pub: room.pub,
-                        epub: room.epub,
-                    };
-                    query = querystring.stringify(query);
 
-                    window.location = domain + "/blank.html?" + query;
+                    var tmp = "~" + imports.app.state.query.pub;
+                    var data = {};
+
+                    var link = {};
+                    link[tmp] = { '#': tmp };
+                    gun.user().get(domain_hash).get(imports.app.state.query.pub).put(link).get(tmp).once(function(data, key, msg, eve) {
+
+                        var query = {
+                            cert: new Buffer(d).toString("base64"),
+                            pub: room.pub,
+                            epub: room.epub,
+                        };
+                        query = querystring.stringify(query);
+
+                        gun.user().leave();
+                        window.sessionStorage.clear();
+
+                        setTimeout(function() {
+                            window.location = "https://" + domain + "/blank.html?" + query;
+                        }, 1000)
+                    });
+
                 });
                 // });
             }
@@ -110,21 +131,15 @@ module.exports = function(imports, login, keychain) {
                                         cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
                                         query.cert = cert;
                                         console.log(query);
+                                        login.user
+                                        if (login.user) {
+                                            gun.user().get("last").get("seen").put(new Date().getTime(), function() {
 
-
-
-                                        if (!res.err) {
-                                            if (login.user) {
-                                                gun.user().get("last").get("seen").put(new Date().getTime(), function() {
-
-                                                    login.prepLogout();
-                                                    imports.app.emit("login", login.user);
-                                                    imports.app.state.history.back();
-                                                });
-                                            }
+                                                login.prepLogout();
+                                                imports.app.emit("login", login.user);
+                                                imports.app.state.history.back();
+                                            });
                                         }
-                                        else gun.user().leave();
-
 
                                     })();
                                 }
@@ -143,5 +158,11 @@ module.exports = function(imports, login, keychain) {
         return false;
     }
 
+    Object.defineProperty(login, 'will_authorize', {
+        get() {
+            return !!(imports.state.query.auth && imports.state.query.pub && imports.state.query.epub);
+        }
+    });
+    
     return authorize;
 };
