@@ -1,9 +1,9 @@
-define(function(require, exports, module) {
+// define(function(require, exports, module) {
 
     appPlugin.consumes = ["app", "gun", "server", "express"];
     appPlugin.provides = ["REST"];
 
-    return appPlugin;
+    module.exports = appPlugin;
 
     function appPlugin(options, imports, register) {
 
@@ -83,4 +83,4 @@ define(function(require, exports, module) {
         }
     }
 
-});
+// });

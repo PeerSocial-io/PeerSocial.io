@@ -1,4 +1,4 @@
-define(function($require, exports, module) {
+// define(function($require, exports, module) {
 
     var fs = require('fs');
     var path = require("path");
@@ -102,7 +102,7 @@ define(function($require, exports, module) {
 
     }
 
-    return appPlugin;
+    module.exports =  appPlugin;
 
     function appPlugin(options, imports, register) {
 
@@ -219,4 +219,4 @@ define(function($require, exports, module) {
 
     }
 
-});
+// });

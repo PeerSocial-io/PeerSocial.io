@@ -1,7 +1,7 @@
 module.exports = {
     start: function() {
 
-        require("amd-loader");
+        // require("amd-loader");
         var architect = require("./lib/architect");
         var events = require("events");
 
