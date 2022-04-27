@@ -46,7 +46,7 @@ define(function(require, exports, module) {
                 console.log('DAPP_KEY="' + pair + '"');
 
             });
-            return;
+            return; 
         }
 
         function finalize() {

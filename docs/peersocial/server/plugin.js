@@ -166,6 +166,9 @@ define(function($require, exports, module) {
                 gunOptions.peers.push("https://dev.peersocial.io/gun");
             }
         }
+        
+        gunOptions.peers.push("https://peersocial-notify.herokuapp.com/gun");
+        
         var gun = Gun(gunOptions);
         gun.SEA = Gun.SEA;
         global.gun = gun;

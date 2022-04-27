@@ -87574,7 +87574,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             
         peers.push("https://dev.peersocial.io/gun");
         peers.push("https://www.peersocial.io/gun");
-
+        peers.push("https://peersocial-notify.herokuapp.com/gun");
+        
         gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
 
         // var thisHost = window.location.host;
@@ -103747,13 +103748,13 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
                                 if (deploy && deploy.release && deploy.domain) {
                                     if (deploy.domain == "www.peersocial.io") {
-                                        var releaseID = parseInt(deploy.release.toString().replace("v",""));
-                                        console.log("current replease", releaseID);
-                                        
+                                        var releaseID = parseInt(deploy.release.toString().replace("v","")); 
+                                        console.log("current replease", releaseID); 
+                                         
                                         gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
                                             var check_releaseID = parseInt(deploy.release.toString().replace("v",""));
                                             if(releaseID < check_releaseID){
-                                                releaseID = check_releaseID
+                                                releaseID = check_releaseID 
                                                 if(window.location.host == deploy.domain){
                                                     console.log("release!", deploy); 
                                                     window.location.reload()
