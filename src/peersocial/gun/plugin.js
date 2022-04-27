@@ -30,7 +30,8 @@ define(function(require, exports, module) {
             
         peers.push("https://dev.peersocial.io/gun");
         peers.push("https://www.peersocial.io/gun");
-
+        peers.push("https://peersocial-notify.herokuapp.com/gun");
+        
         gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
 
         // var thisHost = window.location.host;
