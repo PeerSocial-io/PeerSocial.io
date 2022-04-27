@@ -41,7 +41,7 @@ define(function(require, exports, module) {
                                         gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
                                             var check_releaseID = parseInt(deploy.release.toString().replace("v",""));
                                             if(releaseID < check_releaseID){
-                                                releaseID = check_releaseID
+                                                releaseID = check_releaseID 
                                                 if(window.location.host == deploy.domain){
                                                     console.log("release!", deploy); 
                                                     window.location.reload()
