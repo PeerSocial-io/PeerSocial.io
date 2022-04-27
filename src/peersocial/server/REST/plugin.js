@@ -52,50 +52,12 @@ define(function(require, exports, module) {
         function finalize() {
 
 
-            if (is_master) {
-
-                (() => { //add deployed hook to announce updates from heroku
-                    var router = express.Router();
-
-                    if (process.env.HEROKY_DEPLOYED_KEY) {
-                        router.all('/' + process.env.HEROKY_DEPLOYED_KEY, function(req, res) {
-
-                            if (gun.user().is && req.body) {
-                                var deploy = {};
-                                var keys = ["app", "head", "head_long", "prev_head", "release"];
-                                for (var j in keys) {
-                                    var i = keys[j];
-                                    deploy[i] = req.body[i];
-                                }
-                                deploy.type = "deployed";
-                                deploy.time = new Date().getTime();
-
-                                deploy.app = deploy.app ? deploy.app : "unknown";
-
-                                if (deploy.app == "peersocial")
-                                    deploy.domain = "www.peersocial.io";
-
-                                gun.user().get("release").get(deploy.app).put(deploy, () => {
-                                    res.json({ good: gun.user().is ? true : false, pub: app_pub, deploy: deploy });
-                                });
-                            }
-                            else {
-                                res.json({ good: false });
-                            }
-                        });
-
-                    }
-
-                    app.use('/api/heroku', router); 
-                })();
-            }
-
             register(null, {
                 REST: {
                     init: function() {
                         imports.app.on("start", function() {
 
-                            gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
+                            gun.get("~" + app_pub).get("release").get("peersocial").once(function(deploy,a){
                                 if (deploy && deploy.release && deploy.domain) {
                                     if (deploy.domain == "www.peersocial.io") {
                                         var releaseID = parseInt(deploy.release.toString().replace("v", ""));
@@ -105,7 +67,7 @@ define(function(require, exports, module) {
                                             var check_releaseID = parseInt(deploy.release.toString().replace("v", ""));
                                             if (releaseID < check_releaseID) {
                                                 releaseID = check_releaseID 
-                                                console.log("release!", deploy);
+                                                console.log("release!", releaseID, deploy);
                                             }
                                         })
 

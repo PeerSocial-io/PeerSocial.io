@@ -12,8 +12,8 @@ define(function(require, exports, module) {
 
         /* global */
         Gun = require("gun");
-        require("gun/sea");
-        require("gun/nts");
+        require("gun/sea"); 
+        require("gun/nts");  
         
         // require("gun/lib/webrtc");
 

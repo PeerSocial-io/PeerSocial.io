@@ -86,7 +86,7 @@ define(function(require, exports, module) {
 
                     }
 
-                    app.use('/api/heroku', router);
+                    app.use('/api/heroku', router); 
                 })();
             }
 
@@ -95,13 +95,16 @@ define(function(require, exports, module) {
                     init: function() {
                         imports.app.on("start", function() {
 
-                            gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
+                            gun.get("~" + app_pub).get("release").get("peersocial").once(function(deploy,a){
                                 if (deploy && deploy.release && deploy.domain) {
                                     if (deploy.domain == "www.peersocial.io") {
                                         var releaseID = parseInt(deploy.release.toString().replace("v", ""));
+                                        console.log("current release", releaseID,a,this);
+                                        
                                         gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
                                             var check_releaseID = parseInt(deploy.release.toString().replace("v", ""));
                                             if (releaseID < check_releaseID) {
+                                                releaseID = check_releaseID 
                                                 console.log("release!", deploy);
                                             }
                                         })
