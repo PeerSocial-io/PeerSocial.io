@@ -3,9 +3,9 @@
 module.exports = function(imports) {
     var gun = imports.gun;
 
-    var generateUID32 = function(pub) {
-        return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
-    };
+    // var generateUID32 = function(pub) {
+    //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
+    // };
 
     var ONLYKEY = require("@trustcrypto/node-onlykey/src/onlykey-api");
 
@@ -23,6 +23,7 @@ module.exports = function(imports) {
     });
 
 
+
     Object.defineProperty(login, 'user', {
         get() {
             if (gun.user().is)
@@ -32,7 +33,13 @@ module.exports = function(imports) {
         }
     });
 
-
+    Object.defineProperty(login, 'user_cert', {
+        set(query) {
+            if (gun.user().is) {
+                gun.user().is.cert = query;
+            }
+        }
+    });
 
     login.restoreSession = (done) => {
         imports.app.on("start", () => {
@@ -40,8 +47,8 @@ module.exports = function(imports) {
                 imports.app.emit("login", login.user);
             }
         });
-        
-        if(login.will_authorize) return done();
+
+        if (login.will_authorize) return done();
 
         //check if there is a session to restore
         if (window.sessionStorage.recall) {
@@ -140,9 +147,9 @@ module.exports = function(imports) {
                 model.find("#cancel").click();
 
             model.find(".error").text("");
-            
-            model.find("#pubkey").attr("type","password");
-            
+
+            model.find("#pubkey").attr("type", "password");
+
             var value = $(this).val();
 
             model.find(".login_ALIAS").hide();
@@ -170,10 +177,10 @@ module.exports = function(imports) {
                 model.find("#login_onlykey-usb").click();
             }
         });
-        
+
         var $login_pubkey = async(pair) => {
-            model.find("#pubkey").attr("type","password");
-            
+            model.find("#pubkey").attr("type", "password");
+
             try {
                 if (pair == "") throw ("Faile to load Key")
                 pair = JSON.parse(pair);
@@ -185,7 +192,7 @@ module.exports = function(imports) {
                 create.click(function() {
                     gun.SEA.pair().then((pair) => {
                         pair = JSON.stringify(pair);
-                        model.find("#pubkey").attr("type","text").val(pair).focus().select();
+                        model.find("#pubkey").attr("type", "text").val(pair).focus().select();
                         model.find(".error").css("color", "red").html("<b>COPY PAIR SOMEWHERE SAFE!</b> and click Login");
                         console.log(pair);
                     });
@@ -215,8 +222,8 @@ module.exports = function(imports) {
                 ok_login(imports.app.nw_app.onlykey);
 
             function ok_login(ok) {
-                if(!tag) tag = "";
-                
+                if (!tag) tag = "";
+
                 ok.derive_public_key(tag, 1, false, (err, key) => {
                     ok.derive_shared_secret(tag, key, 1, false, (err, sharedsec, key2) => {
                         $login(tag, sharedsec, createAccount == tag ? sharedsec : false);
@@ -253,30 +260,31 @@ module.exports = function(imports) {
             }
 
             if (usr && pas) {
-                gun.user().auth(usr, pas, function(res) {
-                    if (!res.err) {
-                        if (login.user) {
-                            model.modal("hide");
-                            login.prepLogout();
-                            // me((err, $me, $user) => {
-                            //     if (err) console.log(err);
-                            //     var uid32 = generateUID32("~" + $me.pub);
-                            //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
-                            imports.app.emit("login", login.user);
+                    login.getUserPub(usr, function(usr_pub) {
+                        gun.user().auth(usr_pub || usr, pas, function(res) {
+                            if (!res.err) {
+                                if (login.user) {
+                                    model.modal("hide");
+                                    login.prepLogout();
+                                    // me((err, $me, $user) => {
+                                    //     if (err) console.log(err);
+                                    //     var uid32 = generateUID32("~" + $me.pub);
+                                    //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
+                                    imports.app.emit("login", login.user);
 
-                            // });
-                        }
-                    }
-                    else {
-                        if (res.err == "Wrong user or password.") {
-                            // var uid = false;
-                            // if (usr.indexOf("#") > -1) {
-                            //     usr = usr.split("#");
-                            //     uid = usr[1];
-                            //     usr = usr[0];
-                            // }
-                            // gun.aliasToPub("@" + usr, uid, (pub) => {
-                            //     if (!pub) {
+                                    // });
+                                }
+                            }
+                            else {
+                                if (res.err == "Wrong user or password.") {
+                                    // var uid = false;
+                                    // if (usr.indexOf("#") > -1) {
+                                    //     usr = usr.split("#");
+                                    //     uid = usr[1];
+                                    //     usr = usr[0];
+                                    // }
+                                    // gun.aliasToPub("@" + usr, uid, (pub) => {
+                                    //     if (!pub) {
                                     if (createAccount && !creating) {
                                         creating = true;
                                         gun.user().create(usr, pas, function(ack) {
@@ -298,15 +306,17 @@ module.exports = function(imports) {
                                             createAccount = usr;
                                         });
                                     }
-                            //     }
-                            //     else {
-                            //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
-                            //     }
-                            // });
-                        }
-                    }
+                                    //     }
+                                    //     else {
+                                    //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
+                                    //     }
+                                    // });
+                                }
+                            }
 
-                });
+                        });
+
+                    })
             }
 
         };
@@ -334,6 +344,40 @@ module.exports = function(imports) {
         gun.user().leave();
         setTimeout(function() {
             window.location = "/";
+        });
+    };
+
+
+    login.getUserPub = function(alias, uid, callback) {
+        if (typeof uid == "function") {
+            callback = uid;
+            uid = false
+        }
+
+        if (!uid) {
+            var $id = alias.split("#")
+            if ($id[1]) {
+                alias = $id[0];
+                uid = $id[1];
+            }
+        }
+        
+        if(alias.indexOf("@") != 1)
+            alias = "@"+alias;
+            
+        gun.user(alias).once((data, a, b, c) => {
+            for (var i in data) {
+                if (i.indexOf("~") == 0) {
+                    var check_uid = gun.generateUID32(i);
+                    if (uid) {
+                        if (uid == check_uid)
+                            return callback(i);
+                    }
+                    else
+                        return callback(i);
+                }
+            }
+            callback();
         });
     };
 

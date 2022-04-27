@@ -12,9 +12,9 @@ define(function(require, exports, module) {
 
         /* global */
         Gun = require("gun");
-        require("gun/sea"); 
-        require("gun/nts");  
-        
+        require("gun/sea");
+        require("gun/nts");
+
         // require("gun/lib/webrtc");
 
         if (!Gun.log.once)
@@ -27,14 +27,25 @@ define(function(require, exports, module) {
         // else
         //  if (thisHost != "www.peersocial.io")
         // peers.push("https://www.peersocial.io/gun");
-        if(typeof window != "undefined")
+        if (typeof window != "undefined")
             peers.push("https://" + window.location.host + "/gun");
-            
-        peers.push("https://dev.peersocial.io/gun");
-        peers.push("https://www.peersocial.io/gun");
-        peers.push("https://peersocial-notify.herokuapp.com/gun");
-        
-        gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
+
+        addPeer("https://dev.peersocial.io/gun");
+        addPeer("https://www.peersocial.io/gun");
+        addPeer("https://peersocial-notify.herokuapp.com/gun");
+
+        function addPeer(peer) {
+            if (!(peers.indexOf(peers) > -1)) {
+                peers.push(peer);
+            }
+        }
+
+        var gunOptions = {
+            peers: peers,
+            super: true
+        };
+
+        gun = Gun(gunOptions); //"https://"+window.location.host+"/gun");
 
         // var thisHost = window.location.host;
 
@@ -48,13 +59,13 @@ define(function(require, exports, module) {
         // }
 
         // }, 1)
-        if(typeof window != "undefined")
-            window.gun = gun; 
+        if (typeof window != "undefined")
+            window.gun = gun;
 
 
 
-        var mesh = gun.back('opt.mesh'); // DAM;
-        mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun', 'https://dev.peersocial.io/gun'] } });
+        // var mesh = gun.back('opt.mesh'); // DAM;
+        // mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun', 'https://dev.peersocial.io/gun'] } });
 
         function getPubData(pub) {
             return new Promise(resolve => {
@@ -87,19 +98,19 @@ define(function(require, exports, module) {
                 next();
             });
         }
-        
+
         gun.SEA = Gun.SEA;
-        
-        setTimeout(function(){
-                
+
+        setTimeout(function() {
+
             register(null, {
                 gun: gun,
                 sea: Gun.SEA,
                 gunUser: gun.user()
             });
-            
-            
-        },1000);
+
+
+        }, 1000);
     }
 
 });

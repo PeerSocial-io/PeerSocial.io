@@ -63,8 +63,9 @@
 		}
 		;(function(){ // max ~1ms or before stack overflow 
 			var u, sT = setTimeout, l = 0, c = 0, sI = (typeof setImmediate !== ''+u && setImmediate) || sT; // queueMicrotask faster but blocks UI
+			sT.hold = sT.hold || 9;
 			sT.poll = sT.poll || function(f){ //f(); return; // for testing
-				if((1 >= (+new Date - l)) && c++ < 3333){ f(); return }
+				if((sT.hold >= (+new Date - l)) && c++ < 3333){ f(); return }
 				sI(function(){ l = +new Date; f() },c=0)
 			}
 		}());
@@ -490,19 +491,20 @@
 				if(!Object.plain(opt)){ opt = {} }
 				if(!Object.plain(at.opt)){ at.opt = opt }
 				if('string' == typeof tmp){ tmp = [tmp] }
+				if(!Object.plain(at.opt.peers)){ at.opt.peers = {}}
 				if(tmp instanceof Array){
-					if(!Object.plain(at.opt.peers)){ at.opt.peers = {}}
+					opt.peers = {};
 					tmp.forEach(function(url){
 						var p = {}; p.id = p.url = url;
-						at.opt.peers[url] = at.opt.peers[url] || p;
+						opt.peers[url] = at.opt.peers[url] = at.opt.peers[url] || p;
 					})
 				}
-				at.opt.peers = at.opt.peers || {};
 				obj_each(opt, function each(k){ var v = this[k];
 					if((this && this.hasOwnProperty(k)) || 'string' == typeof v || Object.empty(v)){ this[k] = v; return }
 					if(v && v.constructor !== Object && !(v instanceof Array)){ return }
 					obj_each(v, each);
 				});
+				at.opt.from = opt;
 				Gun.on('opt', at);
 				at.opt.uuid = at.opt.uuid || function uuid(l){ return Gun.state().toString(36).replace('.','') + String.random(l||12) }
 				return gun;
@@ -1380,7 +1382,7 @@
 						var P = opt.puff;
 						(function go(){
 							var S = +new Date;
-							var i = 0, m; while(i < P && (m = msg[i++])){ hear(m, peer) }
+							var i = 0, m; while(i < P && (m = msg[i++])){ mesh.hear(m, peer) }
 							msg = msg.slice(i); // slicing after is faster than shifting during.
 							console.STAT && console.STAT(S, +new Date - S, 'hear loop');
 							flush(peer); // force send all synchronously batched acks.
@@ -1446,7 +1448,7 @@
 						console.STAT && console.STAT(S, +new Date - S, 'say json+hash');
 					  msg._.$put = t;
 					  msg['##'] = h;
-					  say(msg, peer);
+					  mesh.say(msg, peer);
 					  delete msg._.$put;
 					}, sort);
 				}
@@ -1488,7 +1490,7 @@
 							loop = 1; var wr = meta.raw; meta.raw = raw; // quick perf hack
 							var i = 0, p; while(i < 9 && (p = (pl||'')[i++])){
 								if(!(p = ps[p])){ continue }
-								say(msg, p);
+								mesh.say(msg, p);
 							}
 							meta.raw = wr; loop = 0;
 							pl = pl.slice(i); // slicing after is faster than shifting during.
@@ -1562,7 +1564,7 @@
 					function res(err, raw){
 						if(err){ return } // TODO: Handle!!
 						meta.raw = raw; //if(meta && (raw||'').length < (999 * 99)){ meta.raw = raw } // HNPERF: If string too big, don't keep in memory.
-						say(msg, peer);
+						mesh.say(msg, peer);
 					}
 				}
 			}());
@@ -1580,7 +1582,6 @@
 			}
 			// for now - find better place later.
 			function send(raw, peer){ try{
-				//console.log('SAY:', peer.id, (raw||'').slice(0,250), ((raw||'').length / 1024 / 1024).toFixed(4));
 				var wire = peer.wire;
 				if(peer.say){
 					peer.say(raw);
@@ -1594,7 +1595,8 @@
 			}}
 
 			mesh.hi = function(peer){
-				var tmp = peer.wire || {};
+				var wire = peer.wire, tmp;
+				if(!wire){ mesh.wire((peer.length && {url: peer}) || peer); return }
 				if(peer.id){
 					opt.peers[peer.url || peer.id] = peer;
 				} else {
@@ -1603,7 +1605,7 @@
 					delete dup.s[peer.last]; // IMPORTANT: see https://gun.eco/docs/DAM#self
 				}
 				peer.met = peer.met || +(new Date);
-				if(!tmp.hied){ root.on(tmp.hied = 'hi', peer) }
+				if(!wire.hied){ root.on(wire.hied = 'hi', peer) }
 				// @rogowski I need this here by default for now to fix go1dfish's bug
 				tmp = peer.queue; peer.queue = [];
 				setTimeout.each(tmp||[],function(msg){
@@ -1712,6 +1714,7 @@
 			var wait = 2 * 999;
 			function reconnect(peer){
 				clearTimeout(peer.defer);
+				if(!opt.peers[peer.url]){ return }
 				if(doc && peer.retry <= 0){ return }
 				peer.retry = (peer.retry || opt.retry+1 || 60) - ((-peer.tried + (peer.tried = +new Date) < wait*4)?1:0);
 				peer.defer = setTimeout(function to(){
@@ -1742,9 +1745,9 @@
 			var opt = root.opt, graph = root.graph, acks = [], disk, to, size, stop;
 			if(false === opt.localStorage){ return }
 			opt.prefix = opt.file || 'gun/';
-			try{ disk = lg[opt.prefix] = lg[opt.prefix] || JSON.parse(to = store.getItem(opt.prefix)) || {}; // TODO: Perf! This will block, should we care, since limited to 5MB anyways?
+			try{ disk = lg[opt.prefix] = lg[opt.prefix] || JSON.parse(size = store.getItem(opt.prefix)) || {}; // TODO: Perf! This will block, should we care, since limited to 5MB anyways?
 			}catch(e){ disk = lg[opt.prefix] = {}; }
-			size = (to||'').length;
+			size = (size||'').length;
 
 			root.on('get', function(msg){
 				this.to.next(msg);

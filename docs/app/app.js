@@ -34702,8 +34702,9 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 		}
 		;(function(){ // max ~1ms or before stack overflow 
 			var u, sT = setTimeout, l = 0, c = 0, sI = (typeof setImmediate !== ''+u && setImmediate) || sT; // queueMicrotask faster but blocks UI
+			sT.hold = sT.hold || 9;
 			sT.poll = sT.poll || function(f){ //f(); return; // for testing
-				if((1 >= (+new Date - l)) && c++ < 3333){ f(); return }
+				if((sT.hold >= (+new Date - l)) && c++ < 3333){ f(); return }
 				sI(function(){ l = +new Date; f() },c=0)
 			}
 		}());
@@ -35129,19 +35130,20 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 				if(!Object.plain(opt)){ opt = {} }
 				if(!Object.plain(at.opt)){ at.opt = opt }
 				if('string' == typeof tmp){ tmp = [tmp] }
+				if(!Object.plain(at.opt.peers)){ at.opt.peers = {}}
 				if(tmp instanceof Array){
-					if(!Object.plain(at.opt.peers)){ at.opt.peers = {}}
+					opt.peers = {};
 					tmp.forEach(function(url){
 						var p = {}; p.id = p.url = url;
-						at.opt.peers[url] = at.opt.peers[url] || p;
+						opt.peers[url] = at.opt.peers[url] = at.opt.peers[url] || p;
 					})
 				}
-				at.opt.peers = at.opt.peers || {};
 				obj_each(opt, function each(k){ var v = this[k];
 					if((this && this.hasOwnProperty(k)) || 'string' == typeof v || Object.empty(v)){ this[k] = v; return }
 					if(v && v.constructor !== Object && !(v instanceof Array)){ return }
 					obj_each(v, each);
 				});
+				at.opt.from = opt;
 				Gun.on('opt', at);
 				at.opt.uuid = at.opt.uuid || function uuid(l){ return Gun.state().toString(36).replace('.','') + String.random(l||12) }
 				return gun;
@@ -36019,7 +36021,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 						var P = opt.puff;
 						(function go(){
 							var S = +new Date;
-							var i = 0, m; while(i < P && (m = msg[i++])){ hear(m, peer) }
+							var i = 0, m; while(i < P && (m = msg[i++])){ mesh.hear(m, peer) }
 							msg = msg.slice(i); // slicing after is faster than shifting during.
 							console.STAT && console.STAT(S, +new Date - S, 'hear loop');
 							flush(peer); // force send all synchronously batched acks.
@@ -36085,7 +36087,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 						console.STAT && console.STAT(S, +new Date - S, 'say json+hash');
 					  msg._.$put = t;
 					  msg['##'] = h;
-					  say(msg, peer);
+					  mesh.say(msg, peer);
 					  delete msg._.$put;
 					}, sort);
 				}
@@ -36127,7 +36129,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 							loop = 1; var wr = meta.raw; meta.raw = raw; // quick perf hack
 							var i = 0, p; while(i < 9 && (p = (pl||'')[i++])){
 								if(!(p = ps[p])){ continue }
-								say(msg, p);
+								mesh.say(msg, p);
 							}
 							meta.raw = wr; loop = 0;
 							pl = pl.slice(i); // slicing after is faster than shifting during.
@@ -36201,7 +36203,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 					function res(err, raw){
 						if(err){ return } // TODO: Handle!!
 						meta.raw = raw; //if(meta && (raw||'').length < (999 * 99)){ meta.raw = raw } // HNPERF: If string too big, don't keep in memory.
-						say(msg, peer);
+						mesh.say(msg, peer);
 					}
 				}
 			}());
@@ -36219,7 +36221,6 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			}
 			// for now - find better place later.
 			function send(raw, peer){ try{
-				//console.log('SAY:', peer.id, (raw||'').slice(0,250), ((raw||'').length / 1024 / 1024).toFixed(4));
 				var wire = peer.wire;
 				if(peer.say){
 					peer.say(raw);
@@ -36233,7 +36234,8 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			}}
 
 			mesh.hi = function(peer){
-				var tmp = peer.wire || {};
+				var wire = peer.wire, tmp;
+				if(!wire){ mesh.wire((peer.length && {url: peer}) || peer); return }
 				if(peer.id){
 					opt.peers[peer.url || peer.id] = peer;
 				} else {
@@ -36242,7 +36244,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 					delete dup.s[peer.last]; // IMPORTANT: see https://gun.eco/docs/DAM#self
 				}
 				peer.met = peer.met || +(new Date);
-				if(!tmp.hied){ root.on(tmp.hied = 'hi', peer) }
+				if(!wire.hied){ root.on(wire.hied = 'hi', peer) }
 				// @rogowski I need this here by default for now to fix go1dfish's bug
 				tmp = peer.queue; peer.queue = [];
 				setTimeout.each(tmp||[],function(msg){
@@ -36351,6 +36353,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			var wait = 2 * 999;
 			function reconnect(peer){
 				clearTimeout(peer.defer);
+				if(!opt.peers[peer.url]){ return }
 				if(doc && peer.retry <= 0){ return }
 				peer.retry = (peer.retry || opt.retry+1 || 60) - ((-peer.tried + (peer.tried = +new Date) < wait*4)?1:0);
 				peer.defer = setTimeout(function to(){
@@ -36381,9 +36384,9 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 			var opt = root.opt, graph = root.graph, acks = [], disk, to, size, stop;
 			if(false === opt.localStorage){ return }
 			opt.prefix = opt.file || 'gun/';
-			try{ disk = lg[opt.prefix] = lg[opt.prefix] || JSON.parse(to = store.getItem(opt.prefix)) || {}; // TODO: Perf! This will block, should we care, since limited to 5MB anyways?
+			try{ disk = lg[opt.prefix] = lg[opt.prefix] || JSON.parse(size = store.getItem(opt.prefix)) || {}; // TODO: Perf! This will block, should we care, since limited to 5MB anyways?
 			}catch(e){ disk = lg[opt.prefix] = {}; }
-			size = (to||'').length;
+			size = (size||'').length;
 
 			root.on('get', function(msg){
 				this.to.next(msg);
@@ -37464,7 +37467,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
     }});
 
     module.exports = SEA.verify;
-    // legacy & ossl leak mitigation:
+    // legacy & ossl memory leak mitigation:
 
     var knownKeys = {};
     var keyForPair = SEA.opt.slow_leak = pair => {
@@ -87648,9 +87651,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         /* global */
         Gun = __webpack_require__(/*! gun */ "./node_modules/gun/browser.js");
-        __webpack_require__(/*! gun/sea */ "./node_modules/gun/sea.js"); 
-        __webpack_require__(/*! gun/nts */ "./node_modules/gun/nts.js");  
-        
+        __webpack_require__(/*! gun/sea */ "./node_modules/gun/sea.js");
+        __webpack_require__(/*! gun/nts */ "./node_modules/gun/nts.js");
+
         // require("gun/lib/webrtc");
 
         if (!Gun.log.once)
@@ -87663,14 +87666,25 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // else
         //  if (thisHost != "www.peersocial.io")
         // peers.push("https://www.peersocial.io/gun");
-        if(typeof window != "undefined")
+        if (typeof window != "undefined")
             peers.push("https://" + window.location.host + "/gun");
-            
-        peers.push("https://dev.peersocial.io/gun");
-        peers.push("https://www.peersocial.io/gun");
-        peers.push("https://peersocial-notify.herokuapp.com/gun");
-        
-        gun = Gun({ peers: peers }); //"https://"+window.location.host+"/gun");
+
+        addPeer("https://dev.peersocial.io/gun");
+        addPeer("https://www.peersocial.io/gun");
+        addPeer("https://peersocial-notify.herokuapp.com/gun");
+
+        function addPeer(peer) {
+            if (!(peers.indexOf(peers) > -1)) {
+                peers.push(peer);
+            }
+        }
+
+        var gunOptions = {
+            peers: peers,
+            super: true
+        };
+
+        gun = Gun(gunOptions); //"https://"+window.location.host+"/gun");
 
         // var thisHost = window.location.host;
 
@@ -87684,13 +87698,13 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // }
 
         // }, 1)
-        if(typeof window != "undefined")
-            window.gun = gun; 
+        if (typeof window != "undefined")
+            window.gun = gun;
 
 
 
-        var mesh = gun.back('opt.mesh'); // DAM;
-        mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun', 'https://dev.peersocial.io/gun'] } });
+        // var mesh = gun.back('opt.mesh'); // DAM;
+        // mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun', 'https://dev.peersocial.io/gun'] } });
 
         function getPubData(pub) {
             return new Promise(resolve => {
@@ -87723,19 +87737,19 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 next();
             });
         }
-        
+
         gun.SEA = Gun.SEA;
-        
-        setTimeout(function(){
-                
+
+        setTimeout(function() {
+
             register(null, {
                 gun: gun,
                 sea: Gun.SEA,
                 gunUser: gun.user()
             });
-            
-            
-        },1000);
+
+
+        }, 1000);
     }
 
 }).call(exports, __webpack_require__, exports, module),
@@ -102886,7 +102900,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div></div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <img src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avat r_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" class=\"avatar\" alt=\"avatar\">\n                <h6>Upload a different photo...</h6>\n                <input type=\"file\" class=\"text-center center-block file-upload\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer~<%= me.uid32 %>@<%= me.alias %>\">View Public Profile</a>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
+module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div></div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <img src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_1x.png') %>\" class=\"avatar img-circle img-thumbnail\" class=\"avatar\" alt=\"avatar\">\n                <h6>Upload a different photo...</h6>\n                <input type=\"file\" class=\"text-center center-block file-upload\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer~<%= me.uid32 %>@<%= me.alias %>\">View Public Profile</a>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
 
 /***/ }),
 
@@ -103090,12 +103104,11 @@ module.exports = function(imports, login, keychain) {
 
     var authorize = function() {
         var useOAuth = false;
-        if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
-            useOAuth = true;
+        // if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
 
         var domain_hash = crypto.createHash('sha256').update(window.location.host).digest('hex');
 
-        if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
+        if (login.will_authorize) {
             var domain = imports.app.state.query.auth;
             domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
 
@@ -103204,14 +103217,12 @@ module.exports = function(imports, login, keychain) {
                             // proxy.postMessage(message, domain); //send the message and target URI
                             if (popup.location.pathname == "/blank.html" && popup.location.host == window.location.host) {
                                 var query = url.parse(popup.location.href, true).query;
-                                var cert = query.cert;
-                                if (cert) {
+                                if (query.cert) {
                                     (async() => {
-                                        cert = Buffer.from(cert, "base64").toString("utf8");
-                                        cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
-                                        query.cert = cert;
-                                        console.log(query);
-                                        login.user
+                                        query.cert = Buffer.from(query.cert, "base64").toString("utf8");
+                                        query.cert = await imports.app.sea.decrypt(query.cert, await imports.app.sea.secret(query.epub, room));
+                                        login.user_cert = query;
+                                        
                                         if (login.user) {
                                             gun.user().get("last").get("seen").put(new Date().getTime(), function() {
 
@@ -103345,7 +103356,7 @@ module.exports = function(imports, login, keychain) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n  <div class=\"modal-dialog\" role=\"document\">\n    <div class=\"modal-content\">\n      <div class=\"modal-header\">\n        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Peer Login</h5>\n        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n          <span aria-hidden=\"true\">&times;</span>\n        </button>\n      </div>\n      <div class=\"modal-body\">\n        <select class=\"custom-select\" id=\"auth_apparatus\">\n          <option value=\"ALIAS\" selected>Alias</option>\n          <option value=\"PUBKEY\">PUBKEY</option>\n          <option value=\"ONLYKEY-USB\">ONLYKEY-USB</option>\n        </select>\n        \n        <div class=\"login_ALIAS\">\n          <form id=\"loginForm\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">Alias:</label>\n              <input type=\"text\" class=\"form-control\" id=\"username\">\n              <div id=\"username_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n            <div class=\"form-group\" id=\"pwfield\">\n              <label for=\"message-text\" class=\"col-form-label\">Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"password\"></input>\n              <div id=\"password_error\"></div>\n            </div>\n            <div class=\"form-group\" id=\"confirmpwfield\" style=\"display:none;\">\n              <label for=\"message-text\" class=\"col-form-label\">Confirm Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"confirm-password\"></input>\n              <div id=\"confirm-password_error\"></div>\n            </div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_alias\">Login</button>\n          </div>\n        </div>\n        \n        \n        <div class=\"login_ONLYKEY-USB\">\n          <form id=\"loginForm\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">TAG:</label>\n              <input type=\"text\" class=\"form-control\" id=\"tag\">\n              <div id=\"tag_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_onlykey-usb\"><i class=\"fa-brands fa-usb\"></i></button>\n          </div>\n        </div>\n        \n        <div class=\"login_PUBKEY\">\n          <form id=\"loginForm\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">PUBKEY:</label>\n              <input type=\"password\" class=\"form-control\" id=\"pubkey\">\n              <div id=\"pubkey_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_pubkey\">Login</button>\n          </div>\n        </div>\n        \n        \n      </div>\n      <div class=\"modal-footer\">\n        <button type=\"button\" class=\"btn btn-secondary\" id=\"cancel\">Cancel</button>\n      </div>\n    </div>\n  </div>\n</div>";
+module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n  <div class=\"modal-dialog\" role=\"document\">\n    <div class=\"modal-content\">\n      <div class=\"modal-header\">\n        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Peer Login</h5>\n        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n          <span aria-hidden=\"true\">&times;</span>\n        </button>\n      </div>\n      <div class=\"modal-body\">\n        <select class=\"custom-select\" id=\"auth_apparatus\">\n          <option value=\"ALIAS\" selected>Alias</option>\n          <option value=\"PUBKEY\">PUBKEY</option>\n          <option value=\"ONLYKEY-USB\">ONLYKEY-USB</option>\n        </select>\n        \n        <div class=\"login_ALIAS\">\n          <form id=\"loginForm_ALIAS\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">Alias:</label>\n              <input type=\"text\" class=\"form-control\" id=\"username\">\n              <div id=\"username_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n            <div class=\"form-group\" id=\"pwfield\">\n              <label for=\"message-text\" class=\"col-form-label\">Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"password\"></input>\n              <div id=\"password_error\"></div>\n            </div>\n            <div class=\"form-group\" id=\"confirmpwfield\" style=\"display:none;\">\n              <label for=\"message-text\" class=\"col-form-label\">Confirm Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"confirm-password\"></input>\n              <div id=\"confirm-password_error\"></div>\n            </div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_alias\">Login</button>\n          </div>\n        </div>\n        \n        \n        <div class=\"login_ONLYKEY-USB\">\n          <form id=\"loginForm_ONLYKEY-USB\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">TAG:</label>\n              <input type=\"text\" class=\"form-control\" id=\"tag\">\n              <div id=\"tag_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_onlykey-usb\"><i class=\"fa-brands fa-usb\"></i></button>\n          </div>\n        </div>\n        \n        <div class=\"login_PUBKEY\">\n          <form id=\"loginForm_PUBKEY\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">PUBKEY:</label>\n              <input type=\"password\" class=\"form-control\" id=\"pubkey\">\n              <div id=\"pubkey_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_pubkey\">Login</button>\n          </div>\n        </div>\n        \n        \n      </div>\n      <div class=\"modal-footer\">\n        <button type=\"button\" class=\"btn btn-secondary\" id=\"cancel\">Cancel</button>\n      </div>\n    </div>\n  </div>\n</div>";
 
 /***/ }),
 
@@ -103361,9 +103372,9 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 module.exports = function(imports) {
     var gun = imports.gun;
 
-    var generateUID32 = function(pub) {
-        return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
-    };
+    // var generateUID32 = function(pub) {
+    //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
+    // };
 
     var ONLYKEY = __webpack_require__(/*! @trustcrypto/node-onlykey/src/onlykey-api */ "./node_modules/@trustcrypto/node-onlykey/src/onlykey-api.js");
 
@@ -103381,6 +103392,7 @@ module.exports = function(imports) {
     });
 
 
+
     Object.defineProperty(login, 'user', {
         get() {
             if (gun.user().is)
@@ -103390,7 +103402,13 @@ module.exports = function(imports) {
         }
     });
 
-
+    Object.defineProperty(login, 'user_cert', {
+        set(query) {
+            if (gun.user().is) {
+                gun.user().is.cert = query;
+            }
+        }
+    });
 
     login.restoreSession = (done) => {
         imports.app.on("start", () => {
@@ -103398,8 +103416,8 @@ module.exports = function(imports) {
                 imports.app.emit("login", login.user);
             }
         });
-        
-        if(login.will_authorize) return done();
+
+        if (login.will_authorize) return done();
 
         //check if there is a session to restore
         if (window.sessionStorage.recall) {
@@ -103498,9 +103516,9 @@ module.exports = function(imports) {
                 model.find("#cancel").click();
 
             model.find(".error").text("");
-            
-            model.find("#pubkey").attr("type","password");
-            
+
+            model.find("#pubkey").attr("type", "password");
+
             var value = $(this).val();
 
             model.find(".login_ALIAS").hide();
@@ -103528,10 +103546,10 @@ module.exports = function(imports) {
                 model.find("#login_onlykey-usb").click();
             }
         });
-        
+
         var $login_pubkey = async(pair) => {
-            model.find("#pubkey").attr("type","password");
-            
+            model.find("#pubkey").attr("type", "password");
+
             try {
                 if (pair == "") throw ("Faile to load Key")
                 pair = JSON.parse(pair);
@@ -103543,7 +103561,7 @@ module.exports = function(imports) {
                 create.click(function() {
                     gun.SEA.pair().then((pair) => {
                         pair = JSON.stringify(pair);
-                        model.find("#pubkey").attr("type","text").val(pair).focus().select();
+                        model.find("#pubkey").attr("type", "text").val(pair).focus().select();
                         model.find(".error").css("color", "red").html("<b>COPY PAIR SOMEWHERE SAFE!</b> and click Login");
                         console.log(pair);
                     });
@@ -103573,8 +103591,8 @@ module.exports = function(imports) {
                 ok_login(imports.app.nw_app.onlykey);
 
             function ok_login(ok) {
-                if(!tag) tag = "";
-                
+                if (!tag) tag = "";
+
                 ok.derive_public_key(tag, 1, false, (err, key) => {
                     ok.derive_shared_secret(tag, key, 1, false, (err, sharedsec, key2) => {
                         $login(tag, sharedsec, createAccount == tag ? sharedsec : false);
@@ -103611,30 +103629,31 @@ module.exports = function(imports) {
             }
 
             if (usr && pas) {
-                gun.user().auth(usr, pas, function(res) {
-                    if (!res.err) {
-                        if (login.user) {
-                            model.modal("hide");
-                            login.prepLogout();
-                            // me((err, $me, $user) => {
-                            //     if (err) console.log(err);
-                            //     var uid32 = generateUID32("~" + $me.pub);
-                            //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
-                            imports.app.emit("login", login.user);
+                    login.getUserPub(usr, function(usr_pub) {
+                        gun.user().auth(usr_pub || usr, pas, function(res) {
+                            if (!res.err) {
+                                if (login.user) {
+                                    model.modal("hide");
+                                    login.prepLogout();
+                                    // me((err, $me, $user) => {
+                                    //     if (err) console.log(err);
+                                    //     var uid32 = generateUID32("~" + $me.pub);
+                                    //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
+                                    imports.app.emit("login", login.user);
 
-                            // });
-                        }
-                    }
-                    else {
-                        if (res.err == "Wrong user or password.") {
-                            // var uid = false;
-                            // if (usr.indexOf("#") > -1) {
-                            //     usr = usr.split("#");
-                            //     uid = usr[1];
-                            //     usr = usr[0];
-                            // }
-                            // gun.aliasToPub("@" + usr, uid, (pub) => {
-                            //     if (!pub) {
+                                    // });
+                                }
+                            }
+                            else {
+                                if (res.err == "Wrong user or password.") {
+                                    // var uid = false;
+                                    // if (usr.indexOf("#") > -1) {
+                                    //     usr = usr.split("#");
+                                    //     uid = usr[1];
+                                    //     usr = usr[0];
+                                    // }
+                                    // gun.aliasToPub("@" + usr, uid, (pub) => {
+                                    //     if (!pub) {
                                     if (createAccount && !creating) {
                                         creating = true;
                                         gun.user().create(usr, pas, function(ack) {
@@ -103656,15 +103675,17 @@ module.exports = function(imports) {
                                             createAccount = usr;
                                         });
                                     }
-                            //     }
-                            //     else {
-                            //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
-                            //     }
-                            // });
-                        }
-                    }
+                                    //     }
+                                    //     else {
+                                    //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
+                                    //     }
+                                    // });
+                                }
+                            }
 
-                });
+                        });
+
+                    })
             }
 
         };
@@ -103692,6 +103713,40 @@ module.exports = function(imports) {
         gun.user().leave();
         setTimeout(function() {
             window.location = "/";
+        });
+    };
+
+
+    login.getUserPub = function(alias, uid, callback) {
+        if (typeof uid == "function") {
+            callback = uid;
+            uid = false
+        }
+
+        if (!uid) {
+            var $id = alias.split("#")
+            if ($id[1]) {
+                alias = $id[0];
+                uid = $id[1];
+            }
+        }
+        
+        if(alias.indexOf("@") != 1)
+            alias = "@"+alias;
+            
+        gun.user(alias).once((data, a, b, c) => {
+            for (var i in data) {
+                if (i.indexOf("~") == 0) {
+                    var check_uid = gun.generateUID32(i);
+                    if (uid) {
+                        if (uid == check_uid)
+                            return callback(i);
+                    }
+                    else
+                        return callback(i);
+                }
+            }
+            callback();
         });
     };
 

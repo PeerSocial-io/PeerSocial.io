@@ -10,12 +10,11 @@ module.exports = function(imports, login, keychain) {
 
     var authorize = function() {
         var useOAuth = false;
-        if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ )
-            useOAuth = true;
+        // if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
 
         var domain_hash = crypto.createHash('sha256').update(window.location.host).digest('hex');
 
-        if (imports.app.state.query.auth && imports.app.state.query.pub && imports.app.state.query.epub) {
+        if (login.will_authorize) {
             var domain = imports.app.state.query.auth;
             domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
 
@@ -124,14 +123,12 @@ module.exports = function(imports, login, keychain) {
                             // proxy.postMessage(message, domain); //send the message and target URI
                             if (popup.location.pathname == "/blank.html" && popup.location.host == window.location.host) {
                                 var query = url.parse(popup.location.href, true).query;
-                                var cert = query.cert;
-                                if (cert) {
+                                if (query.cert) {
                                     (async() => {
-                                        cert = Buffer.from(cert, "base64").toString("utf8");
-                                        cert = await imports.app.sea.decrypt(cert, await imports.app.sea.secret(query.epub, room));
-                                        query.cert = cert;
-                                        console.log(query);
-                                        login.user
+                                        query.cert = Buffer.from(query.cert, "base64").toString("utf8");
+                                        query.cert = await imports.app.sea.decrypt(query.cert, await imports.app.sea.secret(query.epub, room));
+                                        login.user_cert = query;
+                                        
                                         if (login.user) {
                                             gun.user().get("last").get("seen").put(new Date().getTime(), function() {
 
