@@ -1,0 +1,18 @@
+<ul class="list-unstyled">
+    <% for(var i in peer_list){ %>
+        <li class="media">
+            <img style="max-width: 192px;" class="mr-3" src="<%- (peer_list[i].profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" alt="Card image cap">
+    
+            <div class="media-body">
+                <h5 class="mt-0 mb-1">
+                    <%- peer_list[i].alias %>#<%- peer_list[i].uid32 %>
+                </h5>
+                <p>
+                    <%- peer_list[i].bio %>
+                </p>
+                <a href="/peer~<%- peer_list[i].uid32 %>@<%- peer_list[i].alias %>" class="btn btn-primary">View Peer</a>
+    
+            </div>
+        </li>
+    <% } %>
+</ul>
