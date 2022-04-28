@@ -260,7 +260,7 @@ module.exports = function(imports) {
             }
 
             if (usr && pas) {
-                login.getUserPub(usr, function(usr_pub) {
+                login.getUserPub(usr, function(error, usr_pub) {
                     gun.user().auth(usr_pub || usr, pas, function(res) {
                         if (!res.err) {
                             if (login.user) {
@@ -387,9 +387,9 @@ module.exports = function(imports) {
             if (!pub)
                 return callback();
             gun.get(pub).once(function(data) {
-                if (!data || !data.pub || data.epub) return callback();
+                if (!data || !data.pub || !data.epub) return callback(-1);
 
-                callback(null, { pub: data.pub, epub: data.epub });
+                callback(0, { pub: data.pub, epub: data.epub });
             });
 
         }
