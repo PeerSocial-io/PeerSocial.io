@@ -168,6 +168,7 @@
         }
         
         gunOptions.peers.push("https://peersocial-notify.herokuapp.com/gun");
+        gunOptions.peers.push("https://gun-manhattan.herokuapp.com/gun");
         
         var gun = Gun(gunOptions);
         gun.SEA = Gun.SEA;

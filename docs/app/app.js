@@ -37956,7 +37956,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
     User.prototype.auth = function(...args){ // TODO: this PR with arguments need to be cleaned up / refactored.
       var pair = typeof args[0] === 'object' && (args[0].pub || args[0].epub) ? args[0] : typeof args[1] === 'object' && (args[1].pub || args[1].epub) ? args[1] : null;
       var alias = !pair && typeof args[0] === 'string' ? args[0] : null;
-      var pass = alias && typeof args[1] === 'string' ? args[1] : null;
+      var pass = (alias || (pair && !(pair.priv && pair.epriv))) && typeof args[1] === 'string' ? args[1] : null;
       var cb = args.filter(arg => typeof arg === 'function')[0] || null; // cb now can stand anywhere, after alias/pass or pair
       var opt = args && args.length > 1 && typeof args[args.length-1] === 'object' ? args[args.length-1] : {}; // opt is always the last parameter which typeof === 'object' and stands after cb
       
@@ -38040,6 +38040,14 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
           Gun.log("Your 'auth' callback crashed with:", e);
         }
       }
+      act.h = function(data){
+        if(!data){ return act.b() }
+        if(!data.alias && !data.auth){
+          return act.g(pair);
+        }
+        alias = data.alias;
+        act.c((act.data = data).auth);
+      }
       act.z = function(){
         // password update so encrypt private key using new pwd + salt
         act.salt = String.random(64); // pseudo-random
@@ -38076,7 +38084,10 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
         act.b(tmp);
       }
       if(pair){
-        act.g(pair);
+        if(pair.priv && pair.epriv)
+          act.g(pair);
+        else
+          root.get('~'+pair.pub).once(act.h);
       } else
       if(alias){
         root.get('~@'+alias).once(act.a);
@@ -87672,7 +87683,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         addPeer("https://dev.peersocial.io/gun");
         addPeer("https://www.peersocial.io/gun");
         addPeer("https://peersocial-notify.herokuapp.com/gun");
-
+        addPeer("https://gun-manhattan.herokuapp.com/gun");
+        
         function addPeer(peer) {
             if (!(peers.indexOf(peers) > -1)) {
                 peers.push(peer);
@@ -102281,6 +102293,17 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 
 /***/ }),
 
+/***/ "./src/peersocial/peers/peer-card-side.html":
+/*!**************************************************!*\
+  !*** ./src/peersocial/peers/peer-card-side.html ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "<ul class=\"list-unstyled\">\n    <% for(var i in peer_list){ %>\n        <li class=\"media\">\n            <img style=\"max-width: 192px;\" class=\"mr-3\" src=\"<%- (peer_list[i].profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" alt=\"Card image cap\">\n    \n            <div class=\"media-body\">\n                <h5 class=\"mt-0 mb-1\">\n                    <%- peer_list[i].alias %>#<%- peer_list[i].uid32 %>\n                </h5>\n                <p>\n                    <%- peer_list[i].bio %>\n                </p>\n                <a href=\"/peer~<%- peer_list[i].uid32 %>@<%- peer_list[i].alias %>\" class=\"btn btn-primary\">View Peer</a>\n    \n            </div>\n        </li>\n    <% } %>\n</ul>";
+
+/***/ }),
+
 /***/ "./src/peersocial/peers/peer-card.html":
 /*!*********************************************!*\
   !*** ./src/peersocial/peers/peer-card.html ***!
@@ -102337,19 +102360,19 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         function getPeerData(pub, done) {
             return new Promise(resolve => {
                 var pubRoot = gun.get(pub)
-                pubRoot.once(function(userData){
-                    pubRoot.get("profile").once(function(profile){
-                        resolve(userData,profile, pubRoot);
-                        if(done) done(userData,profile, pubRoot)
+                pubRoot.once(function(userData) {
+                    pubRoot.get("profile").once(function(profile) {
+                        resolve(userData, profile, pubRoot);
+                        if (done) done(userData, profile, pubRoot)
                     });
                 });
             });
         }
 
-        function peerConfirm(text,done){
+        function peerConfirm(text, done) {
             var confirmedComplete = false;
-            var loginModel = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-confirm.html */ "./src/peersocial/peers/peer-confirm.html"),{
-                body:text
+            var loginModel = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-confirm.html */ "./src/peersocial/peers/peer-confirm.html"), {
+                body: text
             }));
             var model = $(loginModel);
             model.modal({
@@ -102363,25 +102386,25 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 model.remove();
             });
 
-            model.find("#confirm").click(()=>{
+            model.find("#confirm").click(() => {
                 confirmedComplete = true;
                 model.modal('hide');
             })
         }
-        
+
         function loadPeersPage() {
             imports.profile.me(async function(err, me, user) {
                 if (!err) {
                     var peerListLayout = $(await imports.app.layout.ejs.render(__webpack_require__(/*! ./peerList.html */ "./src/peersocial/peers/peerList.html"), { me: me, user: user }, { async: true }));
                     $("#main-container").html("");
                     $("#main-container").append(peerListLayout);
-                    
-                    _self.listPeers(function(pList){
+
+                    _self.listPeers(function(pList) {
                         for (var i in pList) {
 
-                            var peerCard = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-card.html */ "./src/peersocial/peers/peer-card.html"), { profile:pList[i].profile, bio: pList[i].bio, profileImage:pList[i].profileImage, alias: pList[i].alias, pub: pList[i].pub, uid32: pList[i].uid32, add: false }));
+                            var peerCard = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-card.html */ "./src/peersocial/peers/peer-card.html"), { profile: pList[i].profile, bio: pList[i].bio, profileImage: pList[i].profileImage, alias: pList[i].alias, pub: pList[i].pub, uid32: pList[i].uid32, add: false }));
                             peerListLayout.find(".peer-cards").append(peerCard);
-                    
+
                         }
                     })
                     /*
@@ -102395,7 +102418,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                 });
                         }
                     });*/
-                    
+
                     peerListLayout.find("#loopupPeer").click(() => {
                         var addedPeer = false;
                         var loginModel = __webpack_require__(/*! ./loopupPeer.html */ "./src/peersocial/peers/loopupPeer.html");
@@ -102404,66 +102427,80 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             show: true
                         });
                         model.on("hide.bs.modal", function() {
-                            
+
                         });
                         model.on("hidden.bs.modal", () => {
                             model.modal("dispose");
                             model.remove();
                         });
+                        var val;
+                        model.find("#username").keyup(() => {
+                            if (val != model.find("#username").val()) {
+                                val = model.find("#username").val();
+                                model.find("#username").change();
+                            }
+                        });
 
                         model.find("#username").change(function() {
-                            var query =  $(this).val().split("#");
+                            var query = $(this).val().split("#");
                             var username;
                             var userid32;
-                            try{
-                                if(query[0].length && query[1].length){
+                            try {
+                                if (query[0].length && query[1].length) {
                                     username = query[0];
                                     userid32 = query[1];
                                 }
-                            }catch(e){}
+                            }
+                            catch (e) {username = query[0];}
                             
-                            if(username && userid32){
+                            if(username){
                                 gun.user("@" + username).once(async(data) => {
-                                    var $$peer;
+                                    var $$peers = [];
                                     for (var i in data) {
                                         if (i.indexOf("~") == 0) {
                                             var peerData = await getPeerData(i);
-                                            if (peerData && peerData.uid32 && peerData.uid32 == userid32) {
-                                                $$peer = peerData;
+                                            if (userid32 && peerData && peerData.uid32 && peerData.uid32 == userid32) {
+                                                $$peers.push(peerData);
                                                 break;
+                                            }else{
+                                                $$peers.push(peerData);
                                             }
                                         }
                                     }
-                                    if ($$peer) {
-                                
-                                        var peerCard = $(await imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-card.html */ "./src/peersocial/peers/peer-card.html"), { bio: "", profileImage:$$peer.profileImage, alias: $$peer.alias, pub: $$peer.pub, uid32: $$peer.uid32, add: true }, { async: true }));
+                                    if ($$peers.length) {
+
+                                        var peerCard = $(await imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-card-side.html */ "./src/peersocial/peers/peer-card-side.html"), { peer_list: $$peers }, { async: true }));
                                         model.find("#results").html(peerCard);
                                         model.find("#results").show();
 
                                         model.find("#results").find(".btn").click(() => {
-                                    
+
                                             model.modal('hide');
-                                    
+
                                         });
-                                        
+
+                                    }else{
+                                        model.find("#results").html("");
                                     }
                                 });
+                            }else{
+                                model.find("#results").html("");
                             }
-                        
+
                         });
-                       
+
                     });
-                    
+
                 }
             });
         }
-        
-        function peerIsAdded(pub,done){
+
+        function peerIsAdded(pub, done) {
             imports.profile.me(async function(err, me, user) {
-                if(err) return done(false, true); 
+                if (err) return done(false, true);
                 user.get("profile").get("peers").once(function(peersL) {
-                    for(var i in peersL){
-                        if(i == "~"+pub && peersL[i])
+                    for (var i in peersL) {
+                        if (i == "~" + pub && peersL[i])
                             return done(true);
                     }
                     return done(false);
@@ -102474,62 +102511,63 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         function loadPeerProfile(query) {
             query = query.split("@");
             imports.user.getUser(query[1], query[0], function(err, $user, user) {
-                if(err){
+                if (err) {
                     console.log(err)
-                }else{
-                    peerIsAdded($user.pub,async function(isMyPeer, notLoggedIn){
-                        
-                        
+                }
+                else {
+                    peerIsAdded($user.pub, async function(isMyPeer, notLoggedIn) {
+
+
                         $user.profile = await user.get('profile');
                         // $user.peer_apps_dev = await user.get('profile').get("peerappsDev");
                         // $user.peer_apps_v2 = await user.get('profile').get("peerapps_v2");
-        
+
                         var profileLayout = $(await imports.app.layout.ejs.render(__webpack_require__(/*! ./viewPeer.html */ "./src/peersocial/peers/viewPeer.html"), {
                             user: $user,
                             $user: user,
-                            isMyPeer:isMyPeer,
-                            notLoggedIn:notLoggedIn
+                            isMyPeer: isMyPeer,
+                            notLoggedIn: notLoggedIn
                         }, { async: true }));
-                        
-                        
-                        profileLayout.find("#addPeer").click(()=>{
-                            peerConfirm("Do you want to add this peer?", function(Yes){
-                                if(Yes)
-                                 _self.addPeer($user.pub, (err, added) => {
-                                    if (!err && added) {
-                                        console.log("added peer");
-                                        imports.state.reload();
-                                    }
-                                });
+
+
+                        profileLayout.find("#addPeer").click(() => {
+                            peerConfirm("Do you want to add this peer?", function(Yes) {
+                                if (Yes)
+                                    _self.addPeer($user.pub, (err, added) => {
+                                        if (!err && added) {
+                                            console.log("added peer");
+                                            imports.state.reload();
+                                        }
+                                    });
                             });
                         });
-                        
-                        profileLayout.find("#removePeer").click(()=>{
-                            
-                            peerConfirm("Do you want to remove this peer?", function(Yes){
-                                if(Yes)
-                                _self.removePeer($user.pub, (err, removed) => {
-                                    if (!err && removed) {
-                                        console.log("removed peer");
-                                        imports.state.reload();
-                                    }
-                                });
+
+                        profileLayout.find("#removePeer").click(() => {
+
+                            peerConfirm("Do you want to remove this peer?", function(Yes) {
+                                if (Yes)
+                                    _self.removePeer($user.pub, (err, removed) => {
+                                        if (!err && removed) {
+                                            console.log("removed peer");
+                                            imports.state.reload();
+                                        }
+                                    });
                             });
                         });
-                        
-                        user.get('profile').get("display_name").on(function(display_name){
+
+                        user.get('profile').get("display_name").on(function(display_name) {
                             profileLayout.find("#display_name").text(display_name)
                         });
-                        user.get('profile').get("tagline").on(function(tagline){
+                        user.get('profile').get("tagline").on(function(tagline) {
                             profileLayout.find("#tagline").text(tagline)
                         })
-                        
-        
+
+
                         $("#main-container").html(profileLayout);
-                        
+
                     });
                 }
-                
+
             });
         }
 
@@ -102550,7 +102588,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 },
                 addPeer: function(pub, callback) {
                     if (imports.gun.user().is) {
-                        getPeerData("~" + pub,function(data, profile, pubRoot) {
+                        getPeerData("~" + pub, function(data, profile, pubRoot) {
                             if (!data.err)
                                 imports.gun.user().get("profile").get("peers").set(pubRoot, (res) => {
                                     if (!res.err) {
@@ -102562,35 +102600,36 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             else callback(data);
                         });
                         return;
-                        
+
                     }
                 },
                 removePeer: function(pub, callback) {
                     if (imports.gun.user().is) {
-                        getPeerData("~" + pub,function(data, profile, pubRoot) {
-                            if (!data.err){
+                        getPeerData("~" + pub, function(data, profile, pubRoot) {
+                            if (!data.err) {
                                 var myPeersList = imports.gun.user().get("profile").get("peers");
-                            
+
                                 myPeersList.unset(pubRoot);
-                                setTimeout(function(){
-                                        
+                                setTimeout(function() {
+
                                     console.log("added removed");
                                     callback(null, true);
-                                    
-                                },500)
-                            
-                            }else callback(data);
+
+                                }, 500)
+
+                            }
+                            else callback(data);
                         });
                         return;
-                        
+
                     }
                 },
                 listPeers: function(done) {
                     var peers = [];
-                    
+
                     imports.profile.me(async function(err, me, user) {
                         if (!err) {
-                            
+
                             user.get("profile").get("peers").once(function(peersL) {
                                 var count = 0;
                                 var recCount = 0;
@@ -102600,18 +102639,18 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                 }
                                 for (var i in peersL) {
                                     if (i != "_" && i != "#" && peersL[i])
-                                        getPeerData(peersL[i],function(data,profile) {
-                                            if(data){
+                                        getPeerData(peersL[i], function(data, profile) {
+                                            if (data) {
                                                 data.profile = profile;
                                                 peers.push(data);
                                             }
                                             recCount += 1;
-                                            if(count == recCount)
+                                            if (count == recCount)
                                                 done(peers);
                                         });
                                 }
-                                       
-                                
+
+
                             });
                         }
                     })
@@ -103371,7 +103410,21 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 
 module.exports = function(imports) {
     var gun = imports.gun;
-
+    var SEA = imports.gun.SEA;
+    
+    SEA.name = (async(cb, opt) => {
+        try {
+            if (cb) { try { cb() } catch (e) { console.log(e) } }
+            return;
+        }
+        catch (e) {
+            console.log(e);
+            SEA.err = e;
+            if (SEA.throw) { throw e }
+            if (cb) { cb() }
+            return;
+        }
+    });
     // var generateUID32 = function(pub) {
     //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
     // };
@@ -103455,7 +103508,7 @@ module.exports = function(imports) {
     };
 
     login.prepLogout = function() {
-        $("#navbar-nav-right").find("#login_btn").remove();
+        // $("#navbar-nav-right").find("#login_btn").remove();
 
         $("#navbar-nav-right").html(
             imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" })
@@ -103629,7 +103682,7 @@ module.exports = function(imports) {
             }
 
             if (usr && pas) {
-                login.getUserPub(usr, function(usr_pub) {
+                login.getUserPub(usr, function(error, usr_pub) {
                     gun.user().auth(usr_pub || usr, pas, function(res) {
                         if (!res.err) {
                             if (login.user) {
@@ -103733,35 +103786,34 @@ module.exports = function(imports) {
 
         if (alias.indexOf("@") != 1)
             alias = "@" + alias;
-        
-        
+
+
         gun.user(alias).once((data, a, b, c) => {
             var count = 0;
             for (var i in data) {
                 if (i.indexOf("~") == 0) {
-                    var pair = { pub: i.substring(1) };
-                    var check_uid = gun.generateUID32(i);
                     if (uid) {
+                        var check_uid = gun.generateUID32(i);
                         if (uid == check_uid)
                             return next(i);
                     }
-                    count
+                    count += 1;
                     // else
                     //     return callback(i);
                 }
             }
             callback(count);
         });
-        
-        function next(pub){
-            if(!pub)
+
+        function next(pub) {
+            if (!pub)
                 return callback();
-             gun.get(pub).once(function(data){
-                 if(!data || !data.pub || data.epub) return callback();
-                 
-                 callback(null, { pub:data.pub, epub:data.epub});
-             });
-            
+            gun.get(pub).once(function(data) {
+                if (!data || !data.pub || !data.epub) return callback(-1);
+
+                callback(0, { pub: data.pub, epub: data.epub });
+            });
+
         }
     };
 
@@ -103796,6 +103848,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         var generateUID32 = function(pub) {
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
+        
         var gun = imports.gun;
 
         function changePassword(old, pass, callback) {

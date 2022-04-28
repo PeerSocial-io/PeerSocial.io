@@ -15,6 +15,7 @@ define(function(require, exports, module) {
         var generateUID32 = function(pub) {
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
+        
         var gun = imports.gun;
 
         function changePassword(old, pass, callback) {

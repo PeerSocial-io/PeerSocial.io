@@ -2,7 +2,21 @@
 
 module.exports = function(imports) {
     var gun = imports.gun;
-
+    var SEA = imports.gun.SEA;
+    
+    SEA.name = (async(cb, opt) => {
+        try {
+            if (cb) { try { cb() } catch (e) { console.log(e) } }
+            return;
+        }
+        catch (e) {
+            console.log(e);
+            SEA.err = e;
+            if (SEA.throw) { throw e }
+            if (cb) { cb() }
+            return;
+        }
+    });
     // var generateUID32 = function(pub) {
     //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
     // };
@@ -86,7 +100,7 @@ module.exports = function(imports) {
     };
 
     login.prepLogout = function() {
-        $("#navbar-nav-right").find("#login_btn").remove();
+        // $("#navbar-nav-right").find("#login_btn").remove();
 
         $("#navbar-nav-right").html(
             imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" })

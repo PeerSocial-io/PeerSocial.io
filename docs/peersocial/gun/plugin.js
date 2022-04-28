@@ -33,7 +33,8 @@ define(function(require, exports, module) {
         addPeer("https://dev.peersocial.io/gun");
         addPeer("https://www.peersocial.io/gun");
         addPeer("https://peersocial-notify.herokuapp.com/gun");
-
+        addPeer("https://gun-manhattan.herokuapp.com/gun");
+        
         function addPeer(peer) {
             if (!(peers.indexOf(peers) > -1)) {
                 peers.push(peer);

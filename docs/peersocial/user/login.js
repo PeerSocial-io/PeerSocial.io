@@ -2,7 +2,21 @@
 
 module.exports = function(imports) {
     var gun = imports.gun;
-
+    var SEA = imports.gun.SEA;
+    
+    SEA.name = (async(cb, opt) => {
+        try {
+            if (cb) { try { cb() } catch (e) { console.log(e) } }
+            return;
+        }
+        catch (e) {
+            console.log(e);
+            SEA.err = e;
+            if (SEA.throw) { throw e }
+            if (cb) { cb() }
+            return;
+        }
+    });
     // var generateUID32 = function(pub) {
     //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
     // };
@@ -86,7 +100,7 @@ module.exports = function(imports) {
     };
 
     login.prepLogout = function() {
-        $("#navbar-nav-right").find("#login_btn").remove();
+        // $("#navbar-nav-right").find("#login_btn").remove();
 
         $("#navbar-nav-right").html(
             imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" })
@@ -260,7 +274,7 @@ module.exports = function(imports) {
             }
 
             if (usr && pas) {
-                login.getUserPub(usr, function(usr_pub) {
+                login.getUserPub(usr, function(error, usr_pub) {
                     gun.user().auth(usr_pub || usr, pas, function(res) {
                         if (!res.err) {
                             if (login.user) {
@@ -364,35 +378,34 @@ module.exports = function(imports) {
 
         if (alias.indexOf("@") != 1)
             alias = "@" + alias;
-        
-        
+
+
         gun.user(alias).once((data, a, b, c) => {
             var count = 0;
             for (var i in data) {
                 if (i.indexOf("~") == 0) {
-                    var pair = { pub: i.substring(1) };
-                    var check_uid = gun.generateUID32(i);
                     if (uid) {
+                        var check_uid = gun.generateUID32(i);
                         if (uid == check_uid)
                             return next(i);
                     }
-                    count
+                    count += 1;
                     // else
                     //     return callback(i);
                 }
             }
             callback(count);
         });
-        
-        function next(pub){
-            if(!pub)
+
+        function next(pub) {
+            if (!pub)
                 return callback();
-             gun.get(pub).once(function(data){
-                 if(!data || !data.pub || data.epub) return callback();
-                 
-                 callback(null, { pub:data.pub, epub:data.epub});
-             });
-            
+            gun.get(pub).once(function(data) {
+                if (!data || !data.pub || !data.epub) return callback(-1);
+
+                callback(0, { pub: data.pub, epub: data.epub });
+            });
+
         }
     };
 
