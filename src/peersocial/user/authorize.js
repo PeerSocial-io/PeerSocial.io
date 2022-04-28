@@ -10,7 +10,7 @@ module.exports = function(imports, login, keychain) {
 
     var authorize = function() {
         var useOAuth = false;
-        // if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
+        if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
 
         var domain_hash = crypto.createHash('sha256').update(window.location.host).digest('hex');
 
