@@ -260,63 +260,63 @@ module.exports = function(imports) {
             }
 
             if (usr && pas) {
-                    login.getUserPub(usr, function(usr_pub) {
-                        gun.user().auth(usr_pub || usr, pas, function(res) {
-                            if (!res.err) {
-                                if (login.user) {
-                                    model.modal("hide");
-                                    login.prepLogout();
-                                    // me((err, $me, $user) => {
-                                    //     if (err) console.log(err);
-                                    //     var uid32 = generateUID32("~" + $me.pub);
-                                    //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
-                                    imports.app.emit("login", login.user);
+                login.getUserPub(usr, function(usr_pub) {
+                    gun.user().auth(usr_pub || usr, pas, function(res) {
+                        if (!res.err) {
+                            if (login.user) {
+                                model.modal("hide");
+                                login.prepLogout();
+                                // me((err, $me, $user) => {
+                                //     if (err) console.log(err);
+                                //     var uid32 = generateUID32("~" + $me.pub);
+                                //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
+                                imports.app.emit("login", login.user);
 
-                                    // });
-                                }
+                                // });
                             }
-                            else {
-                                if (res.err == "Wrong user or password.") {
-                                    // var uid = false;
-                                    // if (usr.indexOf("#") > -1) {
-                                    //     usr = usr.split("#");
-                                    //     uid = usr[1];
-                                    //     usr = usr[0];
-                                    // }
-                                    // gun.aliasToPub("@" + usr, uid, (pub) => {
-                                    //     if (!pub) {
-                                    if (createAccount && !creating) {
-                                        creating = true;
-                                        gun.user().create(usr, pas, function(ack) {
-                                            if (ack.pub) {
-                                                creating = false;
-                                                $login(usr, pas);
-                                            }
-                                        }, {
-                                            already: true
-                                        });
-                                    }
-                                    else {
-                                        model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
-                                        var create = model.find(".error").find("#create");
-                                        create.click(function() {
-                                            model.find("#confirmpwfield").show().focus();
-                                            model.find("#login_alias").text("Create Account");
-                                            model.find(".error").text("Creating Account");
-                                            createAccount = usr;
-                                        });
-                                    }
-                                    //     }
-                                    //     else {
-                                    //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
-                                    //     }
-                                    // });
+                        }
+                        else {
+                            if (res.err == "Wrong user or password.") {
+                                // var uid = false;
+                                // if (usr.indexOf("#") > -1) {
+                                //     usr = usr.split("#");
+                                //     uid = usr[1];
+                                //     usr = usr[0];
+                                // }
+                                // gun.aliasToPub("@" + usr, uid, (pub) => {
+                                //     if (!pub) {
+                                if (createAccount && !creating) {
+                                    creating = true;
+                                    gun.user().create(usr, pas, function(ack) {
+                                        if (ack.pub) {
+                                            creating = false;
+                                            $login(usr, pas);
+                                        }
+                                    }, {
+                                        already: true
+                                    });
                                 }
+                                else {
+                                    model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
+                                    var create = model.find(".error").find("#create");
+                                    create.click(function() {
+                                        model.find("#confirmpwfield").show().focus();
+                                        model.find("#login_alias").text("Create Account");
+                                        model.find(".error").text("Creating Account");
+                                        createAccount = usr;
+                                    });
+                                }
+                                //     }
+                                //     else {
+                                //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
+                                //     }
+                                // });
                             }
+                        }
 
-                        });
+                    });
 
-                    })
+                })
             }
 
         };
@@ -361,24 +361,39 @@ module.exports = function(imports) {
                 uid = $id[1];
             }
         }
+
+        if (alias.indexOf("@") != 1)
+            alias = "@" + alias;
         
-        if(alias.indexOf("@") != 1)
-            alias = "@"+alias;
-            
+        
         gun.user(alias).once((data, a, b, c) => {
+            var count = 0;
             for (var i in data) {
                 if (i.indexOf("~") == 0) {
+                    var pair = { pub: i.substring(1) };
                     var check_uid = gun.generateUID32(i);
                     if (uid) {
                         if (uid == check_uid)
-                            return callback(i);
+                            return next(i);
                     }
-                    else
-                        return callback(i);
+                    count
+                    // else
+                    //     return callback(i);
                 }
             }
-            callback();
+            callback(count);
         });
+        
+        function next(pub){
+            if(!pub)
+                return callback();
+             gun.get(pub).once(function(data){
+                 if(!data || !data.pub || data.epub) return callback();
+                 
+                 callback(null, { pub:data.pub, epub:data.epub});
+             });
+            
+        }
     };
 
 

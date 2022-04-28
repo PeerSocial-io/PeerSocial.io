@@ -42,7 +42,7 @@ define(function(require, exports, module) {
 
         var gunOptions = {
             peers: peers,
-            super: true
+            // super: true
         };
 
         gun = Gun(gunOptions); //"https://"+window.location.host+"/gun");
