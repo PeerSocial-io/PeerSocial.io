@@ -87803,22 +87803,27 @@ module.exports = "<div class=\"container\">\n\n<img src=\"peersocial/layout/teno
 
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
-    appPlugin.consumes = ["app","state"];
+    appPlugin.consumes = ["app", "state"];
     appPlugin.provides = ["layout", "ejs"];
-    
+
     var ejs = __webpack_require__(/*! ../lib/ejs */ "./src/peersocial/lib/ejs.js");
-    
+
     return appPlugin;
     /* global $ */
     function appPlugin(options, imports, register) {
 
         register(null, {
-            ejs:ejs,
+            ejs: ejs,
             layout: {
-                ejs:ejs,
-                
+                ejs: ejs,
+
                 init: function() {
-                    
+                    // $('.navbar-nav>li>a').on('load', function(e) {
+                    //     $(e).on('click', function() {
+                    //         $('.navbar-collapse').collapse('hide');
+                    //     });
+                    // }());
+
                     imports.state.$hash.on("404", function(currentHash, lastHash) {
                         ejs.render(__webpack_require__(/*! ./404-page_not_found.html */ "./src/peersocial/layout/404-page_not_found.html"), {
                             /* options */
@@ -87829,12 +87834,21 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     imports.state.$hash.on("200", function(currentHash, lastHash) {
                         $("#main-container").html(ejs.render(__webpack_require__(/*! ./loading.html */ "./src/peersocial/layout/loading.html")));
                     });
-                    
+
                 },
-                get: function($selector){
+                get: function($selector) {
                     return $($selector);
                 },
-                
+                addNavBar: function(e, clear) {
+                    e = $(e);
+                    e.find("a").on('click', function() {
+                        $('.navbar-collapse').collapse('hide');
+                    });
+                    if(clear)
+                        $("#navbar-nav-right").html(e);
+                    else
+                        $("#navbar-nav-right").prepend(e);
+                }
             }
         });
 
@@ -102349,7 +102363,7 @@ module.exports = "<div>\n<style>\n.peer-cards > .card {\n    display: inline-blo
 
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
     /* global $ */
-    appPlugin.consumes = ["app", "state", "profile", "user", "gun"];
+    appPlugin.consumes = ["app", "state", "profile", "user", "gun", "layout"];
     appPlugin.provides = ["peer"];
 
     return appPlugin;
@@ -102578,9 +102592,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             peer: _self = {
                 init: function() {
                     imports.app.on("login", function() {
-                        $("#navbar-nav-right").prepend(
-                            imports.app.layout.ejs.render('<li class="nav-item active" id="peers_btn"><a class="nav-link" href="/peers"><%= title %><span class="sr-only"></span></a></li>', { title: "Peers" })
-                        );
+                        imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="peers_btn"><a class="nav-link" href="/peers"><%= title %><span class="sr-only"></span></a></li>', { title: "Peers" }))
+                        // $("#navbar-nav-right").prepend(
+                            
+                        // );
                     });
                     imports.state.$hash.on("peers", function() {
                         loadPeersPage();
@@ -102741,7 +102756,7 @@ module.exports = "<div class=\"tab-pane active\">\n    <form class=\"form\" acti
 
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
     /* global $ */
-    appPlugin.consumes = ["app", "user", "gun", "state", "user"];
+    appPlugin.consumes = ["app", "user", "gun", "state", "user", "layout"];
     appPlugin.provides = ["profile"];
 
     var peer_profile_key = "profile";
@@ -102824,7 +102839,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 init: function() {
 
                     imports.app.on("login", function() {
-                        $("#navbar-nav-right").prepend(
+                        imports.layout.addNavBar(
                             imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })
                         );
                     });
@@ -103505,16 +103520,14 @@ module.exports = function(imports) {
     };
 
     login.prepLogin = function() {
-        $("#navbar-nav-right").append(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" })
+        imports.layout.addNavBar(
+            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }) , true
         );
     };
 
     login.prepLogout = function() {
-        // $("#navbar-nav-right").find("#login_btn").remove();
-
-        $("#navbar-nav-right").html(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" })
+        imports.layout.addNavBar(
+            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }) , true
         );
     };
 

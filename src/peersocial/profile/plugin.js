@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
     /* global $ */
-    appPlugin.consumes = ["app", "user", "gun", "state", "user"];
+    appPlugin.consumes = ["app", "user", "gun", "state", "user", "layout"];
     appPlugin.provides = ["profile"];
 
     var peer_profile_key = "profile";
@@ -83,7 +83,7 @@ define(function(require, exports, module) {
                 init: function() {
 
                     imports.app.on("login", function() {
-                        $("#navbar-nav-right").prepend(
+                        imports.layout.addNavBar(
                             imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })
                         );
                     });

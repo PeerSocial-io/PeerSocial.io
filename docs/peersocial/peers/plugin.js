@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
     /* global $ */
-    appPlugin.consumes = ["app", "state", "profile", "user", "gun"];
+    appPlugin.consumes = ["app", "state", "profile", "user", "gun", "layout"];
     appPlugin.provides = ["peer"];
 
     return appPlugin;
@@ -229,9 +229,10 @@ define(function(require, exports, module) {
             peer: _self = {
                 init: function() {
                     imports.app.on("login", function() {
-                        $("#navbar-nav-right").prepend(
-                            imports.app.layout.ejs.render('<li class="nav-item active" id="peers_btn"><a class="nav-link" href="/peers"><%= title %><span class="sr-only"></span></a></li>', { title: "Peers" })
-                        );
+                        imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="peers_btn"><a class="nav-link" href="/peers"><%= title %><span class="sr-only"></span></a></li>', { title: "Peers" }))
+                        // $("#navbar-nav-right").prepend(
+                            
+                        // );
                     });
                     imports.state.$hash.on("peers", function() {
                         loadPeersPage();

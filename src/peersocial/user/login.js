@@ -94,16 +94,14 @@ module.exports = function(imports) {
     };
 
     login.prepLogin = function() {
-        $("#navbar-nav-right").append(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" })
+        imports.layout.addNavBar(
+            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }) , true
         );
     };
 
     login.prepLogout = function() {
-        // $("#navbar-nav-right").find("#login_btn").remove();
-
-        $("#navbar-nav-right").html(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" })
+        imports.layout.addNavBar(
+            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }) , true
         );
     };
 
