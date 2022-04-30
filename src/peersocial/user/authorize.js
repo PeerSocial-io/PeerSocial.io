@@ -103,6 +103,7 @@ module.exports = function(imports, login, keychain) {
                         var domain = useOCAuth_domain;
 
                         if (domain == "localhost" && hostname == "localhost") domain = window.location.host;
+                        else if(domain == "localhost" && hostname != "localhost") domain = "www.peersocial.com";
                         
                         domain = 'https://' + domain;
 
