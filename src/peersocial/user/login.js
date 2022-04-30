@@ -3,7 +3,7 @@
 module.exports = function(imports) {
     var gun = imports.gun;
     var SEA = imports.gun.SEA;
-    
+
     SEA.name = (async(cb, opt) => {
         try {
             if (cb) { try { cb() } catch (e) { console.log(e) } }
@@ -41,7 +41,9 @@ module.exports = function(imports) {
     Object.defineProperty(login, 'user', {
         get() {
             if (gun.user().is)
-                return gun.user();
+                return function(){
+                    return gun.user();
+                };
             else
                 return false;
         }
@@ -57,6 +59,9 @@ module.exports = function(imports) {
 
     login.restoreSession = (done) => {
         imports.app.on("start", () => {
+            imports.app.on("login",function(){
+                gun.user().get("profile").get("seen").put(new Date().getTime());
+            });
             if (login.sessionRestored && login.user) {
                 imports.app.emit("login", login.user);
             }
@@ -75,6 +80,7 @@ module.exports = function(imports) {
                 if (!res.err) { //we did not get a error on the return
                     //set app key to say it was restored
                     sessionRestored = true;
+                    // gun.user().get("profile").get("seen").put(new Date().getTime());
                 }
 
                 //now gun.user().is should be populated
@@ -95,13 +101,13 @@ module.exports = function(imports) {
 
     login.prepLogin = function() {
         imports.layout.addNavBar(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }) , true
+            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }), true
         );
     };
 
     login.prepLogout = function() {
         imports.layout.addNavBar(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }) , true
+            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }), true
         );
     };
 
@@ -117,10 +123,11 @@ module.exports = function(imports) {
 
         var createAccount = false;
         var creating = false;
+        var creatingPair = false;
 
         var canceled = false;
 
-        model.find("#cancel").click(function() {
+        model.find(".cancel-login").click(function() {
             if (!createAccount) {
                 canceled = true;
                 model.modal('hide');
@@ -134,7 +141,8 @@ module.exports = function(imports) {
             }
         });
         model.on("hide.bs.modal", function() {
-            if (done) return done(canceled);
+            if (done) 
+                return done(canceled);
             if (imports.app.state.lastHash)
                 imports.app.state.hash = imports.app.state.lastHash;
             else {
@@ -199,22 +207,29 @@ module.exports = function(imports) {
             }
             catch (e) {
                 // model.find(".error").text("Faile to load Key");
-                model.find(".error").css("color", "red").html("<b>Faile to load Key.</b>&nbsp;<a href='#pubkey' id='create'>Generate Key?</a>");
+                model.find(".error").css("color", "red").html("<b>Faile to load Key.</b>&nbsp;<a href='javascript:' id='create'>Generate Key?</a>");
                 var create = model.find(".error").find("#create");
                 create.click(function() {
                     gun.SEA.pair().then((pair) => {
                         pair = JSON.stringify(pair);
-                        model.find("#pubkey").attr("type", "text").val(pair).focus().select();
+                        model.find("#pubkey").val(pair).focusout(() => model.find("#pubkey").attr("type", "password")).focusin(() => model.find("#pubkey").attr("type", "text")).focus().select();
                         model.find(".error").css("color", "red").html("<b>COPY PAIR SOMEWHERE SAFE!</b> and click Login");
-                        console.log(pair);
+                        creatingPair = true;
+                        // console.log(pair);
                     });
                 });
                 return;
             }
 
-            gun.user().auth(pair, function(res) {
+            gun.user().auth(pair, async function(res) {
                 if (!res.err) {
                     if (login.user) {
+                        if(creatingPair){
+                            creatingPair = false;
+                            await gun.user().get("pub").put(pair.pub);
+                            await gun.user().get("epub").put(pair.epub);
+                            await gun.user().get("alias").put("~"+pair.pub);
+                        }
                         model.modal("hide");
                         login.prepLogout();
                         imports.app.emit("login", login.user);
@@ -309,7 +324,7 @@ module.exports = function(imports) {
                                     });
                                 }
                                 else {
-                                    model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
+                                    model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='javascript:' id='create'>Create User?</a>");
                                     var create = model.find(".error").find("#create");
                                     create.click(function() {
                                         model.find("#confirmpwfield").show().focus();

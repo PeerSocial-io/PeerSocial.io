@@ -5,14 +5,16 @@
     <div class="row">
         <div class="col-sm-3">
             <div class="text-center">
-                <img src="<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_1x.png') %>" class="avatar img-circle img-thumbnail" class="avatar" alt="avatar">
-                <h6>Upload a different photo...</h6>
-                <input type="file" class="text-center center-block file-upload">
+                <label for="for="upload_profile_picture"">
+                    <img  src="<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" class="avatar img-circle img-thumbnail" class="avatar" alt="avatar">
+                    <h6 for="upload_profile_picture">Upload a different photo...</h6>
+                </label>
+                <input type="file" class="text-center center-block file-upload" id="upload_profile_picture">
             </div>
             </hr><br>
 
             <div>
-                <a class="btn btn-secondary btn-block" href="/peer~<%= me.uid32 %>@<%= me.alias %>">View Public Profile</a>
+                <a class="btn btn-secondary btn-block" href="/peer/~<%= me.pub %>">View Public Profile</a>
             </div><br>
             
         </div>

@@ -1,6 +1,7 @@
 define(function(require, exports, module) {
 
     var EventEmitter = require("events").EventEmitter;
+    var url = require("url");
 
     function AppState() {
 
@@ -23,7 +24,15 @@ define(function(require, exports, module) {
                 var urlPath = $(this).attr('href');
                 var title = $(this).text();
                 if (urlPath.indexOf("/") == 0) {
-                    var _hash = urlPath.split("?")[0].split("~").shift().substring(1);
+                    //var _hash = urlPath.split("?")[0].split("~").shift().substring(1);
+
+                    var $url = url.parse(urlPath, true);
+                    var $path = $url.pathname + ($url.hash || '');
+                    $path = $path.split("/");
+                    $path.shift();
+
+                    var _hash = $path.shift();
+                    
                     if (appState.$hash._events[_hash]) {
                         _self.pushState(urlPath, title, urlPath);
                         e.preventDefault();
@@ -37,6 +46,16 @@ define(function(require, exports, module) {
             })
         });
 
+        function animate(timestamp) {
+
+            appState.$hash.emit("/render");
+
+            if (_self.lastHash)
+                appState.$hash.emit("/render-" + _self.lastHash);
+
+            window.requestAnimationFrame(animate);
+        }
+        window.requestAnimationFrame(animate);
         // 	$("body").on('click', 'a', function(e) {
         //       var urlPath = $(this).attr('href');
         //       var title = $(this).text();
@@ -67,6 +86,12 @@ define(function(require, exports, module) {
         // 	History.back(); // logs {}, "Home Page", "?"
         // 	History.go(2); // logs {state:3}, "State 3", "?state=3"
 
+
+
+        setInterval(function() {
+
+        }, 5000);
+
     };
 
     AppState.prototype.pushState = function(urlPath, title) {
@@ -91,15 +116,18 @@ define(function(require, exports, module) {
 
         setTimeout(function() {
 
+            var $url = url.parse(_self.currentState.url, true);
+            var $path = $url.pathname + ($url.hash || '');
+            $path = $path.split("/");
+            $path.shift();
 
-            var hashSplit = _self.currentState.hash.split("?")[0].split("~")
-            var _hash = hashSplit.shift().substring(1);
-            hashSplit = hashSplit.join("~")
-            if (_hash == "index.html") _hash = "home";
+            var _hash = $path.shift();
+            // if (_hash == "index.html") _hash = "home";
             if (appState.$hash._events[_hash]) {
-                appState.$hash.emit(_hash, hashSplit, appState.currentState, appState.lastHash, function onDestroy(fn) {
+                appState.$hash.emit(_hash, $path, appState.currentState, appState.lastHash, function onDestroy(fn) {
                     if (typeof fn == "function") _self.currentState_destructors.push(fn);
                 });
+
             }
             else {
                 appState.$hash.emit('404', appState.currentHash, appState.lastHash);
@@ -123,12 +151,10 @@ define(function(require, exports, module) {
         }
     );
 
-    var url = require('url');
     Object.defineProperty(
         AppState.prototype,
         'query', {
             get: function() {
-
                 return url.parse(this.currentState.url, true).query;
             }
         }

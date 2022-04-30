@@ -3,11 +3,11 @@ define(function(require, exports, module) {
     appPlugin.consumes = ["app", "user", "gun", "state", "user", "layout"];
     appPlugin.provides = ["profile"];
 
-    var peer_profile_key = "profile";
-    var peer_profile_image_key = "profileImage";
+    // var peer_profile_key = "profile";
+    // var peer_profile_image_key = "profileImage";
 
-    var peerApps_key = "peerappsDev";
-    var peerApps_v2_key = "peerapps_v2";
+    // var peerApps_key = "peerappsDev";
+    // var peerApps_v2_key = "peerapps_v2";
 
     var profileTabs = [];
 
@@ -19,7 +19,7 @@ define(function(require, exports, module) {
 
         act.a = function() {
             var next = act.b;
-            user.get(peer_profile_key).once(function(profile) {
+            user().get("profile").once(function(profile) {
                 if (!profile || profile.err) return act.done(profile_out);
 
                 profile_out = profile;
@@ -30,11 +30,11 @@ define(function(require, exports, module) {
 
         act.b = function() {
             var next = act.done;
-            user.get("profileImage").once(function(peer_profile_image) {
+            user().get("profileImage").once(function(peer_profile_image2) {
 
-                if (peer_profile_image && peer_profile_image.err) return next();
+                if (!peer_profile_image2) return next();
 
-                profile_out.peer_profile_image = peer_profile_image;
+                profile_out.peer_profile_image = peer_profile_image2;
 
                 next();
             });
@@ -90,7 +90,7 @@ define(function(require, exports, module) {
 
                     function openProfile(query) {
                         if (imports.gun.user().is) {
-                            imports.user.me(async function(err, me, user) {
+                            imports.user.me(function(err, me, user) {
                                 if (err) console.log(err);
                                 //var profileImage = await user.get("profileImage");
                                 loadProfileData(user, function(profile) {
@@ -103,7 +103,6 @@ define(function(require, exports, module) {
                                     imports.app.layout.ejs.render(require("./profile.html"), {
                                         query: query,
                                         me: me,
-                                        user: user,
                                         profile: profile
 
                                     }, { async: true }).then(function(profileLayout) {
@@ -122,7 +121,7 @@ define(function(require, exports, module) {
                                                 var reader = new FileReader();
                                                 reader.onload = function(e) {
                                                     $('.avatar').attr('src', e.target.result);
-                                                    user.get(peer_profile_image_key).put(e.target.result, function() {
+                                                    user().get("profileImage").put(e.target.result, function() {
                                                         console.log("saved profile image");
                                                     });
                                                 };
@@ -156,27 +155,27 @@ define(function(require, exports, module) {
                 var basicInfo = $(imports.app.layout.ejs.render(require("./basic_info.html"), {
                     query: query,
                     me: me,
-                    user: user,
+                    user: user(),
                     profile: profile
                 }));
 
                 basicInfo.find("#display_name").on('keyup', function() {
-                    user.get("profile").get("display_name").put($(this).val(), function() {
-                        console.log("saved profile display_name");
+                    user().get("profile").get("display_name").put($(this).val(), function() {
+                        // console.log("saved profile display_name");
                     });
                 });
-                user.get("profile").get("display_name").on(function(display_name) {
-                    console.log("update profile display_name", display_name);
+                user().get("profile").get("display_name").on(function(display_name) {
+                    // console.log("update profile display_name", display_name);
                     basicInfo.find("#display_name").val(display_name)
                 });
 
                 basicInfo.find("#tagline").on('keyup', function() {
-                    user.get("profile").get("tagline").put($(this).val(), function() {
-                        console.log("saved profile tagline");
+                    user().get("profile").get("tagline").put($(this).val(), function() {
+                        // console.log("saved profile tagline");
                     });
                 });
-                user.get("profile").get("tagline").on(function(tagline) {
-                    console.log("update profile tagline", tagline);
+                user().get("profile").get("tagline").on(function(tagline) {
+                    // console.log("update profile tagline", tagline);
                     basicInfo.find("#tagline").val(tagline)
                 });
                 profileLayout.find("#profileTabs").append('<li class="nav-item"><a class="nav-link active" href="/profile">Profile</a></li>');

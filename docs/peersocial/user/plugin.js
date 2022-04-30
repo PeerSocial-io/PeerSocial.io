@@ -15,25 +15,26 @@ define(function(require, exports, module) {
         var generateUID32 = function(pub) {
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
-        
+
         var gun = imports.gun;
 
         function changePassword(old, pass, callback) {
             if (login.user)
-                gun.user().auth(login.user.is.alias, old, (res) => {
+                gun.user().auth(login.user().is.alias, old, (res) => {
                     callback(res.err || null, res.err ? null : true);
                 }, { change: pass });
-            else{
-                callback(null);//fail
+            else {
+                callback(null); //fail
             }
         }
 
         function me(callback) {
             if (login.user) {
-                gun.get("~" + login.user.is.pub).once((data) => {
-                    if (data) {
-                        callback(null, data, login.user);
-                    }
+                login.user().once(function (data){
+                    if (!data) data = {};
+                    data.uid32 = generateUID32(login.user().is.pub);
+                    data.alias = data.alias || login.user().is.pub;
+                    callback(null, data, login.user);
                 });
             }
             else callback(new Error("User Not Logged in"));
@@ -44,31 +45,52 @@ define(function(require, exports, module) {
                 callback = $uid32;
                 $uid32 = false;
             }
-            gun.aliasToPub("@" + alias, $uid32, (pub) => {
-                if (login.user && "~" + login.user.is.pub == pub) {
+            var usePub = false;
+
+            if (alias[0] == "~")
+                alias = { pub: alias.substring(1) };
+
+            if (typeof alias == "object") {
+                usePub = true;
+                withPub(alias.pub);
+            }
+            else {
+                gun.aliasToPub("@" + alias, $uid32, withPub);
+            }
+
+
+            function withPub(pub) {
+                if (login.user && "~" + login.user().is.pub == pub) {
                     gun.user().once((data) => {
-                        if (alias == data.alias) {
-                            callback(null, data, login.user, true);
-                        }
+                        callback(null, data, () => { return login.user; }, true);
                     });
                 }
                 else
                 if (pub) {
-                    gun.get(pub).once((data) => {
-                        if (alias == data.alias) {
-                            callback(null, data, gun.get(pub));
-                        }
+                    gun.get("~" + pub).once((data) => {
+                        callback(null, data, () => { return gun.get("~" + pub); });
                     });
                 }
                 else {
                     callback(new Error("User Not Found"));
                 }
+            }
+        }
+
+        function chain_gun_user(fn) {
+            var $user = {};
+
+            Object.defineProperty($user, 'get', {
+                get() {
+                    return fn().get
+                }
             });
 
+            return $user;
         }
-        
+
         function finishInitialization() {
-            
+
             register(null, {
                 user: {
                     keychain: keychain,

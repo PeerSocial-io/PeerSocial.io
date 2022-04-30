@@ -38,7 +38,7 @@ module.exports = function(imports, login, keychain) {
             }
             else {
                 // keychain("test").then((room) => {
-                var room = login.user._.sea;
+                var room = login.user()._.sea;
 
 
                 imports.app.sea.certify(
@@ -49,7 +49,7 @@ module.exports = function(imports, login, keychain) {
                     { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
                 ).then(async(cert) => {
                     console.log(cert);
-                    var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
+                    var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user()._.sea)); // pair.epriv will be used as a passphrase
 
 
                     var tmp = "~" + imports.app.state.query.pub;
@@ -86,7 +86,7 @@ module.exports = function(imports, login, keychain) {
             keychain().then((room) => {
 
                 gun.user().auth(room, function(res) {
-                    gun.user().get("last").get("seen").put(new Date().getTime(), function() {
+                    gun.user().get("profile").get("seen").put(new Date().getTime(), function() {
                         var domain;
 
                         if (hostname == "localhost") domain = window.location.host;

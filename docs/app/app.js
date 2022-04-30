@@ -34883,7 +34883,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 
 		Gun.is = function($){ return ($ instanceof Gun) || ($ && $._ && ($ === $._.$)) || false }
 
-		Gun.version = 0.2020;
+		Gun.version = 0.2022;
 
 		Gun.chain = Gun.prototype;
 		Gun.chain.toJSON = function(){};
@@ -37957,7 +37957,7 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
       var pair = typeof args[0] === 'object' && (args[0].pub || args[0].epub) ? args[0] : typeof args[1] === 'object' && (args[1].pub || args[1].epub) ? args[1] : null;
       var alias = !pair && typeof args[0] === 'string' ? args[0] : null;
       var pass = (alias || (pair && !(pair.priv && pair.epriv))) && typeof args[1] === 'string' ? args[1] : null;
-      var cb = args.filter(arg => typeof arg === 'function')[0] || null; // cb now can stand anywhere, after alias/pass or pair
+      var cb = args.filter(arg => typeof arg === 'function')[0] || null; // cb now can stand anywhere, after alias/pass or pair!
       var opt = args && args.length > 1 && typeof args[args.length-1] === 'object' ? args[args.length-1] : {}; // opt is always the last parameter which typeof === 'object' and stands after cb
       
       var gun = this, cat = (gun._), root = gun.back(-1);
@@ -87790,7 +87790,7 @@ module.exports = "<div class=\"container\">\n\n    <div class=\"jumbotron p-4 p-
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n\n<img src=\"peersocial/layout/tenor-12215996.gif\" alt=\"LOADING...\"></img>\n\n</div>";
+module.exports = "<div class=\"container\">\n\n<img src=\"/peersocial/layout/tenor-12215996.gif\" alt=\"LOADING...\"></img>\n\n</div>";
 
 /***/ }),
 
@@ -102375,13 +102375,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         var gun = imports.gun;
 
         function getPeerData(pub, done) {
-            return new Promise(resolve => {
-                var pubRoot = gun.get(pub)
-                pubRoot.once(function(userData) {
-                    pubRoot.get("profile").once(function(profile) {
-                        resolve(userData, profile, pubRoot);
-                        if (done) done(userData, profile, pubRoot)
-                    });
+            gun.get(pub).once(function(userData) {
+                gun.get(pub).get("profile").once(function(profile) {
+                    done(userData, profile, pub);
                 });
             });
         }
@@ -102410,9 +102406,12 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         }
 
         function loadPeersPage() {
-            imports.profile.me(async function(err, me, user) {
+            imports.profile.me(function(err, me, user) {
                 if (!err) {
-                    var peerListLayout = $(await imports.app.layout.ejs.render(__webpack_require__(/*! ./peerList.html */ "./src/peersocial/peers/peerList.html"), { me: me, user: user }, { async: true }));
+                    var peerListLayout = imports.app.layout.ejs.render(__webpack_require__(/*! ./peerList.html */ "./src/peersocial/peers/peerList.html"), { me: me, user: user() })
+
+                    peerListLayout = $(peerListLayout);
+
                     $("#main-container").html("");
                     $("#main-container").append(peerListLayout);
 
@@ -102468,120 +102467,165 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                     userid32 = query[1];
                                 }
                             }
-                            catch (e) {username = query[0];}
-                            
-                            if(username){
-                                gun.user("@" + username).once(async(data) => {
+                            catch (e) { username = query[0]; }
+
+                            var chain;
+
+
+                            if (username) {
+                                if (username[0] == "~")
+                                    chain = gun.get(username)
+                                else if (username[0] == "@")
+                                    chain = gun.user(username);
+                                else
+                                    chain = gun.user("@" + username);
+                            }
+                            if (chain) {
+                                chain.once((data) => {
                                     var $$peers = [];
-                                    for (var i in data) {
-                                        if (i.indexOf("~") == 0) {
-                                            var peerData = await getPeerData(i);
-                                            if (userid32 && peerData && peerData.uid32 && peerData.uid32 == userid32) {
-                                                $$peers.push(peerData);
-                                                break;
-                                            }else{
-                                                $$peers.push(peerData);
+                                    if (!data.pub) {
+                                        var c = 0,
+                                            b = 0;
+                                        for (var i in data) {
+                                            if (i.indexOf("~") == 0) { c += 1 }
+                                        }
+
+                                        for (var i in data) {
+                                            if (i.indexOf("~") == 0) {
+                                                getPeerData(i, function(peerData, profile, pubRoot) {
+                                                    if (userid32 && peerData && peerData.pub == userid32) {
+                                                        $$peers.push(peerData);
+                                                        return next();
+                                                    }
+                                                    else {
+                                                        $$peers.push(peerData);
+                                                    }
+                                                    b += 1;
+                                                    if (b == c)
+                                                        next();
+                                                })
+                                                // var peerData = await getPeerData(i);
+
                                             }
                                         }
                                     }
-                                    if ($$peers.length) {
+                                    else if ("~" + data.pub == username) {
+                                        $$peers.push(data);
+                                    }
 
-                                        var peerCard = $(await imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-card-side.html */ "./src/peersocial/peers/peer-card-side.html"), { peer_list: $$peers }, { async: true }));
-                                        model.find("#results").html(peerCard);
-                                        model.find("#results").show();
+                                    function next() {
+                                        if ($$peers.length) {
 
-                                        model.find("#results").find(".btn").click(() => {
+                                            var peerCard = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-card-side.html */ "./src/peersocial/peers/peer-card-side.html"), { peer_list: $$peers }));
 
-                                            model.modal('hide');
 
-                                        });
+                                            model.find("#results").html(peerCard);
+                                            model.find("#results").show();
 
-                                    }else{
-                                        model.find("#results").html("");
+                                            model.find("#results").find(".btn").click(() => {
+
+                                                model.modal('hide');
+
+                                            });
+                                        }
+                                        else {
+                                            model.find("#results").html("");
+                                        }
                                     }
                                 });
-                            }else{
+                            }
+                            else {
                                 model.find("#results").html("");
                             }
 
                         });
 
                     });
-
                 }
             });
         }
 
         function peerIsAdded(pub, done) {
-            imports.profile.me(async function(err, me, user) {
+            imports.profile.me(function(err, me, user) {
                 if (err) return done(false, true);
-                user.get("profile").get("peers").once(function(peersL) {
-                    for (var i in peersL) {
-                        if (i == "~" + pub && peersL[i])
-                            return done(true);
-                    }
-                    return done(false);
+                user().get("profile").once(function(profile) {
+                    if(profile && profile.peers){
+                        user().get("profile").get("peers").once(function(peersL) {
+                            for (var i in peersL) {
+                                if (i == "~" + pub && peersL[i])
+                                    return done(true);
+                            }
+                            return done(false);
+                        });
+                    }else return done(false);
                 });
             })
         }
 
         function loadPeerProfile(query) {
-            query = query.split("@");
-            imports.user.getUser(query[1], query[0], function(err, $user, user) {
+            query = query[0].split("@");
+            imports.user.getUser(query[1] || query[0], query[1] ? query[0] : false, function(err, $user, user) {
                 if (err) {
                     console.log(err)
                 }
                 else {
-                    peerIsAdded($user.pub, async function(isMyPeer, notLoggedIn) {
+                    peerIsAdded($user.pub, function(isMyPeer, notLoggedIn) {
 
+                        user().get('profile').once((profile) => {
+                            $user.profile = profile;
+                            // $user.peer_apps_dev = await user().get('profile').get("peerappsDev");
+                            // $user.peer_apps_v2 = await user().get('profile').get("peerapps_v2");
 
-                        $user.profile = await user.get('profile');
-                        // $user.peer_apps_dev = await user.get('profile').get("peerappsDev");
-                        // $user.peer_apps_v2 = await user.get('profile').get("peerapps_v2");
+                            var profileLayout = imports.app.layout.ejs.render(__webpack_require__(/*! ./viewPeer.html */ "./src/peersocial/peers/viewPeer.html"), {
+                                user: $user,
+                                $user: user,
+                                isMyPeer: isMyPeer,
+                                notLoggedIn: notLoggedIn
+                            })
+                            profileLayout = $(profileLayout);
 
-                        var profileLayout = $(await imports.app.layout.ejs.render(__webpack_require__(/*! ./viewPeer.html */ "./src/peersocial/peers/viewPeer.html"), {
-                            user: $user,
-                            $user: user,
-                            isMyPeer: isMyPeer,
-                            notLoggedIn: notLoggedIn
-                        }, { async: true }));
-
-
-                        profileLayout.find("#addPeer").click(() => {
-                            peerConfirm("Do you want to add this peer?", function(Yes) {
-                                if (Yes)
-                                    _self.addPeer($user.pub, (err, added) => {
-                                        if (!err && added) {
-                                            console.log("added peer");
-                                            imports.state.reload();
-                                        }
-                                    });
+                            profileLayout.find("#addPeer").click(() => {
+                                peerConfirm("Do you want to add this peer?", function(Yes) {
+                                    if (Yes)
+                                        _self.addPeer($user.pub, (err, added) => {
+                                            if (!err && added) {
+                                                console.log("added peer");
+                                                imports.state.reload();
+                                            }
+                                        });
+                                });
                             });
-                        });
 
-                        profileLayout.find("#removePeer").click(() => {
+                            profileLayout.find("#removePeer").click(() => {
 
-                            peerConfirm("Do you want to remove this peer?", function(Yes) {
-                                if (Yes)
-                                    _self.removePeer($user.pub, (err, removed) => {
-                                        if (!err && removed) {
-                                            console.log("removed peer");
-                                            imports.state.reload();
-                                        }
-                                    });
+                                peerConfirm("Do you want to remove this peer?", function(Yes) {
+                                    if (Yes)
+                                        _self.removePeer($user.pub, (err, removed) => {
+                                            if (!err && removed) {
+                                                console.log("removed peer");
+                                                imports.state.reload();
+                                            }
+                                        });
+                                });
                             });
+
+                            if (profile) {
+                                if (profile.display_name)
+                                    user().get('profile').get("display_name").once(function(display_name) {
+                                        profileLayout.find("#display_name").text(display_name);
+                                    });
+                                if (profile.tagline)
+                                    user().get('profile').get("tagline").once(function(tagline) {
+                                        profileLayout.find("#tagline").text(tagline);
+                                    });
+                            }
+
+
+
+
+                            $("#main-container").html(profileLayout);
+
                         });
-
-                        user.get('profile').get("display_name").on(function(display_name) {
-                            profileLayout.find("#display_name").text(display_name)
-                        });
-                        user.get('profile').get("tagline").on(function(tagline) {
-                            profileLayout.find("#tagline").text(tagline)
-                        })
-
-
-                        $("#main-container").html(profileLayout);
-
                     });
                 }
 
@@ -102594,7 +102638,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     imports.app.on("login", function() {
                         imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="peers_btn"><a class="nav-link" href="/peers"><%= title %><span class="sr-only"></span></a></li>', { title: "Peers" }))
                         // $("#navbar-nav-right").prepend(
-                            
+
                         // );
                     });
                     imports.state.$hash.on("peers", function() {
@@ -102645,10 +102689,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 listPeers: function(done) {
                     var peers = [];
 
-                    imports.profile.me(async function(err, me, user) {
+                    imports.profile.me(function(err, me, user) {
                         if (!err) {
 
-                            user.get("profile").get("peers").once(function(peersL) {
+                            user().get("profile").get("peers").once(function(peersL) {
                                 var count = 0;
                                 var recCount = 0;
                                 for (var i in peersL) {
@@ -102759,11 +102803,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     appPlugin.consumes = ["app", "user", "gun", "state", "user", "layout"];
     appPlugin.provides = ["profile"];
 
-    var peer_profile_key = "profile";
-    var peer_profile_image_key = "profileImage";
+    // var peer_profile_key = "profile";
+    // var peer_profile_image_key = "profileImage";
 
-    var peerApps_key = "peerappsDev";
-    var peerApps_v2_key = "peerapps_v2";
+    // var peerApps_key = "peerappsDev";
+    // var peerApps_v2_key = "peerapps_v2";
 
     var profileTabs = [];
 
@@ -102775,7 +102819,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         act.a = function() {
             var next = act.b;
-            user.get(peer_profile_key).once(function(profile) {
+            user().get("profile").once(function(profile) {
                 if (!profile || profile.err) return act.done(profile_out);
 
                 profile_out = profile;
@@ -102786,11 +102830,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         act.b = function() {
             var next = act.done;
-            user.get("profileImage").once(function(peer_profile_image) {
+            user().get("profileImage").once(function(peer_profile_image2) {
 
-                if (peer_profile_image && peer_profile_image.err) return next();
+                if (!peer_profile_image2) return next();
 
-                profile_out.peer_profile_image = peer_profile_image;
+                profile_out.peer_profile_image = peer_profile_image2;
 
                 next();
             });
@@ -102841,12 +102885,12 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     imports.app.on("login", function() {
                         imports.layout.addNavBar(
                             imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })
-                        );
+                        ); 
                     });
 
                     function openProfile(query) {
                         if (imports.gun.user().is) {
-                            imports.user.me(async function(err, me, user) {
+                            imports.user.me(function(err, me, user) {
                                 if (err) console.log(err);
                                 //var profileImage = await user.get("profileImage");
                                 loadProfileData(user, function(profile) {
@@ -102859,7 +102903,6 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                     imports.app.layout.ejs.render(__webpack_require__(/*! ./profile.html */ "./src/peersocial/profile/profile.html"), {
                                         query: query,
                                         me: me,
-                                        user: user,
                                         profile: profile
 
                                     }, { async: true }).then(function(profileLayout) {
@@ -102878,7 +102921,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                                 var reader = new FileReader();
                                                 reader.onload = function(e) {
                                                     $('.avatar').attr('src', e.target.result);
-                                                    user.get(peer_profile_image_key).put(e.target.result, function() {
+                                                    user().get("profileImage").put(e.target.result, function() {
                                                         console.log("saved profile image");
                                                     });
                                                 };
@@ -102912,27 +102955,27 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 var basicInfo = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./basic_info.html */ "./src/peersocial/profile/basic_info.html"), {
                     query: query,
                     me: me,
-                    user: user,
+                    user: user(),
                     profile: profile
                 }));
 
                 basicInfo.find("#display_name").on('keyup', function() {
-                    user.get("profile").get("display_name").put($(this).val(), function() {
-                        console.log("saved profile display_name");
+                    user().get("profile").get("display_name").put($(this).val(), function() {
+                        // console.log("saved profile display_name");
                     });
                 });
-                user.get("profile").get("display_name").on(function(display_name) {
-                    console.log("update profile display_name", display_name);
+                user().get("profile").get("display_name").on(function(display_name) {
+                    // console.log("update profile display_name", display_name);
                     basicInfo.find("#display_name").val(display_name)
                 });
 
                 basicInfo.find("#tagline").on('keyup', function() {
-                    user.get("profile").get("tagline").put($(this).val(), function() {
-                        console.log("saved profile tagline");
+                    user().get("profile").get("tagline").put($(this).val(), function() {
+                        // console.log("saved profile tagline");
                     });
                 });
-                user.get("profile").get("tagline").on(function(tagline) {
-                    console.log("update profile tagline", tagline);
+                user().get("profile").get("tagline").on(function(tagline) {
+                    // console.log("update profile tagline", tagline);
                     basicInfo.find("#tagline").val(tagline)
                 });
                 profileLayout.find("#profileTabs").append('<li class="nav-item"><a class="nav-link active" href="/profile">Profile</a></li>');
@@ -102957,7 +103000,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div></div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <img src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_1x.png') %>\" class=\"avatar img-circle img-thumbnail\" class=\"avatar\" alt=\"avatar\">\n                <h6>Upload a different photo...</h6>\n                <input type=\"file\" class=\"text-center center-block file-upload\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer~<%= me.uid32 %>@<%= me.alias %>\">View Public Profile</a>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
+module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div></div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <label for=\"for=\"upload_profile_picture\"\">\n                    <img  src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" class=\"avatar\" alt=\"avatar\">\n                    <h6 for=\"upload_profile_picture\">Upload a different photo...</h6>\n                </label>\n                <input type=\"file\" class=\"text-center center-block file-upload\" id=\"upload_profile_picture\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer/~<%= me.pub %>\">View Public Profile</a>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
 
 /***/ }),
 
@@ -102971,6 +103014,7 @@ module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
     var EventEmitter = __webpack_require__(/*! events */ "./node_modules/node-libs-browser/node_modules/events/events.js").EventEmitter;
+    var url = __webpack_require__(/*! url */ "./node_modules/node-libs-browser/node_modules/url/url.js");
 
     function AppState() {
 
@@ -102993,7 +103037,15 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 var urlPath = $(this).attr('href');
                 var title = $(this).text();
                 if (urlPath.indexOf("/") == 0) {
-                    var _hash = urlPath.split("?")[0].split("~").shift().substring(1);
+                    //var _hash = urlPath.split("?")[0].split("~").shift().substring(1);
+
+                    var $url = url.parse(urlPath, true);
+                    var $path = $url.pathname + ($url.hash || '');
+                    $path = $path.split("/");
+                    $path.shift();
+
+                    var _hash = $path.shift();
+                    
                     if (appState.$hash._events[_hash]) {
                         _self.pushState(urlPath, title, urlPath);
                         e.preventDefault();
@@ -103007,6 +103059,16 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             })
         });
 
+        function animate(timestamp) {
+
+            appState.$hash.emit("/render");
+
+            if (_self.lastHash)
+                appState.$hash.emit("/render-" + _self.lastHash);
+
+            window.requestAnimationFrame(animate);
+        }
+        window.requestAnimationFrame(animate);
         // 	$("body").on('click', 'a', function(e) {
         //       var urlPath = $(this).attr('href');
         //       var title = $(this).text();
@@ -103037,6 +103099,12 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // 	History.back(); // logs {}, "Home Page", "?"
         // 	History.go(2); // logs {state:3}, "State 3", "?state=3"
 
+
+
+        setInterval(function() {
+
+        }, 5000);
+
     };
 
     AppState.prototype.pushState = function(urlPath, title) {
@@ -103061,15 +103129,18 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         setTimeout(function() {
 
+            var $url = url.parse(_self.currentState.url, true);
+            var $path = $url.pathname + ($url.hash || '');
+            $path = $path.split("/");
+            $path.shift();
 
-            var hashSplit = _self.currentState.hash.split("?")[0].split("~")
-            var _hash = hashSplit.shift().substring(1);
-            hashSplit = hashSplit.join("~")
-            if (_hash == "index.html") _hash = "home";
+            var _hash = $path.shift();
+            // if (_hash == "index.html") _hash = "home";
             if (appState.$hash._events[_hash]) {
-                appState.$hash.emit(_hash, hashSplit, appState.currentState, appState.lastHash, function onDestroy(fn) {
+                appState.$hash.emit(_hash, $path, appState.currentState, appState.lastHash, function onDestroy(fn) {
                     if (typeof fn == "function") _self.currentState_destructors.push(fn);
                 });
+
             }
             else {
                 appState.$hash.emit('404', appState.currentHash, appState.lastHash);
@@ -103093,12 +103164,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         }
     );
 
-    var url = __webpack_require__(/*! url */ "./node_modules/node-libs-browser/node_modules/url/url.js");
     Object.defineProperty(
         AppState.prototype,
         'query', {
             get: function() {
-
                 return url.parse(this.currentState.url, true).query;
             }
         }
@@ -103189,7 +103258,7 @@ module.exports = function(imports, login, keychain) {
             }
             else {
                 // keychain("test").then((room) => {
-                var room = login.user._.sea;
+                var room = login.user()._.sea;
 
 
                 imports.app.sea.certify(
@@ -103200,7 +103269,7 @@ module.exports = function(imports, login, keychain) {
                     { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
                 ).then(async(cert) => {
                     console.log(cert);
-                    var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user._.sea)); // pair.epriv will be used as a passphrase
+                    var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user()._.sea)); // pair.epriv will be used as a passphrase
 
 
                     var tmp = "~" + imports.app.state.query.pub;
@@ -103237,7 +103306,7 @@ module.exports = function(imports, login, keychain) {
             keychain().then((room) => {
 
                 gun.user().auth(room, function(res) {
-                    gun.user().get("last").get("seen").put(new Date().getTime(), function() {
+                    gun.user().get("profile").get("seen").put(new Date().getTime(), function() {
                         var domain;
 
                         if (hostname == "localhost") domain = window.location.host;
@@ -103413,7 +103482,7 @@ module.exports = function(imports, login, keychain) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n  <div class=\"modal-dialog\" role=\"document\">\n    <div class=\"modal-content\">\n      <div class=\"modal-header\">\n        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Peer Login</h5>\n        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n          <span aria-hidden=\"true\">&times;</span>\n        </button>\n      </div>\n      <div class=\"modal-body\">\n        <select class=\"custom-select\" id=\"auth_apparatus\">\n          <option value=\"ALIAS\" selected>Alias</option>\n          <option value=\"PUBKEY\">PUBKEY</option>\n          <option value=\"ONLYKEY-USB\">ONLYKEY-USB</option>\n        </select>\n        \n        <div class=\"login_ALIAS\">\n          <form id=\"loginForm_ALIAS\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">Alias:</label>\n              <input type=\"text\" class=\"form-control\" id=\"username\">\n              <div id=\"username_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n            <div class=\"form-group\" id=\"pwfield\">\n              <label for=\"message-text\" class=\"col-form-label\">Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"password\"></input>\n              <div id=\"password_error\"></div>\n            </div>\n            <div class=\"form-group\" id=\"confirmpwfield\" style=\"display:none;\">\n              <label for=\"message-text\" class=\"col-form-label\">Confirm Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"confirm-password\"></input>\n              <div id=\"confirm-password_error\"></div>\n            </div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_alias\">Login</button>\n          </div>\n        </div>\n        \n        \n        <div class=\"login_ONLYKEY-USB\">\n          <form id=\"loginForm_ONLYKEY-USB\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">TAG:</label>\n              <input type=\"text\" class=\"form-control\" id=\"tag\">\n              <div id=\"tag_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_onlykey-usb\"><i class=\"fa-brands fa-usb\"></i></button>\n          </div>\n        </div>\n        \n        <div class=\"login_PUBKEY\">\n          <form id=\"loginForm_PUBKEY\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">PUBKEY:</label>\n              <input type=\"password\" class=\"form-control\" id=\"pubkey\">\n              <div id=\"pubkey_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_pubkey\">Login</button>\n          </div>\n        </div>\n        \n        \n      </div>\n      <div class=\"modal-footer\">\n        <button type=\"button\" class=\"btn btn-secondary\" id=\"cancel\">Cancel</button>\n      </div>\n    </div>\n  </div>\n</div>";
+module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n  <div class=\"modal-dialog\" role=\"document\">\n    <div class=\"modal-content\">\n      <div class=\"modal-header\">\n        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Peer Login</h5>\n        <button type=\"button\" class=\"close cancel-login\" aria-label=\"Close\">\n          <span aria-hidden=\"true\">&times;</span>\n        </button>\n      </div>\n      <div class=\"modal-body\">\n        <select class=\"custom-select\" id=\"auth_apparatus\">\n          <option value=\"ALIAS\" selected>Alias</option>\n          <option value=\"PUBKEY\">PUBKEY</option>\n          <option value=\"ONLYKEY-USB\">ONLYKEY-USB</option>\n        </select>\n        \n        <div class=\"login_ALIAS\">\n          <form id=\"loginForm_ALIAS\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">Alias:</label>\n              <input type=\"text\" class=\"form-control\" id=\"username\">\n              <div id=\"username_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n            <div class=\"form-group\" id=\"pwfield\">\n              <label for=\"message-text\" class=\"col-form-label\">Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"password\"></input>\n              <div id=\"password_error\"></div>\n            </div>\n            <div class=\"form-group\" id=\"confirmpwfield\" style=\"display:none;\">\n              <label for=\"message-text\" class=\"col-form-label\">Confirm Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"confirm-password\"></input>\n              <div id=\"confirm-password_error\"></div>\n            </div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_alias\">Login</button>\n          </div>\n        </div>\n        \n        \n        <div class=\"login_ONLYKEY-USB\">\n          <form id=\"loginForm_ONLYKEY-USB\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">TAG:</label>\n              <input type=\"text\" class=\"form-control\" id=\"tag\">\n              <div id=\"tag_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_onlykey-usb\"><i class=\"fa-brands fa-usb\"></i></button>\n          </div>\n        </div>\n        \n        <div class=\"login_PUBKEY\">\n          <form id=\"loginForm_PUBKEY\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">PUBKEY:</label>\n              <input type=\"password\" class=\"form-control\" id=\"pubkey\">\n              <div id=\"pubkey_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_pubkey\">Login</button>\n          </div>\n        </div>\n        \n        \n      </div>\n      <div class=\"modal-footer\">\n        <button type=\"button\" class=\"btn btn-secondary cancel-login\" id=\"cancel\">Cancel</button>\n      </div>\n    </div>\n  </div>\n</div>";
 
 /***/ }),
 
@@ -103429,7 +103498,7 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 module.exports = function(imports) {
     var gun = imports.gun;
     var SEA = imports.gun.SEA;
-    
+
     SEA.name = (async(cb, opt) => {
         try {
             if (cb) { try { cb() } catch (e) { console.log(e) } }
@@ -103467,7 +103536,9 @@ module.exports = function(imports) {
     Object.defineProperty(login, 'user', {
         get() {
             if (gun.user().is)
-                return gun.user();
+                return function(){
+                    return gun.user();
+                };
             else
                 return false;
         }
@@ -103483,6 +103554,9 @@ module.exports = function(imports) {
 
     login.restoreSession = (done) => {
         imports.app.on("start", () => {
+            imports.app.on("login",function(){
+                gun.user().get("profile").get("seen").put(new Date().getTime());
+            });
             if (login.sessionRestored && login.user) {
                 imports.app.emit("login", login.user);
             }
@@ -103501,6 +103575,7 @@ module.exports = function(imports) {
                 if (!res.err) { //we did not get a error on the return
                     //set app key to say it was restored
                     sessionRestored = true;
+                    // gun.user().get("profile").get("seen").put(new Date().getTime());
                 }
 
                 //now gun.user().is should be populated
@@ -103521,13 +103596,13 @@ module.exports = function(imports) {
 
     login.prepLogin = function() {
         imports.layout.addNavBar(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }) , true
+            imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }), true
         );
     };
 
     login.prepLogout = function() {
         imports.layout.addNavBar(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }) , true
+            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }), true
         );
     };
 
@@ -103543,10 +103618,11 @@ module.exports = function(imports) {
 
         var createAccount = false;
         var creating = false;
+        var creatingPair = false;
 
         var canceled = false;
 
-        model.find("#cancel").click(function() {
+        model.find(".cancel-login").click(function() {
             if (!createAccount) {
                 canceled = true;
                 model.modal('hide');
@@ -103560,7 +103636,8 @@ module.exports = function(imports) {
             }
         });
         model.on("hide.bs.modal", function() {
-            if (done) return done(canceled);
+            if (done) 
+                return done(canceled);
             if (imports.app.state.lastHash)
                 imports.app.state.hash = imports.app.state.lastHash;
             else {
@@ -103625,22 +103702,29 @@ module.exports = function(imports) {
             }
             catch (e) {
                 // model.find(".error").text("Faile to load Key");
-                model.find(".error").css("color", "red").html("<b>Faile to load Key.</b>&nbsp;<a href='#pubkey' id='create'>Generate Key?</a>");
+                model.find(".error").css("color", "red").html("<b>Faile to load Key.</b>&nbsp;<a href='javascript:' id='create'>Generate Key?</a>");
                 var create = model.find(".error").find("#create");
                 create.click(function() {
                     gun.SEA.pair().then((pair) => {
                         pair = JSON.stringify(pair);
-                        model.find("#pubkey").attr("type", "text").val(pair).focus().select();
+                        model.find("#pubkey").val(pair).focusout(() => model.find("#pubkey").attr("type", "password")).focusin(() => model.find("#pubkey").attr("type", "text")).focus().select();
                         model.find(".error").css("color", "red").html("<b>COPY PAIR SOMEWHERE SAFE!</b> and click Login");
-                        console.log(pair);
+                        creatingPair = true;
+                        // console.log(pair);
                     });
                 });
                 return;
             }
 
-            gun.user().auth(pair, function(res) {
+            gun.user().auth(pair, async function(res) {
                 if (!res.err) {
                     if (login.user) {
+                        if(creatingPair){
+                            creatingPair = false;
+                            await gun.user().get("pub").put(pair.pub);
+                            await gun.user().get("epub").put(pair.epub);
+                            await gun.user().get("alias").put("~"+pair.pub);
+                        }
                         model.modal("hide");
                         login.prepLogout();
                         imports.app.emit("login", login.user);
@@ -103735,7 +103819,7 @@ module.exports = function(imports) {
                                     });
                                 }
                                 else {
-                                    model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='#login_alias' id='create'>Create User?</a>");
+                                    model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='javascript:' id='create'>Create User?</a>");
                                     var create = model.find(".error").find("#create");
                                     create.click(function() {
                                         model.find("#confirmpwfield").show().focus();
@@ -103864,25 +103948,26 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         var generateUID32 = function(pub) {
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
-        
+
         var gun = imports.gun;
 
         function changePassword(old, pass, callback) {
             if (login.user)
-                gun.user().auth(login.user.is.alias, old, (res) => {
+                gun.user().auth(login.user().is.alias, old, (res) => {
                     callback(res.err || null, res.err ? null : true);
                 }, { change: pass });
-            else{
-                callback(null);//fail
+            else {
+                callback(null); //fail
             }
         }
 
         function me(callback) {
             if (login.user) {
-                gun.get("~" + login.user.is.pub).once((data) => {
-                    if (data) {
-                        callback(null, data, login.user);
-                    }
+                login.user().once(function (data){
+                    if (!data) data = {};
+                    data.uid32 = generateUID32(login.user().is.pub);
+                    data.alias = data.alias || login.user().is.pub;
+                    callback(null, data, login.user);
                 });
             }
             else callback(new Error("User Not Logged in"));
@@ -103893,31 +103978,52 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 callback = $uid32;
                 $uid32 = false;
             }
-            gun.aliasToPub("@" + alias, $uid32, (pub) => {
-                if (login.user && "~" + login.user.is.pub == pub) {
+            var usePub = false;
+
+            if (alias[0] == "~")
+                alias = { pub: alias.substring(1) };
+
+            if (typeof alias == "object") {
+                usePub = true;
+                withPub(alias.pub);
+            }
+            else {
+                gun.aliasToPub("@" + alias, $uid32, withPub);
+            }
+
+
+            function withPub(pub) {
+                if (login.user && "~" + login.user().is.pub == pub) {
                     gun.user().once((data) => {
-                        if (alias == data.alias) {
-                            callback(null, data, login.user, true);
-                        }
+                        callback(null, data, () => { return login.user; }, true);
                     });
                 }
                 else
                 if (pub) {
-                    gun.get(pub).once((data) => {
-                        if (alias == data.alias) {
-                            callback(null, data, gun.get(pub));
-                        }
+                    gun.get("~" + pub).once((data) => {
+                        callback(null, data, () => { return gun.get("~" + pub); });
                     });
                 }
                 else {
                     callback(new Error("User Not Found"));
                 }
+            }
+        }
+
+        function chain_gun_user(fn) {
+            var $user = {};
+
+            Object.defineProperty($user, 'get', {
+                get() {
+                    return fn().get
+                }
             });
 
+            return $user;
         }
-        
+
         function finishInitialization() {
-            
+
             register(null, {
                 user: {
                     keychain: keychain,

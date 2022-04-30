@@ -29,7 +29,7 @@ let plugins = [
     new HtmlWebpackPlugin({
         filename: './index.html',
         template: './src/index.html',
-        inject: 'head',
+        inject: false,
         minify: false,
         hash: false,
         cache: false,
