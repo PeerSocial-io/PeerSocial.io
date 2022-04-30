@@ -30,7 +30,7 @@
     "cross-env": "^7.0.2",
     "elliptic": "^6.5.4",
     "express": "*",
-    "gun": "github:bmatusiak/gun#main",
+    "gun": "github:amark/gun#e3eaf5e2680b41915f4ba1bf8e380c35e842e208",
     "html-webpack-plugin": "^4.3.0",
     "minimist": "^1.2.5",
     "node-forge": "^1.3.1",

@@ -5,7 +5,7 @@
       var pair = typeof args[0] === 'object' && (args[0].pub || args[0].epub) ? args[0] : typeof args[1] === 'object' && (args[1].pub || args[1].epub) ? args[1] : null;
       var alias = !pair && typeof args[0] === 'string' ? args[0] : null;
       var pass = (alias || (pair && !(pair.priv && pair.epriv))) && typeof args[1] === 'string' ? args[1] : null;
-      var cb = args.filter(arg => typeof arg === 'function')[0] || null; // cb now can stand anywhere, after alias/pass or pair!
+      var cb = args.filter(arg => typeof arg === 'function')[0] || null; // cb now can stand anywhere, after alias/pass or pair
       var opt = args && args.length > 1 && typeof args[args.length-1] === 'object' ? args[args.length-1] : {}; // opt is always the last parameter which typeof === 'object' and stands after cb
       
       var gun = this, cat = (gun._), root = gun.back(-1);
@@ -66,7 +66,7 @@
         at = user._ = root.get('~'+pair.pub)._;
         at.opt = upt;
         // add our credentials in-memory only to our root user instance
-        user.is = {pub: pair.pub, epub: pair.epub, alias: alias || pair.pub};
+        user.is = {pub: pair.pub, epub: pair.epub, alias: alias || pair};
         at.sea = act.pair;
         cat.ing = false;
         try{if(pass && u == (obj_ify(cat.root.graph['~'+pair.pub].auth)||'')[':']){ opt.shuffle = opt.change = pass; } }catch(e){} // migrate UTF8 & Shuffle!
@@ -74,7 +74,7 @@
         if(SEA.window && ((gun.back('user')._).opt||opt).remember){
           // TODO: this needs to be modular.
           try{var sS = {};
-          sS = window.sessionStorage; // TODO: FIX BUG putting on `.is`!
+          sS = window.sessionStorage;
           sS.recall = true;
           sS.pair = JSON.stringify(pair); // auth using pair is more reliable than alias/pass
           }catch(e){}

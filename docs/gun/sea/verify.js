@@ -40,7 +40,7 @@
     }});
 
     module.exports = SEA.verify;
-    // legacy & ossl memory leak mitigation:
+    // legacy & ossl leak mitigation:
 
     var knownKeys = {};
     var keyForPair = SEA.opt.slow_leak = pair => {

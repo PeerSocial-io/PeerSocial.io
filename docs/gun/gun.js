@@ -244,7 +244,7 @@
 
 		Gun.is = function($){ return ($ instanceof Gun) || ($ && $._ && ($ === $._.$)) || false }
 
-		Gun.version = 0.2022;
+		Gun.version = 0.2020;
 
 		Gun.chain = Gun.prototype;
 		Gun.chain.toJSON = function(){};

@@ -1,11 +1,6 @@
 
 require('./shim');
 
-var noop = function(){}
-var parse = JSON.parseAsync || function(t,cb,r){ var u, d = +new Date; try{ cb(u, JSON.parse(t,r), json.sucks(+new Date - d)) }catch(e){ cb(e) } }
-var json = JSON.stringifyAsync || function(v,cb,r,s){ var u, d = +new Date; try{ cb(u, JSON.stringify(v,r,s), json.sucks(+new Date - d)) }catch(e){ cb(e) } }
-json.sucks = function(d){ if(d > 99){ console.log("Warning: JSON blocking CPU detected. Add `gun/lib/yson.js` to fix."); json.sucks = noop } }
-
 function Mesh(root){
 	var mesh = function(){};
 	var opt = root.opt || {};
@@ -15,6 +10,8 @@ function Mesh(root){
 	opt.pack = opt.pack || (opt.max * 0.01 * 0.01);
 	opt.puff = opt.puff || 9; // IDEA: do a start/end benchmark, divide ops/result.
 	var puff = setTimeout.turn || setTimeout;
+	var parse = JSON.parseAsync || function(t,cb,r){ var u; try{ cb(u, JSON.parse(t,r)) }catch(e){ cb(e) } }
+	var json = JSON.stringifyAsync || function(v,cb,r,s){ var u; try{ cb(u, JSON.stringify(v,r,s)) }catch(e){ cb(e) } }
 
 	var dup = root.dup, dup_check = dup.check, dup_track = dup.track;
 
@@ -41,7 +38,7 @@ function Mesh(root){
 				var P = opt.puff;
 				(function go(){
 					var S = +new Date;
-					var i = 0, m; while(i < P && (m = msg[i++])){ mesh.hear(m, peer) }
+					var i = 0, m; while(i < P && (m = msg[i++])){ hear(m, peer) }
 					msg = msg.slice(i); // slicing after is faster than shifting during.
 					console.STAT && console.STAT(S, +new Date - S, 'hear loop');
 					flush(peer); // force send all synchronously batched acks.
@@ -93,6 +90,7 @@ function Mesh(root){
 		mesh.leap = mesh.last = null; // warning! mesh.leap could be buggy.
 	}
 	var tomap = function(k,i,m){m(k,true)};
+	var noop = function(){};
 	hear.c = hear.d = 0;
 
 	;(function(){
@@ -107,7 +105,7 @@ function Mesh(root){
 				console.STAT && console.STAT(S, +new Date - S, 'say json+hash');
 			  msg._.$put = t;
 			  msg['##'] = h;
-			  mesh.say(msg, peer);
+			  say(msg, peer);
 			  delete msg._.$put;
 			}, sort);
 		}
@@ -149,7 +147,7 @@ function Mesh(root){
 					loop = 1; var wr = meta.raw; meta.raw = raw; // quick perf hack
 					var i = 0, p; while(i < 9 && (p = (pl||'')[i++])){
 						if(!(p = ps[p])){ continue }
-						mesh.say(msg, p);
+						say(msg, p);
 					}
 					meta.raw = wr; loop = 0;
 					pl = pl.slice(i); // slicing after is faster than shifting during.
@@ -223,7 +221,7 @@ function Mesh(root){
 			function res(err, raw){
 				if(err){ return } // TODO: Handle!!
 				meta.raw = raw; //if(meta && (raw||'').length < (999 * 99)){ meta.raw = raw } // HNPERF: If string too big, don't keep in memory.
-				mesh.say(msg, peer);
+				say(msg, peer);
 			}
 		}
 	}());
@@ -241,6 +239,7 @@ function Mesh(root){
 	}
 	// for now - find better place later.
 	function send(raw, peer){ try{
+		//console.log('SAY:', peer.id, (raw||'').slice(0,250), ((raw||'').length / 1024 / 1024).toFixed(4));
 		var wire = peer.wire;
 		if(peer.say){
 			peer.say(raw);
@@ -254,8 +253,7 @@ function Mesh(root){
 	}}
 
 	mesh.hi = function(peer){
-		var wire = peer.wire, tmp;
-		if(!wire){ mesh.wire((peer.length && {url: peer}) || peer); return }
+		var tmp = peer.wire || {};
 		if(peer.id){
 			opt.peers[peer.url || peer.id] = peer;
 		} else {
@@ -264,7 +262,7 @@ function Mesh(root){
 			delete dup.s[peer.last]; // IMPORTANT: see https://gun.eco/docs/DAM#self
 		}
 		peer.met = peer.met || +(new Date);
-		if(!wire.hied){ root.on(wire.hied = 'hi', peer) }
+		if(!tmp.hied){ root.on(tmp.hied = 'hi', peer) }
 		// @rogowski I need this here by default for now to fix go1dfish's bug
 		tmp = peer.queue; peer.queue = [];
 		setTimeout.each(tmp||[],function(msg){
