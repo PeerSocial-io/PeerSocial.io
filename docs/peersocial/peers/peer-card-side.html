@@ -8,7 +8,8 @@
                     <%- peer_list[i].alias %>#<%- peer_list[i].uid32 %>
                 </h5>
                 <p>
-                    <%- peer_list[i].bio %>
+                    <%- peer_list[i].profile.display_name %><br/>
+                    <%- peer_list[i].profile.tagline %>
                 </p>
                 <a href="/peer~<%- peer_list[i].uid32 %>@<%- peer_list[i].alias %>" class="btn btn-primary">View Peer</a>
     

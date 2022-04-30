@@ -144,7 +144,7 @@
 
 
         var gunOptions = {
-            peers: ["https://www.peersocial.io/gun", "https://dev.peersocial.io/gun"],
+            peers: ["https://www.peersocial.io/gun", "https://dev.peersocial.io/gun"], // primary 
             file: 'radata',
             web: server,
             // super: false,
@@ -168,7 +168,8 @@
         }
         
         gunOptions.peers.push("https://peersocial-notify.herokuapp.com/gun");
-        gunOptions.peers.push("https://gun-manhattan.herokuapp.com/gun");
+        
+        gunOptions.peers.push("https://gun-manhattan.herokuapp.com/gun");//1 global peer relay
         
         var gun = Gun(gunOptions);
         gun.SEA = Gun.SEA;

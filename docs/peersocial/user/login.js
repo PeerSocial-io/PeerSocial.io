@@ -3,7 +3,8 @@
 module.exports = function(imports) {
     var gun = imports.gun;
     var SEA = imports.gun.SEA;
-
+    
+    /*
     SEA.name = (async(cb, opt) => {
         try {
             if (cb) { try { cb() } catch (e) { console.log(e) } }
@@ -17,6 +18,8 @@ module.exports = function(imports) {
             return;
         }
     });
+    */
+    
     // var generateUID32 = function(pub) {
     //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
     // };

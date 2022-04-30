@@ -15,7 +15,7 @@ define(function(require, exports, module) {
         require("gun/sea");
         require("gun/nts");
 
-        // require("gun/lib/webrtc");
+        require("gun/lib/webrtc");
 
         if (!Gun.log.once)
             Gun.log.once = function() {};

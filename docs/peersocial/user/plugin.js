@@ -34,6 +34,7 @@ define(function(require, exports, module) {
                     if (!data) data = {};
                     data.uid32 = generateUID32(login.user().is.pub);
                     data.alias = data.alias || login.user().is.pub;
+                    data.pub = data.pub || login.user().is.pub;
                     callback(null, data, login.user);
                 });
             }

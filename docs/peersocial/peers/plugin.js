@@ -14,6 +14,7 @@ define(function(require, exports, module) {
         function getPeerData(pub, done) {
             gun.get(pub).once(function(userData) {
                 gun.get(pub).get("profile").once(function(profile) {
+                    userData.profile = profile;
                     done(userData, profile, pub);
                 });
             });

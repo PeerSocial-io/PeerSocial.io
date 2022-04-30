@@ -97,8 +97,8 @@ define(function(require, exports, module) {
 
                                     if (!profile) profile = {};
                                     
-                                    if (me.uid32 && !me.alias)
-                                        profile.url = me.uid32 + "@" + me.alias;
+                                    // if (me.uid32 && me.alias)
+                                    //     profile.url = me.uid32 + "@" + me.alias;
 
                                     imports.app.layout.ejs.render(require("./profile.html"), {
                                         query: query,

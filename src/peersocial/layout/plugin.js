@@ -9,6 +9,10 @@ define(function(require, exports, module) {
     /* global $ */
     function appPlugin(options, imports, register) {
 
+        $(document).on('DOMNodeInserted', function(e) {
+            $(e.target).find("time").timeago();
+        });
+        
         register(null, {
             ejs: ejs,
             layout: {
@@ -41,7 +45,7 @@ define(function(require, exports, module) {
                     e.find("a").on('click', function() {
                         $('.navbar-collapse').collapse('hide');
                     });
-                    if(clear)
+                    if (clear)
                         $("#navbar-nav-right").html(e);
                     else
                         $("#navbar-nav-right").prepend(e);

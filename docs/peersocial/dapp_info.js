@@ -5,7 +5,7 @@ var dapp_info  = {
 
 
 dapp_info.name= "peersocial.io";
-dapp_info.peers = ["www.peersocial.io", "dev.peersocial.io"];
-
+dapp_info.relay_peers = ["www.peersocial.io", "dev.peersocial.io"];
+dapp_info.pub = dapp_info.DAPP_PUB;
 
 module.exports = dapp_info;

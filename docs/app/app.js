@@ -36891,6 +36891,126 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 
 /***/ }),
 
+/***/ "./node_modules/gun/lib/webrtc.js":
+/*!****************************************!*\
+  !*** ./node_modules/gun/lib/webrtc.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {;(function(){
+	var Gun = (typeof window !== "undefined")? window.Gun : __webpack_require__(/*! ../gun */ "./node_modules/gun/gun.js");
+
+	Gun.on('opt', function(root){
+		this.to.next(root);
+		var opt = root.opt;
+		if(root.once){ return }
+		if(!Gun.Mesh){ return }
+		if(false === opt.RTCPeerConnection){ return }
+
+		var env;
+		if(typeof window !== "undefined"){ env = window }
+		if(typeof global !== "undefined"){ env = global }
+		env = env || {};
+
+		var rtcpc = opt.RTCPeerConnection || env.RTCPeerConnection || env.webkitRTCPeerConnection || env.mozRTCPeerConnection;
+		var rtcsd = opt.RTCSessionDescription || env.RTCSessionDescription || env.webkitRTCSessionDescription || env.mozRTCSessionDescription;
+		var rtcic = opt.RTCIceCandidate || env.RTCIceCandidate || env.webkitRTCIceCandidate || env.mozRTCIceCandidate;
+		if(!rtcpc || !rtcsd || !rtcic){ return }
+		opt.RTCPeerConnection = rtcpc;
+		opt.RTCSessionDescription = rtcsd;
+		opt.RTCIceCandidate = rtcic;
+		opt.rtc = opt.rtc || {'iceServers': [
+      {urls: 'stun:stun.l.google.com:19302'},
+      {urls: "stun:stun.sipgate.net:3478"}/*,
+      {urls: "stun:stun.stunprotocol.org"},
+      {urls: "stun:stun.sipgate.net:10000"},
+      {urls: "stun:217.10.68.152:10000"},
+      {urls: 'stun:stun.services.mozilla.com'}*/ 
+    ]};
+    // TODO: Select the most appropriate stuns. 
+    // FIXME: Find the wire throwing ICE Failed
+    // The above change corrects at least firefox RTC Peer handler where it **throws** on over 6 ice servers, and updates url: to urls: removing deprecation warning 
+    opt.rtc.dataChannel = opt.rtc.dataChannel || {ordered: false, maxRetransmits: 2};
+    opt.rtc.sdp = opt.rtc.sdp || {mandatory: {OfferToReceiveAudio: false, OfferToReceiveVideo: false}};
+    opt.announce = function(to){
+			root.on('out', {rtc: {id: opt.pid, to:to}}); // announce ourself
+    };
+		var mesh = opt.mesh = opt.mesh || Gun.Mesh(root);
+		root.on('create', function(at){
+			this.to.next(at);
+			setTimeout(opt.announce, 1);
+		});
+		root.on('in', function(msg){
+			if(msg.rtc){ open(msg) }
+			this.to.next(msg);
+		});
+
+		function open(msg){
+			var rtc = msg.rtc, peer, tmp;
+			if(!rtc || !rtc.id){ return }
+			delete opt.announce[rtc.id]; /// remove after connect
+			if(tmp = rtc.answer){
+				if(!(peer = opt.peers[rtc.id] || open[rtc.id]) || peer.remoteSet){ return }
+				tmp.sdp = tmp.sdp.replace(/\\r\\n/g, '\r\n')
+				return peer.setRemoteDescription(peer.remoteSet = new opt.RTCSessionDescription(tmp)); 
+			}
+			if(tmp = rtc.candidate){
+				peer = opt.peers[rtc.id] || open[rtc.id] || open({rtc: {id: rtc.id}});
+				return peer.addIceCandidate(new opt.RTCIceCandidate(tmp));
+			}
+			//if(opt.peers[rtc.id]){ return }
+			if(open[rtc.id]){ return }
+			(peer = new opt.RTCPeerConnection(opt.rtc)).id = rtc.id;
+			var wire = peer.wire = peer.createDataChannel('dc', opt.rtc.dataChannel);
+			open[rtc.id] = peer;
+			wire.onclose = function(){
+				delete open[rtc.id];
+				mesh.bye(peer);
+				//reconnect(peer);
+			};
+			wire.onerror = function(err){};
+			wire.onopen = function(e){
+				//delete open[rtc.id];
+				mesh.hi(peer);
+			}
+			wire.onmessage = function(msg){
+				if(!msg){ return }
+				mesh.hear(msg.data || msg, peer);
+			};
+			peer.onicecandidate = function(e){ // source: EasyRTC!
+        if(!e.candidate){ return }
+        root.on('out', {'@': msg['#'], rtc: {candidate: e.candidate, id: opt.pid}});
+			}
+			peer.ondatachannel = function(e){
+				var rc = e.channel;
+				rc.onmessage = wire.onmessage;
+				rc.onopen = wire.onopen;
+				rc.onclose = wire.onclose;
+			}
+			if(tmp = rtc.offer){
+				rtc.offer.sdp = rtc.offer.sdp.replace(/\\r\\n/g, '\r\n')
+				peer.setRemoteDescription(new opt.RTCSessionDescription(tmp)); 
+				peer.createAnswer(function(answer){
+					peer.setLocalDescription(answer);
+					root.on('out', {'@': msg['#'], rtc: {answer: answer, id: opt.pid}});
+				}, function(){}, opt.rtc.sdp);
+				return;
+			}
+			peer.createOffer(function(offer){
+				peer.setLocalDescription(offer);
+				root.on('out', {'@': msg['#'], rtc: {offer: offer, id: opt.pid}});
+			}, function(){}, opt.rtc.sdp);
+			return peer;
+		}
+	});
+	var noop = function(){};
+}());
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
 /***/ "./node_modules/gun/nts.js":
 /*!*********************************!*\
   !*** ./node_modules/gun/nts.js ***!
@@ -87635,8 +87755,8 @@ module.exports = (config, server) => {
 
 
 dapp_info.name= "peersocial.io";
-dapp_info.peers = ["www.peersocial.io", "dev.peersocial.io"];
-
+dapp_info.relay_peers = ["www.peersocial.io", "dev.peersocial.io"];
+dapp_info.pub = dapp_info.DAPP_PUB;
 
 module.exports = dapp_info;
 
@@ -87668,7 +87788,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         __webpack_require__(/*! gun/sea */ "./node_modules/gun/sea.js");
         __webpack_require__(/*! gun/nts */ "./node_modules/gun/nts.js");
 
-        // require("gun/lib/webrtc");
+        __webpack_require__(/*! gun/lib/webrtc */ "./node_modules/gun/lib/webrtc.js");
 
         if (!Gun.log.once)
             Gun.log.once = function() {};
@@ -87812,6 +87932,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     /* global $ */
     function appPlugin(options, imports, register) {
 
+        $(document).on('DOMNodeInserted', function(e) {
+            $(e.target).find("time").timeago();
+        });
+        
         register(null, {
             ejs: ejs,
             layout: {
@@ -87844,7 +87968,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     e.find("a").on('click', function() {
                         $('.navbar-collapse').collapse('hide');
                     });
-                    if(clear)
+                    if (clear)
                         $("#navbar-nav-right").html(e);
                     else
                         $("#navbar-nav-right").prepend(e);
@@ -102317,7 +102441,7 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<ul class=\"list-unstyled\">\n    <% for(var i in peer_list){ %>\n        <li class=\"media\">\n            <img style=\"max-width: 192px;\" class=\"mr-3\" src=\"<%- (peer_list[i].profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" alt=\"Card image cap\">\n    \n            <div class=\"media-body\">\n                <h5 class=\"mt-0 mb-1\">\n                    <%- peer_list[i].alias %>#<%- peer_list[i].uid32 %>\n                </h5>\n                <p>\n                    <%- peer_list[i].bio %>\n                </p>\n                <a href=\"/peer~<%- peer_list[i].uid32 %>@<%- peer_list[i].alias %>\" class=\"btn btn-primary\">View Peer</a>\n    \n            </div>\n        </li>\n    <% } %>\n</ul>";
+module.exports = "<ul class=\"list-unstyled\">\n    <% for(var i in peer_list){ %>\n        <li class=\"media\">\n            <img style=\"max-width: 192px;\" class=\"mr-3\" src=\"<%- (peer_list[i].profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" alt=\"Card image cap\">\n    \n            <div class=\"media-body\">\n                <h5 class=\"mt-0 mb-1\">\n                    <%- peer_list[i].alias %>#<%- peer_list[i].uid32 %>\n                </h5>\n                <p>\n                    <%- peer_list[i].profile.display_name %><br/>\n                    <%- peer_list[i].profile.tagline %>\n                </p>\n                <a href=\"/peer~<%- peer_list[i].uid32 %>@<%- peer_list[i].alias %>\" class=\"btn btn-primary\">View Peer</a>\n    \n            </div>\n        </li>\n    <% } %>\n</ul>";
 
 /***/ }),
 
@@ -102377,6 +102501,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         function getPeerData(pub, done) {
             gun.get(pub).once(function(userData) {
                 gun.get(pub).get("profile").once(function(profile) {
+                    userData.profile = profile;
                     done(userData, profile, pub);
                 });
             });
@@ -102897,8 +103022,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
                                     if (!profile) profile = {};
                                     
-                                    if (me.uid32 && !me.alias)
-                                        profile.url = me.uid32 + "@" + me.alias;
+                                    // if (me.uid32 && me.alias)
+                                    //     profile.url = me.uid32 + "@" + me.alias;
 
                                     imports.app.layout.ejs.render(__webpack_require__(/*! ./profile.html */ "./src/peersocial/profile/profile.html"), {
                                         query: query,
@@ -103000,7 +103125,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div></div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <label for=\"for=\"upload_profile_picture\"\">\n                    <img  src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" class=\"avatar\" alt=\"avatar\">\n                    <h6 for=\"upload_profile_picture\">Upload a different photo...</h6>\n                </label>\n                <input type=\"file\" class=\"text-center center-block file-upload\" id=\"upload_profile_picture\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer/~<%= me.pub %>\">View Public Profile</a>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
+module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div></div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <label for=\"upload_profile_picture\">\n                    <img  src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" class=\"avatar\" alt=\"avatar\">\n                </label>\n                <input type=\"file\" class=\"text-center center-block file-upload d-none\" id=\"upload_profile_picture\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer/~<%= me.pub %>\">View Public Profile</a>\n            </div><br>\n            <div>\n                Last Seen <time class=\"timeago\" datetime=\"<%= (new Date(profile.seen).toISOString()) %>\"><%= (new Date(profile.seen).toString()) %></time>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
 
 /***/ }),
 
@@ -103226,17 +103351,30 @@ module.exports = function(imports, login, keychain) {
     var crypto = __webpack_require__(/*! crypto */ "./node_modules/crypto-browserify/index.js");
     var url = __webpack_require__(/*! url */ "./node_modules/node-libs-browser/node_modules/url/url.js");
     var querystring = __webpack_require__(/*! querystring */ "./node_modules/querystring-es3/index.js");
-    var hostname = window.location.hostname;
+    
 
+    var enable_useOCAuth = true;
+    var useOCAuth_domain = "www.peersocial.io";
+        useOCAuth_domain = "localhost";
+    
+    var dapp_info = imports.app.dapp_info;
+    
     var authorize = function() {
         var useOAuth = false;
-        // if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
+        
+        if(enable_useOCAuth)
+            if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
 
-        var domain_hash = crypto.createHash('sha256').update(window.location.host).digest('hex');
-
+        var dapp_pub_hash = crypto.createHash('sha256').update(dapp_info.pub).digest('hex');
+        
+        
+        var hostname = window.location.hostname;
+        
         if (login.will_authorize) {
+            hostname = imports.app.state.query.auth.split(":")[0];
             var domain = imports.app.state.query.auth;
-            domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
+            
+            var hostname_hash = crypto.createHash('sha256').update(domain).digest('hex');
 
             if (!login.user) {
                 // imports.app.on("login", () => {
@@ -103258,13 +103396,13 @@ module.exports = function(imports, login, keychain) {
             }
             else {
                 // keychain("test").then((room) => {
-                var room = login.user()._.sea;
+                var main_user = login.user()._.sea;
 
 
                 imports.app.sea.certify(
                     imports.app.state.query.pub, // everybody is allowed to write
-                    { "*": domain_hash, "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
-                    room, //authority
+                    { "*": hostname_hash, "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
+                    main_user, //authority
                     null, //no need for callback here
                     { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
                 ).then(async(cert) => {
@@ -103273,16 +103411,16 @@ module.exports = function(imports, login, keychain) {
 
 
                     var tmp = "~" + imports.app.state.query.pub;
-                    var data = {};
+                    // var data = {};
 
                     var link = {};
                     link[tmp] = { '#': tmp };
-                    gun.user().get(domain_hash).get(imports.app.state.query.pub).put(link).get(tmp).once(function(data, key, msg, eve) {
+                    gun.user().get(dapp_pub_hash).get(imports.app.state.query.pub).put(link).get(tmp).once(function(data, key, msg, eve) {
 
                         var query = {
                             cert: new Buffer(d).toString("base64"),
-                            pub: room.pub,
-                            epub: room.epub,
+                            pub: main_user.pub,
+                            epub: main_user.epub,
                         };
                         query = querystring.stringify(query);
 
@@ -103303,24 +103441,22 @@ module.exports = function(imports, login, keychain) {
 
         if (useOAuth) {
 
-            keychain().then((room) => {
+            keychain().then((temp_dapp_user) => {
 
-                gun.user().auth(room, function(res) {
+                gun.user().auth(temp_dapp_user, function(res) {
                     gun.user().get("profile").get("seen").put(new Date().getTime(), function() {
-                        var domain;
+                        var domain = useOCAuth_domain;
 
-                        if (hostname == "localhost") domain = window.location.host;
-                        else
-
-                            domain = "www.peersocial.io";
-
+                        if (domain == "localhost" && hostname == "localhost") domain = window.location.host;
+                        
                         domain = 'https://' + domain;
 
                         var popupOptions = "popup,location=1,toolbar=1,menubar=1,resizable=1,height=800,width=600";
                         var query = {
                             auth: window.location.host,
-                            pub: room.pub,
-                            epub: room.epub,
+                            dapp: dapp_pub_hash,
+                            pub: temp_dapp_user.pub,
+                            epub: temp_dapp_user.epub,
                         };
                         query = querystring.stringify(query);
                         var _url = domain + '/login?' + query;
@@ -103346,11 +103482,11 @@ module.exports = function(imports, login, keychain) {
                                 if (query.cert) {
                                     (async() => {
                                         query.cert = Buffer.from(query.cert, "base64").toString("utf8");
-                                        query.cert = await imports.app.sea.decrypt(query.cert, await imports.app.sea.secret(query.epub, room));
+                                        query.cert = await imports.app.sea.decrypt(query.cert, await imports.app.sea.secret(query.epub, temp_dapp_user));
                                         login.user_cert = query;
                                         
                                         if (login.user) {
-                                            gun.user().get("last").get("seen").put(new Date().getTime(), function() {
+                                            gun.user().get("profile").get("seen").put(new Date().getTime(), function() {
 
                                                 login.prepLogout();
                                                 imports.app.emit("login", login.user);
@@ -103498,7 +103634,8 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
 module.exports = function(imports) {
     var gun = imports.gun;
     var SEA = imports.gun.SEA;
-
+    
+    /*
     SEA.name = (async(cb, opt) => {
         try {
             if (cb) { try { cb() } catch (e) { console.log(e) } }
@@ -103512,6 +103649,8 @@ module.exports = function(imports) {
             return;
         }
     });
+    */
+    
     // var generateUID32 = function(pub) {
     //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
     // };
@@ -103967,6 +104106,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     if (!data) data = {};
                     data.uid32 = generateUID32(login.user().is.pub);
                     data.alias = data.alias || login.user().is.pub;
+                    data.pub = data.pub || login.user().is.pub;
                     callback(null, data, login.user);
                 });
             }

@@ -6,17 +6,30 @@ module.exports = function(imports, login, keychain) {
     var crypto = require("crypto");
     var url = require("url");
     var querystring = require('querystring');
-    var hostname = window.location.hostname;
+    
 
+    var enable_useOCAuth = true;
+    var useOCAuth_domain = "www.peersocial.io";
+        useOCAuth_domain = "localhost";
+    
+    var dapp_info = imports.app.dapp_info;
+    
     var authorize = function() {
         var useOAuth = false;
-        // if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
+        
+        if(enable_useOCAuth)
+            if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
 
-        var domain_hash = crypto.createHash('sha256').update(window.location.host).digest('hex');
-
+        var dapp_pub_hash = crypto.createHash('sha256').update(dapp_info.pub).digest('hex');
+        
+        
+        var hostname = window.location.hostname;
+        
         if (login.will_authorize) {
+            hostname = imports.app.state.query.auth.split(":")[0];
             var domain = imports.app.state.query.auth;
-            domain_hash = crypto.createHash('sha256').update(domain).digest('hex');
+            
+            var hostname_hash = crypto.createHash('sha256').update(domain).digest('hex');
 
             if (!login.user) {
                 // imports.app.on("login", () => {
@@ -38,13 +51,13 @@ module.exports = function(imports, login, keychain) {
             }
             else {
                 // keychain("test").then((room) => {
-                var room = login.user()._.sea;
+                var main_user = login.user()._.sea;
 
 
                 imports.app.sea.certify(
                     imports.app.state.query.pub, // everybody is allowed to write
-                    { "*": domain_hash, "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
-                    room, //authority
+                    { "*": hostname_hash, "+": "*" }, // to the path that starts with 'profile' and along with the key has the user's pub in it
+                    main_user, //authority
                     null, //no need for callback here
                     { expiry: Date.now() + (60 * 60 * 24 * 1000) } // Let's set a one day expiration period
                 ).then(async(cert) => {
@@ -53,16 +66,16 @@ module.exports = function(imports, login, keychain) {
 
 
                     var tmp = "~" + imports.app.state.query.pub;
-                    var data = {};
+                    // var data = {};
 
                     var link = {};
                     link[tmp] = { '#': tmp };
-                    gun.user().get(domain_hash).get(imports.app.state.query.pub).put(link).get(tmp).once(function(data, key, msg, eve) {
+                    gun.user().get(dapp_pub_hash).get(imports.app.state.query.pub).put(link).get(tmp).once(function(data, key, msg, eve) {
 
                         var query = {
                             cert: new Buffer(d).toString("base64"),
-                            pub: room.pub,
-                            epub: room.epub,
+                            pub: main_user.pub,
+                            epub: main_user.epub,
                         };
                         query = querystring.stringify(query);
 
@@ -83,24 +96,22 @@ module.exports = function(imports, login, keychain) {
 
         if (useOAuth) {
 
-            keychain().then((room) => {
+            keychain().then((temp_dapp_user) => {
 
-                gun.user().auth(room, function(res) {
+                gun.user().auth(temp_dapp_user, function(res) {
                     gun.user().get("profile").get("seen").put(new Date().getTime(), function() {
-                        var domain;
+                        var domain = useOCAuth_domain;
 
-                        if (hostname == "localhost") domain = window.location.host;
-                        else
-
-                            domain = "www.peersocial.io";
-
+                        if (domain == "localhost" && hostname == "localhost") domain = window.location.host;
+                        
                         domain = 'https://' + domain;
 
                         var popupOptions = "popup,location=1,toolbar=1,menubar=1,resizable=1,height=800,width=600";
                         var query = {
                             auth: window.location.host,
-                            pub: room.pub,
-                            epub: room.epub,
+                            dapp: dapp_pub_hash,
+                            pub: temp_dapp_user.pub,
+                            epub: temp_dapp_user.epub,
                         };
                         query = querystring.stringify(query);
                         var _url = domain + '/login?' + query;
@@ -126,11 +137,11 @@ module.exports = function(imports, login, keychain) {
                                 if (query.cert) {
                                     (async() => {
                                         query.cert = Buffer.from(query.cert, "base64").toString("utf8");
-                                        query.cert = await imports.app.sea.decrypt(query.cert, await imports.app.sea.secret(query.epub, room));
+                                        query.cert = await imports.app.sea.decrypt(query.cert, await imports.app.sea.secret(query.epub, temp_dapp_user));
                                         login.user_cert = query;
                                         
                                         if (login.user) {
-                                            gun.user().get("last").get("seen").put(new Date().getTime(), function() {
+                                            gun.user().get("profile").get("seen").put(new Date().getTime(), function() {
 
                                                 login.prepLogout();
                                                 imports.app.emit("login", login.user);

@@ -5,16 +5,18 @@
     <div class="row">
         <div class="col-sm-3">
             <div class="text-center">
-                <label for="for="upload_profile_picture"">
+                <label for="upload_profile_picture">
                     <img  src="<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" class="avatar img-circle img-thumbnail" class="avatar" alt="avatar">
-                    <h6 for="upload_profile_picture">Upload a different photo...</h6>
                 </label>
-                <input type="file" class="text-center center-block file-upload" id="upload_profile_picture">
+                <input type="file" class="text-center center-block file-upload d-none" id="upload_profile_picture">
             </div>
             </hr><br>
 
             <div>
                 <a class="btn btn-secondary btn-block" href="/peer/~<%= me.pub %>">View Public Profile</a>
+            </div><br>
+            <div>
+                Last Seen <time class="timeago" datetime="<%= (new Date(profile.seen).toISOString()) %>"><%= (new Date(profile.seen).toString()) %></time>
             </div><br>
             
         </div>
