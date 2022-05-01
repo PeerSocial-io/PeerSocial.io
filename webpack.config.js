@@ -4,14 +4,21 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const pathsToClean = ['./docs'];
-const cleanOptions = { root: __dirname, verbose: true, dry: false, exclude: [], };
+// const pathsToClean = ['./docs'];
+// const cleanOptions = { root: __dirname, verbose: true, dry: false, exclude: [], };
 
 const webpack_env = {};
-webpack_env['process.env.NODE_ENV'] = process.env.APP_ENV;
+// console.log("process.env.NODE_ENV",process.env.NODE_ENV)
+// webpack_env['process.env.NODE_ENV'] = JSON.stringify(process.env.APP_ENV);
 webpack_env['process.env.DEBUG'] = JSON.stringify(process.env.APP_ENV == "production" ? false : true);
+webpack_env['process.env.DAPP_KEY'] = JSON.stringify(false);
 
 console.log(webpack_env);
+
+// var webpack_env = new webpack.EnvironmentPlugin({
+//   NODE_ENV: process.env.APP_ENV, // use 'development' unless process.env.NODE_ENV is defined
+//   DEBUG: process.env.APP_ENV == "production" ? false : true,
+// });
 
 let plugins = [
     new CleanWebpackPlugin(),
@@ -34,6 +41,7 @@ let plugins = [
 
     // new Dotenv(), //
     new webpack.DefinePlugin(webpack_env),
+    // webpack_env,
     
     new HtmlWebpackPlugin({
         filename: './index.html',
@@ -50,6 +58,41 @@ let plugins = [
 
 
 module.exports = {
+    mode: process.env.NODE_ENV,
+    stats: 'minimal',
+    entry: ['./src/peersocial/app.js'],
+    externals: {
+        fs: "commonjs fs",
+        path: "commonjs path",
+    },
+    output: {
+        path: path.resolve(__dirname, './docs'),
+        filename: './app/app.js'
+    },
+    plugins: plugins,
+    resolve: {
+        fallback: {
+            crypto: require.resolve("crypto-browserify"),
+            stream: require.resolve("stream-browserify")
+        }
+
+    },
+    module: {
+        rules: [{
+            test: /\.html$/i,
+            use: [{
+                loader: 'raw-loader',
+                options: {
+                    esModule: false,
+                }
+            }]
+        }]
+    },
+};
+
+/*
+
+module.exports = {
     stats: 'minimal',
     mode: process.env.NODE_ENV,
     entry: ['./src/peersocial/app.js'],
@@ -57,7 +100,7 @@ module.exports = {
         path: path.resolve(__dirname, './docs'),
         filename: './app/app.js'
     },
-    externals: { 
+    externals: {
         fs: "commonjs fs",
         path: "commonjs path",
     },
@@ -74,3 +117,4 @@ module.exports = {
         }]
     }
 };
+*/
