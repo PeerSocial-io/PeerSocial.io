@@ -38,11 +38,16 @@ let plugins = [
             to: './fontawesome' //Copies all files from above dest to dist/assets
         }, ]
     }),
-
+    new webpack.ProvidePlugin({
+        Buffer: ['buffer', 'Buffer'],
+    }),
+    new webpack.ProvidePlugin({
+        process: 'process/browser',
+    }),
     // new Dotenv(), //
     new webpack.DefinePlugin(webpack_env),
     // webpack_env,
-    
+
     new HtmlWebpackPlugin({
         filename: './index.html',
         template: './src/index.html',
@@ -73,7 +78,8 @@ module.exports = {
     resolve: {
         fallback: {
             crypto: require.resolve("crypto-browserify"),
-            stream: require.resolve("stream-browserify")
+            stream: require.resolve("stream-browserify"),
+            buffer: require.resolve("buffer")
         }
 
     },
