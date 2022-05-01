@@ -20,8 +20,8 @@ define(function(require, exports, module) {
         act.a = function() {
             var next = act.b;
             user().get("profile").once(function(profile) {
-                if (!profile || profile.err) return act.done(profile_out);
-
+                if (!profile) return act.done(profile_out);
+                
                 profile_out = profile;
 
                 next();

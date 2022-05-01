@@ -87676,7 +87676,7 @@ setTimeout(function() {
 
         function appPlugin(options, imports, register) {
             var app = new events.EventEmitter();
-            app.debug = false;
+            app.debug = true;
             app.dapp_info = __webpack_require__(/*! ./dapp_info */ "./src/peersocial/dapp_info.js");
             app.events = events;
             app.nw = window.nw;
@@ -102947,8 +102947,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         act.a = function() {
             var next = act.b;
             user().get("profile").once(function(profile) {
-                if (!profile || profile.err) return act.done(profile_out);
-
+                if (!profile) return act.done(profile_out);
+                
                 profile_out = profile;
 
                 next();
@@ -103359,7 +103359,7 @@ module.exports = function(imports, login, keychain) {
     var useOCAuth_domain = "www.peersocial.io";
     
     if(imports.app.debug)
-        if(window.location.hostname == "localhost") useOCAuth_domain = "localhost";
+        if(window.location.hostname == "localhost"){ useOCAuth_domain = "localhost"; enable_useOCAuth = false;}
     
     var dapp_info = imports.app.dapp_info;
     
@@ -104091,6 +104091,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         var authorize = __webpack_require__(/*! ./authorize.js */ "./src/peersocial/user/authorize.js")(imports, login, keychain);
 
         var generateUID32 = function(pub) {
+            if (pub[0] != "~") pub = "~" + pub;
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
 
@@ -104108,7 +104109,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         function me(callback) {
             if (login.user) {
-                login.user().once(function (data){
+                login.user().once(function(data) {
                     if (!data) data = {};
                     data.uid32 = generateUID32(login.user().is.pub);
                     data.alias = data.alias || login.user().is.pub;
@@ -104140,8 +104141,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
             function withPub(pub) {
                 if (login.user && "~" + login.user().is.pub == pub) {
-                    gun.user().once((data) => {
-                        callback(null, data, () => { return login.user; }, true);
+                    me((err, data, user) => {
+                        callback(err, data, user, true);
                     });
                 }
                 else

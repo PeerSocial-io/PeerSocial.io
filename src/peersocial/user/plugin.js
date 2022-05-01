@@ -13,6 +13,7 @@ define(function(require, exports, module) {
         var authorize = require("./authorize.js")(imports, login, keychain);
 
         var generateUID32 = function(pub) {
+            if (pub[0] != "~") pub = "~" + pub;
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
 
@@ -30,7 +31,7 @@ define(function(require, exports, module) {
 
         function me(callback) {
             if (login.user) {
-                login.user().once(function (data){
+                login.user().once(function(data) {
                     if (!data) data = {};
                     data.uid32 = generateUID32(login.user().is.pub);
                     data.alias = data.alias || login.user().is.pub;
@@ -46,13 +47,11 @@ define(function(require, exports, module) {
                 callback = $uid32;
                 $uid32 = false;
             }
-            var usePub = false;
 
             if (alias[0] == "~")
                 alias = { pub: alias.substring(1) };
 
             if (typeof alias == "object") {
-                usePub = true;
                 withPub(alias.pub);
             }
             else {
@@ -62,8 +61,8 @@ define(function(require, exports, module) {
 
             function withPub(pub) {
                 if (login.user && "~" + login.user().is.pub == pub) {
-                    gun.user().once((data) => {
-                        callback(null, data, () => { return login.user; }, true);
+                    me((err, data, user) => {
+                        callback(err, data, user, true);
                     });
                 }
                 else
@@ -76,18 +75,6 @@ define(function(require, exports, module) {
                     callback(new Error("User Not Found"));
                 }
             }
-        }
-
-        function chain_gun_user(fn) {
-            var $user = {};
-
-            Object.defineProperty($user, 'get', {
-                get() {
-                    return fn().get
-                }
-            });
-
-            return $user;
         }
 
         function finishInitialization() {

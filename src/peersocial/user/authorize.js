@@ -12,7 +12,7 @@ module.exports = function(imports, login, keychain) {
     var useOCAuth_domain = "www.peersocial.io";
     
     if(imports.app.debug)
-        if(window.location.hostname == "localhost") useOCAuth_domain = "localhost";
+        if(window.location.hostname == "localhost"){ useOCAuth_domain = "localhost"; enable_useOCAuth = false;}
     
     var dapp_info = imports.app.dapp_info;
     
