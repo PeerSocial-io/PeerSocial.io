@@ -6,6 +6,9 @@
 [![Github](https://img.shields.io/github/commit-activity/m/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io)
 [![Github contributors](https://img.shields.io/github/contributors/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/graphs/contributors)
 
+
+![Stats - Gun Peers](https://img.shields.io/badge/dynamic/json?label=GUN-PEERS&query=peers.count&url=https://www.peersocial.io/gun/stats.radata)
+
 Support me by giving the project stars on github! 
 
 [![Github Stars](https://img.shields.io/github/stars/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/stargazers)
@@ -14,6 +17,6 @@ Support me by giving the project stars on github!
 
 Chat with us!
 
-[![Gitter](https://badges.gitter.im/PeerSocial-io/community.svg)](https://gitter.im/PeerSocial-io/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://img.shields.io/gitter/room/PeerSocial-io/community)](https://gitter.im/PeerSocial-io/community)
 [![Discord](https://img.shields.io/discord/699620283748843610)](https://discord.gg/rHM4GmR)
 
