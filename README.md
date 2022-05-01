@@ -13,7 +13,9 @@
 
 Support me by giving the project stars on github! 
 
-[![Github Stars](https://img.shields.io/github/stars/PeerSocial-io/PeerSocial.io?style=social)](https://github.com/PeerSocial-io/PeerSocial.io/stargazers)
+[![Github Stars](https://img.shields.io/github/stars/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/stargazers)
+![Github Watchers](https://img.shields.io/github/watchers/PeerSocial-io/PeerSocial.io)
+![Github Forks](https://img.shields.io/github/forks/PeerSocial-io/PeerSocial.io)
 
 Chat with us!
 
