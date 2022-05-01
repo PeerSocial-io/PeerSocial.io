@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "peersocial dapp",
   "scripts": {
+    "prepare": "npm run build",
     "build": "cross-env APP_ENV=development ./run-build.sh",
     "build-pro": "cross-env APP_ENV=production ./run-build.sh",
     "build-app": "cross-env OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
