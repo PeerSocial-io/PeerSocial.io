@@ -3,7 +3,7 @@
 module.exports = function(imports) {
     var gun = imports.gun;
     var SEA = imports.gun.SEA;
-    
+
     /*
     SEA.name = (async(cb, opt) => {
         try {
@@ -19,7 +19,7 @@ module.exports = function(imports) {
         }
     });
     */
-    
+
     // var generateUID32 = function(pub) {
     //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
     // };
@@ -44,7 +44,7 @@ module.exports = function(imports) {
     Object.defineProperty(login, 'user', {
         get() {
             if (gun.user().is)
-                return function(){
+                return function() {
                     return gun.user();
                 };
             else
@@ -62,7 +62,7 @@ module.exports = function(imports) {
 
     login.restoreSession = (done) => {
         imports.app.on("start", () => {
-            imports.app.on("login",function(){
+            imports.app.on("login", function() {
                 gun.user().get("profile").get("seen").put(new Date().getTime());
             });
             if (login.sessionRestored && login.user) {
@@ -112,20 +112,17 @@ module.exports = function(imports) {
         imports.layout.addNavBar(
             imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }), true
         );
-        
-        imports.layout.addNavBar(
-            imports.app.layout.ejs.render(`<li class="nav-item dropdown">
+
+        imports.layout.addNavBar(`<li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Dropdown
+          User
         </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="#">Action</a>
-          <a class="dropdown-item" href="#">Another action</a>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href="/profile">Profile</a>
           <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">Something else here</a>
+          <a class="dropdown-item" href="/logout">Logout</a>
         </div>
-      </li>`, { Logout: "Logout" }), true
-        );
+      </li>`);
     };
 
     login.openLogin = function(done) {
@@ -158,7 +155,7 @@ module.exports = function(imports) {
             }
         });
         model.on("hide.bs.modal", function() {
-            if (done) 
+            if (done)
                 return done(canceled);
             if (imports.app.state.lastHash)
                 imports.app.state.hash = imports.app.state.lastHash;
@@ -241,11 +238,11 @@ module.exports = function(imports) {
             gun.user().auth(pair, async function(res) {
                 if (!res.err) {
                     if (login.user) {
-                        if(creatingPair){
+                        if (creatingPair) {
                             creatingPair = false;
                             await gun.user().get("pub").put(pair.pub);
                             await gun.user().get("epub").put(pair.epub);
-                            await gun.user().get("alias").put("~"+pair.pub);
+                            await gun.user().get("alias").put("~" + pair.pub);
                         }
                         model.modal("hide");
                         login.prepLogout();
