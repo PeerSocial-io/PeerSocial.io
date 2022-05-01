@@ -8,8 +8,8 @@ const pathsToClean = ['./docs'];
 const cleanOptions = { root: __dirname, verbose: true, dry: false, exclude: [], };
 
 const webpack_env = {};
-webpack_env['process.env.NODE_ENV'] = process.env.NODE_ENV;
-webpack_env['process.env.DEBUG'] = JSON.stringify(process.env.NODE_ENV == "production" ? false : true);
+webpack_env['process.env.NODE_ENV'] = process.env.APP_ENV;
+webpack_env['process.env.DEBUG'] = JSON.stringify(process.env.APP_ENV == "production" ? false : true);
 
 console.log(webpack_env);
 
