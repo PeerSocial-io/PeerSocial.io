@@ -87650,7 +87650,7 @@ module.exports = function(module) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var architect = __webpack_require__(/*! ./lib/architect */ "./src/peersocial/lib/architect.js");
+/* WEBPACK VAR INJECTION */(function(process) {var architect = __webpack_require__(/*! ./lib/architect */ "./src/peersocial/lib/architect.js");
 var events = __webpack_require__(/*! events */ "./node_modules/node-libs-browser/node_modules/events/events.js");
 
 __webpack_require__(/*! ./lib/native.history.js */ "./src/peersocial/lib/native.history.js");
@@ -87676,6 +87676,7 @@ setTimeout(function() {
 
         function appPlugin(options, imports, register) {
             var app = new events.EventEmitter();
+            app.debug = process.env.DEBUG;
             app.dapp_info = __webpack_require__(/*! ./dapp_info */ "./src/peersocial/dapp_info.js");
             app.events = events;
             app.nw = window.nw;
@@ -87703,6 +87704,7 @@ setTimeout(function() {
 }, 500)
 
 
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -87748,12 +87750,12 @@ module.exports = (config, server) => {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process) {var dapp_info  = {
-    DAPP_KEY : process.env.DAPP_KEY,
-    DAPP_PUB : "SRmb-SMPPB_5NU13ncuOh5LgHL1alp6jfZcjZKSIunE.8J_26wW0sTF1fW-6bCQhMVtYftYHoDTKw27o0n1u3h4",
-}
+/* WEBPACK VAR INJECTION */(function(process) {var dapp_info  = {};
 
+if(process.env.DAPP_KEY)
+    dapp_info.DAPP_KEY = process.env.DAPP_KEY;
 
+dapp_info.DAPP_PUB = "SRmb-SMPPB_5NU13ncuOh5LgHL1alp6jfZcjZKSIunE.8J_26wW0sTF1fW-6bCQhMVtYftYHoDTKw27o0n1u3h4";
 dapp_info.name= "peersocial.io";
 dapp_info.relay_peers = ["www.peersocial.io", "dev.peersocial.io"];
 dapp_info.pub = dapp_info.DAPP_PUB;

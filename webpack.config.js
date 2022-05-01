@@ -1,10 +1,15 @@
 const path = require('path');
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const pathsToClean = ['./docs'];
 const cleanOptions = { root: __dirname, verbose: true, dry: false, exclude: [], };
+
+const webpack_env = {};
+webpack_env['process.env.NODE_ENV'] = JSON.stringify(process.env.NODE_ENV);
+webpack_env['process.env.DEBUG'] = webpack_env['process.env.NODE_ENV'] == "production" ? false : true;
 
 
 let plugins = [
@@ -26,6 +31,9 @@ let plugins = [
         }, ]
     }),
 
+    // new Dotenv(), //
+    //  new webpack.DefinePlugin(webpack_env),
+    
     new HtmlWebpackPlugin({
         filename: './index.html',
         template: './src/index.html',

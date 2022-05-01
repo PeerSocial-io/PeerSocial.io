@@ -24,6 +24,7 @@ setTimeout(function() {
 
         function appPlugin(options, imports, register) {
             var app = new events.EventEmitter();
+            app.debug = process.env.DEBUG;
             app.dapp_info = require("./dapp_info");
             app.events = events;
             app.nw = window.nw;
