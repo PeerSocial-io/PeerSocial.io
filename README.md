@@ -1,15 +1,10 @@
 # SocialPeer.io
 
-[![Version](https://img.shields.io/github/package-json/v/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io)
-
 [![https://www.peersocial.io/](https://img.shields.io/website?label=peersocial.io&url=http://www.peersocial.io)](https://www.peersocial.io/)
-
-[![Github](https://img.shields.io/github/commit-activity/m/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io)
-
-[![Github contributors](https://img.shields.io/github/contributors/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/graphs/contributors)
-
+[![Version](https://img.shields.io/github/package-json/v/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io)
 [![Github last commit](https://img.shields.io/github/last-commit/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/graphs/commit-activity)
-
+[![Github](https://img.shields.io/github/commit-activity/m/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io)
+[![Github contributors](https://img.shields.io/github/contributors/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/graphs/contributors)
 
 Support me by giving the project stars on github! 
 
