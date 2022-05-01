@@ -25,7 +25,7 @@ define(function(require, exports, module) {
 
         //peers.push("https://" + window.location.host + "/gun")
         // else
-        //  if (thisHost != "www.peersocial.io")
+        //  if (thisHost != "www.peersocial.io") 
         // peers.push("https://www.peersocial.io/gun");
         if (typeof window != "undefined")
             peers.push("https://" + window.location.host + "/gun");
@@ -37,14 +37,17 @@ define(function(require, exports, module) {
         
         function addPeer(peer) {
             if (!(peers.indexOf(peers) > -1)) {
-                peers.push(peer);
+                peers.push(peer);//bradleyab
             }
-        }
-
-        var gunOptions = {
+        } 
+  
+        var gunOptions = { 
             peers: peers,
             // super: true
         };
+          
+           
+        console.log("GNOME_SHELL_SESSION_MODE", process.env.GNOME_SHELL_SESSION_MODE);
 
         gun = Gun(gunOptions); //"https://"+window.location.host+"/gun");
 

@@ -1,6 +1,6 @@
 module.exports = {
   apps : [{
-    script: 'run-build.sh',
+    script: 'run-build-and-wait.sh',
     watch: './src/.'
   }]
 };
