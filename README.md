@@ -1,4 +1,4 @@
-# [SocialPeer.io](https://www.peersocial.io/)
+# [PeerSocial.io](https://www.peersocial.io/)
 
 [![https://www.peersocial.io/](https://img.shields.io/website?label=peersocial.io&url=http://www.peersocial.io)](https://www.peersocial.io/)
 [![Version](https://img.shields.io/github/package-json/v/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io)
