@@ -120,6 +120,7 @@ define(function(require, exports, module) {
                             }
                             if (chain) {
                                 chain.once((data) => {
+                                    if(!data) return model.find("#results").html("");
                                     var $$peers = [];
                                     if (!data.pub) {
                                         var c = 0,
