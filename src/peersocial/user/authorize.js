@@ -10,12 +10,16 @@ module.exports = function(imports, login, keychain) {
 
     var enable_useOCAuth = true;
     var useOCAuth_domain = "www.peersocial.io";
-        useOCAuth_domain = "localhost";
+    
+    if(imports.app.debug)
+        if(window.location.hostname == "localhost") useOCAuth_domain = "localhost";
     
     var dapp_info = imports.app.dapp_info;
     
     var authorize = function() {
         var useOAuth = false;
+        
+        var hostname = window.location.hostname;
         
         if(enable_useOCAuth)
             if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
@@ -23,7 +27,6 @@ module.exports = function(imports, login, keychain) {
         var dapp_pub_hash = crypto.createHash('sha256').update(dapp_info.pub).digest('hex');
         
         
-        var hostname = window.location.hostname;
         
         if (login.will_authorize) {
             hostname = imports.app.state.query.auth.split(":")[0];
