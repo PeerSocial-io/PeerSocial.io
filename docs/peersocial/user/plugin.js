@@ -8,14 +8,16 @@ define(function(require, exports, module) {
 
     function appPlugin(options, imports, register) {
 
-        var keychain = require("./key_chain.js");
-        var login = require("./login.js")(imports);
-        var authorize = require("./authorize.js")(imports, login, keychain);
-
         var generateUID32 = function(pub) {
             if (pub[0] != "~") pub = "~" + pub;
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
+
+        imports.generateUID32 = generateUID32;
+
+        var keychain = require("./key_chain.js");
+        var login = require("./login.js")(imports);
+        var authorize = require("./authorize.js")(imports, login, keychain);
 
         var gun = imports.gun;
 
@@ -47,13 +49,11 @@ define(function(require, exports, module) {
                 callback = $uid32;
                 $uid32 = false;
             }
-            var usePub = false;
 
             if (alias[0] == "~")
                 alias = { pub: alias.substring(1) };
 
             if (typeof alias == "object") {
-                usePub = true;
                 withPub(alias.pub);
             }
             else {
@@ -77,18 +77,6 @@ define(function(require, exports, module) {
                     callback(new Error("User Not Found"));
                 }
             }
-        }
-
-        function chain_gun_user(fn) {
-            var $user = {};
-
-            Object.defineProperty($user, 'get', {
-                get() {
-                    return fn().get
-                }
-            });
-
-            return $user;
         }
 
         function finishInitialization() {

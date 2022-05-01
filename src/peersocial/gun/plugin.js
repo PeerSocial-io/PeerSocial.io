@@ -68,37 +68,37 @@ define(function(require, exports, module) {
         // var mesh = gun.back('opt.mesh'); // DAM;
         // mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun', 'https://dev.peersocial.io/gun'] } });
 
-        function getPubData(pub) {
-            return new Promise(resolve => {
-                gun.get(pub).once(resolve);
-            });
-        }
+        // function getPubData(pub) {
+        //     return new Promise(resolve => {
+        //         gun.get(pub).once(resolve);
+        //     });
+        // }
 
-        gun.generateUID32 = function(pub) {
-            return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
-        }
+        // gun.generateUID32 = function(pub) {
+        //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
+        // }
 
-        gun.aliasToPub = function(alias, $uid32, next) {
-            if (typeof $uid32 == "function") {
-                next = $uid32;
-                $uid32 = false
-            }
+        // gun.aliasToPub = function(alias, $uid32, next) {
+        //     if (typeof $uid32 == "function") {
+        //         next = $uid32;
+        //         $uid32 = false
+        //     }
 
-            gun.user(alias).once((data, a, b, c) => {
-                for (var i in data) {
-                    if (i.indexOf("~") == 0) {
+        //     gun.user(alias).once((data, a, b, c) => {
+        //         for (var i in data) {
+        //             if (i.indexOf("~") == 0) {
 
-                        if ($uid32) {
-                            if ($uid32 == gun.generateUID32(i))
-                                return next(i);
-                        }
-                        else
-                            return next(i);
-                    }
-                }
-                next();
-            });
-        }
+        //                 if ($uid32) {
+        //                     if ($uid32 == gun.generateUID32(i))
+        //                         return next(i);
+        //                 }
+        //                 else
+        //                     return next(i);
+        //             }
+        //         }
+        //         next();
+        //     });
+        // }
 
         gun.SEA = Gun.SEA;
 
@@ -106,6 +106,7 @@ define(function(require, exports, module) {
 
             register(null, {
                 gun: gun,
+                gunMask: require("./gun-mask.js")(gun),
                 sea: Gun.SEA,
                 gunUser: gun.user()
             });

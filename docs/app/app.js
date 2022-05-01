@@ -87765,6 +87765,83 @@ module.exports = dapp_info;
 
 /***/ }),
 
+/***/ "./src/peersocial/gun/gun-mask.js":
+/*!****************************************!*\
+  !*** ./src/peersocial/gun/gun-mask.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function(gun) {
+    function $gun(last) {
+        var self = this;
+        if (last) {
+            self.last = last;
+            self.root = last.root;
+        }
+        else {
+            self.user = function(user) {
+                var _user = new $gun();
+                _user.graph.push(user);
+                _user.user = true;
+                return _user;
+            };
+            self.root = self;
+        }
+        var graph = [];
+        self.graph = graph;
+
+        return self;
+    }
+
+    $gun.prototype.get = function(key) {
+        var self = this;
+
+        var next = new $gun(self);
+        next.graph = [].concat(self.graph, [key]);
+        return next;
+    };
+    $gun.prototype.cert = function(cert) {
+        var self = this;
+
+        self.root._cert = cert;
+
+        return self;
+    };
+
+    var chainList = ["put", "on", "once"];
+
+    for (var i in chainList) {
+        ((c) => {
+
+            $gun.prototype[c] = function(val, cb, option) {
+                var self = this;
+                var next;
+                if (c == "pub" && self.root._cert) {
+                    if (!option) option = {};
+                    if (!option.opt) option.opt = {};
+                    if (!option.opt.cert) option.opt.cert = self.root._cert;
+
+                }
+                for (var i in self.graph) {
+                    var n = next || gun;
+                    if (i == 0 && self.root.user == true)
+                        next = n.user(self.graph[i]);
+                    else
+                        next = n.get(self.graph[i]);
+                }
+
+                return next[c](val, cb, option);
+            };
+
+        })(chainList[i]);
+    }
+
+    return function() { return new $gun() };
+};
+
+/***/ }),
+
 /***/ "./src/peersocial/gun/plugin.js":
 /*!**************************************!*\
   !*** ./src/peersocial/gun/plugin.js ***!
@@ -87842,37 +87919,37 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // var mesh = gun.back('opt.mesh'); // DAM;
         // mesh.say({ dam: 'opt', opt: { peers: ['https://www.peersocial.io/gun', 'https://dev.peersocial.io/gun'] } });
 
-        function getPubData(pub) {
-            return new Promise(resolve => {
-                gun.get(pub).once(resolve);
-            });
-        }
+        // function getPubData(pub) {
+        //     return new Promise(resolve => {
+        //         gun.get(pub).once(resolve);
+        //     });
+        // }
 
-        gun.generateUID32 = function(pub) {
-            return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
-        }
+        // gun.generateUID32 = function(pub) {
+        //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
+        // }
 
-        gun.aliasToPub = function(alias, $uid32, next) {
-            if (typeof $uid32 == "function") {
-                next = $uid32;
-                $uid32 = false
-            }
+        // gun.aliasToPub = function(alias, $uid32, next) {
+        //     if (typeof $uid32 == "function") {
+        //         next = $uid32;
+        //         $uid32 = false
+        //     }
 
-            gun.user(alias).once((data, a, b, c) => {
-                for (var i in data) {
-                    if (i.indexOf("~") == 0) {
+        //     gun.user(alias).once((data, a, b, c) => {
+        //         for (var i in data) {
+        //             if (i.indexOf("~") == 0) {
 
-                        if ($uid32) {
-                            if ($uid32 == gun.generateUID32(i))
-                                return next(i);
-                        }
-                        else
-                            return next(i);
-                    }
-                }
-                next();
-            });
-        }
+        //                 if ($uid32) {
+        //                     if ($uid32 == gun.generateUID32(i))
+        //                         return next(i);
+        //                 }
+        //                 else
+        //                     return next(i);
+        //             }
+        //         }
+        //         next();
+        //     });
+        // }
 
         gun.SEA = Gun.SEA;
 
@@ -87880,6 +87957,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
             register(null, {
                 gun: gun,
+                gunMask: __webpack_require__(/*! ./gun-mask.js */ "./src/peersocial/gun/gun-mask.js")(gun),
                 sea: Gun.SEA,
                 gunUser: gun.user()
             });
@@ -104038,7 +104116,7 @@ module.exports = function(imports) {
             for (var i in data) {
                 if (i.indexOf("~") == 0) {
                     if (uid) {
-                        var check_uid = gun.generateUID32(i);
+                        var check_uid = imports.generateUID32(i);
                         if (uid == check_uid)
                             return next(i);
                     }
@@ -104086,14 +104164,16 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
     function appPlugin(options, imports, register) {
 
-        var keychain = __webpack_require__(/*! ./key_chain.js */ "./src/peersocial/user/key_chain.js");
-        var login = __webpack_require__(/*! ./login.js */ "./src/peersocial/user/login.js")(imports);
-        var authorize = __webpack_require__(/*! ./authorize.js */ "./src/peersocial/user/authorize.js")(imports, login, keychain);
-
         var generateUID32 = function(pub) {
             if (pub[0] != "~") pub = "~" + pub;
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
+
+        imports.generateUID32 = generateUID32;
+
+        var keychain = __webpack_require__(/*! ./key_chain.js */ "./src/peersocial/user/key_chain.js");
+        var login = __webpack_require__(/*! ./login.js */ "./src/peersocial/user/login.js")(imports);
+        var authorize = __webpack_require__(/*! ./authorize.js */ "./src/peersocial/user/authorize.js")(imports, login, keychain);
 
         var gun = imports.gun;
 
@@ -104125,13 +104205,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 callback = $uid32;
                 $uid32 = false;
             }
-            var usePub = false;
 
             if (alias[0] == "~")
                 alias = { pub: alias.substring(1) };
 
             if (typeof alias == "object") {
-                usePub = true;
                 withPub(alias.pub);
             }
             else {
@@ -104155,18 +104233,6 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     callback(new Error("User Not Found"));
                 }
             }
-        }
-
-        function chain_gun_user(fn) {
-            var $user = {};
-
-            Object.defineProperty($user, 'get', {
-                get() {
-                    return fn().get
-                }
-            });
-
-            return $user;
         }
 
         function finishInitialization() {

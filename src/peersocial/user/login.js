@@ -112,6 +112,20 @@ module.exports = function(imports) {
         imports.layout.addNavBar(
             imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }), true
         );
+        
+        imports.layout.addNavBar(
+            imports.app.layout.ejs.render(`<li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Dropdown
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href="#">Action</a>
+          <a class="dropdown-item" href="#">Another action</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="#">Something else here</a>
+        </div>
+      </li>`, { Logout: "Logout" }), true
+        );
     };
 
     login.openLogin = function(done) {
@@ -401,7 +415,7 @@ module.exports = function(imports) {
             for (var i in data) {
                 if (i.indexOf("~") == 0) {
                     if (uid) {
-                        var check_uid = gun.generateUID32(i);
+                        var check_uid = imports.generateUID32(i);
                         if (uid == check_uid)
                             return next(i);
                     }

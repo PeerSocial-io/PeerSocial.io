@@ -8,14 +8,16 @@ define(function(require, exports, module) {
 
     function appPlugin(options, imports, register) {
 
-        var keychain = require("./key_chain.js");
-        var login = require("./login.js")(imports);
-        var authorize = require("./authorize.js")(imports, login, keychain);
-
         var generateUID32 = function(pub) {
             if (pub[0] != "~") pub = "~" + pub;
             return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
         };
+
+        imports.generateUID32 = generateUID32;
+
+        var keychain = require("./key_chain.js");
+        var login = require("./login.js")(imports);
+        var authorize = require("./authorize.js")(imports, login, keychain);
 
         var gun = imports.gun;
 

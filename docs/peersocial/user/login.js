@@ -401,7 +401,7 @@ module.exports = function(imports) {
             for (var i in data) {
                 if (i.indexOf("~") == 0) {
                     if (uid) {
-                        var check_uid = gun.generateUID32(i);
+                        var check_uid = imports.generateUID32(i);
                         if (uid == check_uid)
                             return next(i);
                     }
