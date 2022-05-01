@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "description": "peersocial dapp",
   "scripts": {
-    "prepare": "cross-env NODE_ENV=development npm run build-pro",
-    "build": "cross-env APP_ENV=development ./run-build.sh",
+    "prepare": "npm run build-pro",
     "build-pro": "cross-env APP_ENV=production ./run-build.sh",
-    "build-app": "cross-env OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
+    "build-dev": "cross-env APP_ENV=development ./run-build.sh",
+    "build-app": "cross-env NODE_ENV=development OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
     "start": "node ./server.js",
     "bash": "bash",
     "heroku-prebuild": "echo This runs before Heroku installs dependencies.",
