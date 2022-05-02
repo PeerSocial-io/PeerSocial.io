@@ -11,8 +11,18 @@ define(function(require, exports, module) {
 
         $(document).on('DOMNodeInserted', function(e) {
             $(e.target).find("time").timeago();
+
+            $(e.target).find(".dropdown-item").each((i, e) => {
+                var self = $(e);
+                self.click(() => {
+                    var dropdown_id = self.closest(".dropdown-menu").attr("aria-labelledby");
+                    self.closest('.navbar-collapse').collapse('hide');
+                    $("#"+dropdown_id).dropdown('hide');
+                });
+            });
+            
         });
-        
+
         register(null, {
             ejs: ejs,
             layout: {
@@ -42,8 +52,9 @@ define(function(require, exports, module) {
                 },
                 addNavBar: function(e, clear) {
                     e = $(e);
-                    e.find("a").on('click', function() {
-                        $('.navbar-collapse').collapse('hide');
+                    e.find("a").on('click', function(e) {
+                        if(!$(e.target).hasClass("dropdown-toggle"))
+                            $('.navbar-collapse').collapse('hide');
                     });
                     if (clear)
                         $("#navbar-nav-right").html(e);

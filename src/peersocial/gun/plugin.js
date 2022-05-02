@@ -63,7 +63,7 @@ define(function(require, exports, module) {
         // }
 
         // }, 1)
-        if (typeof window != "undefined")
+        if (process.env.DEBUG && typeof window != "undefined")
             window.gun = gun;
 
 

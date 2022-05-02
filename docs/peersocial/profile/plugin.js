@@ -83,9 +83,7 @@ define(function(require, exports, module) {
                 init: function() {
 
                     imports.app.on("login", function() {
-                        imports.layout.addNavBar(
-                            imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })
-                        ); 
+                        // imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })); 
                     });
 
                     function openProfile(query) {

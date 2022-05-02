@@ -18278,6 +18278,219 @@ module.exports = CipherBase
 
 /***/ }),
 
+/***/ "./node_modules/cookie/index.js":
+/*!**************************************!*\
+  !*** ./node_modules/cookie/index.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+/*!
+ * cookie
+ * Copyright(c) 2012-2014 Roman Shtylman
+ * Copyright(c) 2015 Douglas Christopher Wilson
+ * MIT Licensed
+ */
+
+
+
+/**
+ * Module exports.
+ * @public
+ */
+
+exports.parse = parse;
+exports.serialize = serialize;
+
+/**
+ * Module variables.
+ * @private
+ */
+
+var decode = decodeURIComponent;
+var encode = encodeURIComponent;
+
+/**
+ * RegExp to match field-content in RFC 7230 sec 3.2
+ *
+ * field-content = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+ * field-vchar   = VCHAR / obs-text
+ * obs-text      = %x80-FF
+ */
+
+var fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
+
+/**
+ * Parse a cookie header.
+ *
+ * Parse the given cookie header string into an object
+ * The object has the various cookies as keys(names) => values
+ *
+ * @param {string} str
+ * @param {object} [options]
+ * @return {object}
+ * @public
+ */
+
+function parse(str, options) {
+  if (typeof str !== 'string') {
+    throw new TypeError('argument str must be a string');
+  }
+
+  var obj = {}
+  var opt = options || {};
+  var pairs = str.split(';')
+  var dec = opt.decode || decode;
+
+  for (var i = 0; i < pairs.length; i++) {
+    var pair = pairs[i];
+    var index = pair.indexOf('=')
+
+    // skip things that don't look like key=value
+    if (index < 0) {
+      continue;
+    }
+
+    var key = pair.substring(0, index).trim()
+
+    // only assign once
+    if (undefined == obj[key]) {
+      var val = pair.substring(index + 1, pair.length).trim()
+
+      // quoted values
+      if (val[0] === '"') {
+        val = val.slice(1, -1)
+      }
+
+      obj[key] = tryDecode(val, dec);
+    }
+  }
+
+  return obj;
+}
+
+/**
+ * Serialize data into a cookie header.
+ *
+ * Serialize the a name value pair into a cookie string suitable for
+ * http headers. An optional options object specified cookie parameters.
+ *
+ * serialize('foo', 'bar', { httpOnly: true })
+ *   => "foo=bar; httpOnly"
+ *
+ * @param {string} name
+ * @param {string} val
+ * @param {object} [options]
+ * @return {string}
+ * @public
+ */
+
+function serialize(name, val, options) {
+  var opt = options || {};
+  var enc = opt.encode || encode;
+
+  if (typeof enc !== 'function') {
+    throw new TypeError('option encode is invalid');
+  }
+
+  if (!fieldContentRegExp.test(name)) {
+    throw new TypeError('argument name is invalid');
+  }
+
+  var value = enc(val);
+
+  if (value && !fieldContentRegExp.test(value)) {
+    throw new TypeError('argument val is invalid');
+  }
+
+  var str = name + '=' + value;
+
+  if (null != opt.maxAge) {
+    var maxAge = opt.maxAge - 0;
+
+    if (isNaN(maxAge) || !isFinite(maxAge)) {
+      throw new TypeError('option maxAge is invalid')
+    }
+
+    str += '; Max-Age=' + Math.floor(maxAge);
+  }
+
+  if (opt.domain) {
+    if (!fieldContentRegExp.test(opt.domain)) {
+      throw new TypeError('option domain is invalid');
+    }
+
+    str += '; Domain=' + opt.domain;
+  }
+
+  if (opt.path) {
+    if (!fieldContentRegExp.test(opt.path)) {
+      throw new TypeError('option path is invalid');
+    }
+
+    str += '; Path=' + opt.path;
+  }
+
+  if (opt.expires) {
+    if (typeof opt.expires.toUTCString !== 'function') {
+      throw new TypeError('option expires is invalid');
+    }
+
+    str += '; Expires=' + opt.expires.toUTCString();
+  }
+
+  if (opt.httpOnly) {
+    str += '; HttpOnly';
+  }
+
+  if (opt.secure) {
+    str += '; Secure';
+  }
+
+  if (opt.sameSite) {
+    var sameSite = typeof opt.sameSite === 'string'
+      ? opt.sameSite.toLowerCase() : opt.sameSite;
+
+    switch (sameSite) {
+      case true:
+        str += '; SameSite=Strict';
+        break;
+      case 'lax':
+        str += '; SameSite=Lax';
+        break;
+      case 'strict':
+        str += '; SameSite=Strict';
+        break;
+      case 'none':
+        str += '; SameSite=None';
+        break;
+      default:
+        throw new TypeError('option sameSite is invalid');
+    }
+  }
+
+  return str;
+}
+
+/**
+ * Try decoding a string using a decoding function.
+ *
+ * @param {string} str
+ * @param {function} decode
+ * @private
+ */
+
+function tryDecode(str, decode) {
+  try {
+    return decode(str);
+  } catch (e) {
+    return str;
+  }
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/create-ecdh/browser.js":
 /*!*********************************************!*\
   !*** ./node_modules/create-ecdh/browser.js ***!
@@ -80976,7 +81189,7 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
   \**************************************************/
 /***/ ((module) => {
 
-module.exports = "<ul class=\"list-unstyled\">\n    <% for(var i in peer_list){ %>\n        <li class=\"media\">\n            <img style=\"max-width: 192px;\" class=\"mr-3\" src=\"<%- (peer_list[i].profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" alt=\"Card image cap\">\n    \n            <div class=\"media-body\">\n                <h5 class=\"mt-0 mb-1\">\n                    <%- peer_list[i].alias %>#<%- peer_list[i].uid32 %>\n                </h5>\n                <p>\n                    <%- peer_list[i].profile.display_name %><br/>\n                    <%- peer_list[i].profile.tagline %>\n                </p>\n                <a href=\"/peer~<%- peer_list[i].uid32 %>@<%- peer_list[i].alias %>\" class=\"btn btn-primary\">View Peer</a>\n    \n            </div>\n        </li>\n    <% } %>\n</ul>";
+module.exports = "<!--<ul class=\"list-unstyled\">-->\n<% for(var i in peer_list){ %>\n    <li class=\"media\">\n        <img style=\"max-width: 64px;\" src=\"<%- (peer_list[i].profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\">\n        <div class=\"media-body\">\n            <a href=\"/peer/~<%- peer_list[i].pub %>\" class=\"dropdown-item\">\n                <b class=\"mt-0 mb-1\">\n                    <%- peer_list[i].alias %>#\n                    <%- peer_list[i].uid32 %>\n                </b>\n                <p>\n                    <%- (peer_list[i].profile ? peer_list[i].profile.display_name : '').substr(0, 16) %><br/>\n                    <%- (peer_list[i].profile ? peer_list[i].profile.tagline : '').substr(0, 16) %>\n                </p>\n            </a>\n        </div>\n    </li>\n<% } %>\n<!--</ul>-->";
 
 /***/ }),
 
@@ -87553,7 +87766,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // }
 
         // }, 1)
-        if (typeof window != "undefined")
+        if ( true && typeof window != "undefined")
             window.gun = gun;
 
 
@@ -87632,8 +87845,18 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         $(document).on('DOMNodeInserted', function(e) {
             $(e.target).find("time").timeago();
+
+            $(e.target).find(".dropdown-item").each((i, e) => {
+                var self = $(e);
+                self.click(() => {
+                    var dropdown_id = self.closest(".dropdown-menu").attr("aria-labelledby");
+                    self.closest('.navbar-collapse').collapse('hide');
+                    $("#"+dropdown_id).dropdown('hide');
+                });
+            });
+            
         });
-        
+
         register(null, {
             ejs: ejs,
             layout: {
@@ -87663,8 +87886,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 },
                 addNavBar: function(e, clear) {
                     e = $(e);
-                    e.find("a").on('click', function() {
-                        $('.navbar-collapse').collapse('hide');
+                    e.find("a").on('click', function(e) {
+                        if(!$(e.target).hasClass("dropdown-toggle"))
+                            $('.navbar-collapse').collapse('hide');
                     });
                     if (clear)
                         $("#navbar-nav-right").html(e);
@@ -102132,10 +102356,24 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         function getPeerData(pub, done) {
             gun.get(pub).once(function(userData) {
-                gun.get(pub).get("profile").once(function(profile) {
-                    userData.profile = profile;
-                    done(userData, profile, pub);
-                });
+                if (userData && userData.profile)
+                    gun.get(pub).get("profile").once(function(profile) {
+                        if (profile)
+                            userData.profile = profile;
+                        else {
+                            userData.profile = false;
+                        }
+                        done(userData, userData.profile, pub);
+                    });
+                else {
+                    if (!userData)
+                        userData = false;
+
+                    if (userData && !userData.profile)
+                        userData.profile = false;
+
+                    done(userData, userData.profile, pub);
+                }
             });
         }
 
@@ -102239,7 +102477,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             }
                             if (chain) {
                                 chain.once((data) => {
-                                    if(!data) return model.find("#results").html("");
+                                    if (!data) return model.find("#results").html("");
                                     var $$peers = [];
                                     if (!data.pub) {
                                         var c = 0,
@@ -102251,12 +102489,21 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                         for (var i in data) {
                                             if (i.indexOf("~") == 0) {
                                                 getPeerData(i, function(peerData, profile, pubRoot) {
-                                                    if (userid32 && peerData && peerData.pub == userid32) {
-                                                        $$peers.push(peerData);
-                                                        return next();
-                                                    }
-                                                    else {
-                                                        $$peers.push(peerData);
+                                                    if (peerData) {
+                                                        if (userid32) {
+                                                            if (imports.user.uid(peerData.pub) == userid32) {
+                                                                $$peers.push(peerData);
+                                                                return next();
+                                                            }
+                                                        }
+                                                        else {
+                                                            if (!peerData.pub)
+                                                                peerData.pub = pubRoot;
+                                                            if (!peerData.uid32)
+                                                                peerData.uid32 = imports.user.uid(peerData.pub);
+
+                                                            $$peers.push(peerData);
+                                                        }
                                                     }
                                                     b += 1;
                                                     if (b == c)
@@ -102307,7 +102554,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             imports.profile.me(function(err, me, user) {
                 if (err) return done(false, true);
                 user().get("profile").once(function(profile) {
-                    if(profile && profile.peers){
+                    if (profile && profile.peers) {
                         user().get("profile").get("peers").once(function(peersL) {
                             for (var i in peersL) {
                                 if (i == "~" + pub && peersL[i])
@@ -102315,7 +102562,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             }
                             return done(false);
                         });
-                    }else return done(false);
+                    }
+                    else return done(false);
                 });
             })
         }
@@ -102394,7 +102642,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             peer: _self = {
                 init: function() {
                     imports.app.on("login", function() {
-                        imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="peers_btn"><a class="nav-link" href="/peers"><%= title %><span class="sr-only"></span></a></li>', { title: "Peers" }))
+                        // imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="peers_btn"><a class="nav-link" href="/peers"><%= title %><span class="sr-only"></span></a></li>', { title: "Peers" }))
+                        
                         // $("#navbar-nav-right").prepend(
 
                         // );
@@ -102405,11 +102654,160 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     imports.state.$hash.on("peer", function(query) {
                         loadPeerProfile(query);
                     });
+
+                    imports.app.on("start", () => {
+                        
+                        var empty_dropdown = `<i class="fa-solid fa-circle-notch fa-spin"></i>`;
+                        
+                        
+                        $("input#search").on("keydown", function(event) {
+                            if(event.key == "Enter"){
+                                 $("input#search").change();
+                                 return false;
+                            }
+                            return true;
+                        });
+
+                        var val;
+                        $("input#search").keyup(() => {
+                            if (val != $("input#search").val()) {
+
+                                $("#search").dropdown("show");
+                                if (hideTimer) {
+                                    clearTimeout(hideTimer)
+                                    hideTimer = false;
+                                }
+                                hideTimer = setTimeout(() => {
+                                    if (val != $("input#search").val()) {
+                                        $("input#search").change();
+                                    }
+                                }, 1000)
+                            }
+                        });
+
+                        var hideTimer = false;
+
+                        $("#searchresults").html(empty_dropdown);
+                        
+                        $("input#search").change(function() {
+                            if (val != $("input#search").val()) {
+                                val = $("input#search").val();
+                            }
+                            else return;
+                            
+                            $("#searchresults").html(empty_dropdown);
+                            $("#search").dropdown("show");
+
+                            if (hideTimer) {
+                                clearTimeout(hideTimer)
+                                hideTimer = false;
+                            }
+
+                            var query = $(this).val().split("#");
+                            var username;
+                            var userid32;
+                            try {
+                                if (query[0].length && (query[1].length > 3)) {
+                                    username = query[0];
+                                    userid32 = query[1];
+                                }
+                            }
+                            catch (e) { username = query[0]; }
+
+                            var chain;
+
+
+                            if (username) {
+                                if (username[0] == "~")
+                                    chain = gun.get(username)
+                                else if (username[0] == "@")
+                                    chain = gun.user(username);
+                                else
+                                    chain = gun.user("@" + username);
+                            }
+                            if (chain) {
+                                // 
+                                chain.once((data) => {
+                                    if (!data) {
+                                        $("#search").dropdown("hide");
+                                        $("#searchresults").html(empty_dropdown);
+                                        return;
+                                    }
+                                    var $$peers = [];
+                                    if (!data.pub) {
+                                        var c = 0,
+                                            b = 0;
+                                        for (var i in data) {
+                                            if (i.indexOf("~") == 0) { c += 1 }
+                                        }
+
+                                        for (var i in data) {
+                                            if (i.indexOf("~") == 0) {
+                                                getPeerData(i, function(peerData, profile, pubRoot) {
+                                                    if (peerData) {
+                                                        if (userid32) {
+                                                            if (imports.user.uid(peerData.pub) == userid32) {
+                                                                $$peers.push(peerData);
+                                                                return next();
+                                                            }
+                                                        }
+                                                        else {
+                                                            if (!peerData.pub)
+                                                                peerData.pub = pubRoot;
+                                                            if (!peerData.uid32)
+                                                                peerData.uid32 = imports.user.uid(peerData.pub);
+
+                                                            $$peers.push(peerData);
+                                                        }
+                                                    }
+                                                    b += 1;
+                                                    if (b == c)
+                                                        next();
+                                                })
+                                                // var peerData = await getPeerData(i);
+
+                                            }
+                                        }
+                                    }
+                                    else if ("~" + data.pub == username) {
+                                        $$peers.push(data);
+                                    }
+
+                                    function next() {
+                                        if ($$peers.length) {
+
+                                            var peerCard = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-card-side.html */ "./src/peersocial/peers/peer-card-side.html"), { peer_list: $$peers }));
+
+                                            peerCard.find(".dropdown-item").each((i, e) => {
+                                                var self = $(e);
+                                                self.click(() => {
+                                                    $("input#search").val('');
+                                                });
+                                            });
+
+                                            $("#searchresults").html(peerCard);
+                                        }
+                                        else {
+                                            $("#search").dropdown("hide");
+                                            $("#searchresults").html(empty_dropdown);
+                                        }
+                                    }
+                                });
+                            }
+                            else if (!username) {
+
+                                $("#search").dropdown("hide");
+                                $("#searchresults").html(empty_dropdown);
+                            }
+
+                        });
+
+                    })
                 },
                 addPeer: function(pub, callback) {
                     if (imports.gun.user().is) {
                         getPeerData("~" + pub, function(data, profile, pubRoot) {
-                            if (!data.err)
+                            if (data)
                                 imports.gun.user().get("profile").get("peers").set(pubRoot, (res) => {
                                     if (!res.err) {
                                         console.log("added peer");
@@ -102426,7 +102824,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 removePeer: function(pub, callback) {
                     if (imports.gun.user().is) {
                         getPeerData("~" + pub, function(data, profile, pubRoot) {
-                            if (!data.err) {
+                            if (data) {
                                 var myPeersList = imports.gun.user().get("profile").get("peers");
 
                                 myPeersList.unset(pubRoot);
@@ -102617,9 +103015,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 init: function() {
 
                     imports.app.on("login", function() {
-                        imports.layout.addNavBar(
-                            imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })
-                        ); 
+                        // imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })); 
                     });
 
                     function openProfile(query) {
@@ -102737,7 +103133,31 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
     var EventEmitter = (__webpack_require__(/*! events */ "./node_modules/events/events.js").EventEmitter);
     var url = __webpack_require__(/*! url */ "./node_modules/url/url.js");
+    var cookie = __webpack_require__(/*! cookie */ "./node_modules/cookie/index.js");
 
+    function setCookie(cname, cvalue, exdays) {
+        exdays = exdays || 365;
+        const d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        
+        Math.floor((60 * 60 * 24 * 7)/1000)
+        
+        let _cookie = cookie.serialize(cname, cvalue);
+        
+        _cookie += "; Max-Age=" + Math.floor((60 * 60 * 24 * exdays)/1000);
+        _cookie += "; Expires=" + d.toUTCString();
+        _cookie += "; Path=/";
+        // cookie += "; Domain=";
+         document.cookie = _cookie;
+    }
+    
+    
+    console.log(cookie.parse(document.cookie));
+
+    document.cookie = setCookie("checkthis","yes");
+
+    console.log(cookie.parse(document.cookie));
+    
     function AppState() {
 
         var _self = this;
@@ -102750,7 +103170,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         }
 
         History.Adapter.bind(window, 'statechange', function() { // Note: We are using statechange instead of popstate
-            _self.currentState = History.getState(); // Note: We are using History.getState() instead of event.state
+            _self.currentState = History.getState(); // Note: We are using History.getState() instead of event.state  
             _self.emitCurrentState();
         });
 
@@ -102767,7 +103187,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     $path.shift();
 
                     var _hash = $path.shift();
-                    
+
                     if (appState.$hash._events[_hash]) {
                         _self.pushState(urlPath, title, urlPath);
                         e.preventDefault();
@@ -102783,10 +103203,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         function animate(timestamp) {
 
-            appState.$hash.emit("/render");
+            appState.$hash.emit("/render", timestamp);
 
             if (_self.lastHash)
-                appState.$hash.emit("/render-" + _self.lastHash);
+                appState.$hash.emit("/render-" + _self.lastHash, timestamp);
 
             window.requestAnimationFrame(animate);
         }
@@ -103327,20 +103747,20 @@ module.exports = function(imports) {
     };
 
     login.prepLogout = function() {
-        imports.layout.addNavBar(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }), true
-        );
+        // imports.layout.addNavBar(
+        //     imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }), true
+        // );
 
-        imports.layout.addNavBar(`<li class="nav-item dropdown">
+        imports.layout.addNavBar(`<li class="nav-item dropdown active">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          User
+          <img class="rounded-circle" style="max-width: 32px;" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
         </a>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="/profile">Profile</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="/logout">Logout</a>
         </div>
-      </li>`);
+      </li>`, {}, true);
     };
 
     login.openLogin = function(done) {
@@ -104186,7 +104606,7 @@ setTimeout(function() {
 
         function appPlugin(options, imports, register) {
             var app = new events.EventEmitter();
-            app.debug = false;
+            app.debug = true;
             app.dapp_info = __webpack_require__(/*! ./dapp_info */ "./src/peersocial/dapp_info.js");
             app.events = events;
             app.nw = window.nw;

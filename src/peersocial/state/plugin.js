@@ -2,7 +2,31 @@ define(function(require, exports, module) {
 
     var EventEmitter = require("events").EventEmitter;
     var url = require("url");
+    var cookie = require('cookie');
 
+    function setCookie(cname, cvalue, exdays) {
+        exdays = exdays || 365;
+        const d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        
+        Math.floor((60 * 60 * 24 * 7)/1000)
+        
+        let _cookie = cookie.serialize(cname, cvalue);
+        
+        _cookie += "; Max-Age=" + Math.floor((60 * 60 * 24 * exdays)/1000);
+        _cookie += "; Expires=" + d.toUTCString();
+        _cookie += "; Path=/";
+        // cookie += "; Domain=";
+         document.cookie = _cookie;
+    }
+    
+    
+    console.log(cookie.parse(document.cookie));
+
+    document.cookie = setCookie("checkthis","yes");
+
+    console.log(cookie.parse(document.cookie));
+    
     function AppState() {
 
         var _self = this;
@@ -15,7 +39,7 @@ define(function(require, exports, module) {
         }
 
         History.Adapter.bind(window, 'statechange', function() { // Note: We are using statechange instead of popstate
-            _self.currentState = History.getState(); // Note: We are using History.getState() instead of event.state
+            _self.currentState = History.getState(); // Note: We are using History.getState() instead of event.state  
             _self.emitCurrentState();
         });
 
@@ -32,7 +56,7 @@ define(function(require, exports, module) {
                     $path.shift();
 
                     var _hash = $path.shift();
-                    
+
                     if (appState.$hash._events[_hash]) {
                         _self.pushState(urlPath, title, urlPath);
                         e.preventDefault();
@@ -48,10 +72,10 @@ define(function(require, exports, module) {
 
         function animate(timestamp) {
 
-            appState.$hash.emit("/render");
+            appState.$hash.emit("/render", timestamp);
 
             if (_self.lastHash)
-                appState.$hash.emit("/render-" + _self.lastHash);
+                appState.$hash.emit("/render-" + _self.lastHash, timestamp);
 
             window.requestAnimationFrame(animate);
         }

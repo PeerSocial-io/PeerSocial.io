@@ -1,19 +1,19 @@
-<ul class="list-unstyled">
-    <% for(var i in peer_list){ %>
-        <li class="media">
-            <img style="max-width: 192px;" class="mr-3" src="<%- (peer_list[i].profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" alt="Card image cap">
-    
-            <div class="media-body">
-                <h5 class="mt-0 mb-1">
-                    <%- peer_list[i].alias %>#<%- peer_list[i].uid32 %>
-                </h5>
+<!--<ul class="list-unstyled">-->
+<% for(var i in peer_list){ %>
+    <li class="media">
+        <img style="max-width: 64px;" src="<%- (peer_list[i].profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>">
+        <div class="media-body">
+            <a href="/peer/~<%- peer_list[i].pub %>" class="dropdown-item">
+                <b class="mt-0 mb-1">
+                    <%- peer_list[i].alias %>#
+                    <%- peer_list[i].uid32 %>
+                </b>
                 <p>
-                    <%- peer_list[i].profile.display_name %><br/>
-                    <%- peer_list[i].profile.tagline %>
+                    <%- (peer_list[i].profile ? peer_list[i].profile.display_name : '').substr(0, 16) %><br/>
+                    <%- (peer_list[i].profile ? peer_list[i].profile.tagline : '').substr(0, 16) %>
                 </p>
-                <a href="/peer~<%- peer_list[i].uid32 %>@<%- peer_list[i].alias %>" class="btn btn-primary">View Peer</a>
-    
-            </div>
-        </li>
-    <% } %>
-</ul>
+            </a>
+        </div>
+    </li>
+<% } %>
+<!--</ul>-->

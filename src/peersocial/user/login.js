@@ -109,20 +109,20 @@ module.exports = function(imports) {
     };
 
     login.prepLogout = function() {
-        imports.layout.addNavBar(
-            imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }), true
-        );
+        // imports.layout.addNavBar(
+        //     imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }), true
+        // );
 
-        imports.layout.addNavBar(`<li class="nav-item dropdown">
+        imports.layout.addNavBar(`<li class="nav-item dropdown active">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          User
+          <img class="rounded-circle" style="max-width: 32px;" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
         </a>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="/profile">Profile</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="/logout">Logout</a>
         </div>
-      </li>`);
+      </li>`, {}, true);
     };
 
     login.openLogin = function(done) {
