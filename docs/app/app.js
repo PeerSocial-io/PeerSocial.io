@@ -103368,32 +103368,33 @@ module.exports = function(imports, login, keychain) {
     var crypto = __webpack_require__(/*! crypto */ "./node_modules/crypto-browserify/index.js");
     var url = __webpack_require__(/*! url */ "./node_modules/url/url.js");
     var querystring = __webpack_require__(/*! querystring */ "./node_modules/querystring/index.js");
-    
+
 
     var enable_useOCAuth = true;
     var useOCAuth_domain = "www.peersocial.io";
-    
-    if(imports.app.debug)
-        if(window.location.hostname == "localhost"){ useOCAuth_domain = "localhost"; enable_useOCAuth = false;}
-    
+
+    if (imports.app.debug)
+        if (window.location.hostname == "localhost") { useOCAuth_domain = "localhost";
+            enable_useOCAuth = false; }
+
     var dapp_info = imports.app.dapp_info;
-    
+
     var authorize = function() {
         var useOAuth = false;
-        
+
         var hostname = window.location.hostname;
-        
-        if(enable_useOCAuth)
+
+        if (enable_useOCAuth)
             if (!imports.app.state.query.auth && hostname != "www.peersocial.io" /*&& hostname != "localhost" */ ) useOAuth = true;
 
         var dapp_pub_hash = crypto.createHash('sha256').update(dapp_info.pub).digest('hex');
-        
-        
-        
+
+
+
         if (login.will_authorize) {
             hostname = imports.app.state.query.auth.split(":")[0];
             var domain = imports.app.state.query.auth;
-            
+
             var hostname_hash = crypto.createHash('sha256').update(domain).digest('hex');
 
             if (!login.user) {
@@ -103429,28 +103430,19 @@ module.exports = function(imports, login, keychain) {
                     console.log(cert);
                     var d = await imports.app.sea.encrypt(cert, await imports.app.sea.secret(imports.app.state.query.epub, login.user()._.sea)); // pair.epriv will be used as a passphrase
 
+                    var query = {
+                        cert: new Buffer(d).toString("base64"),
+                        pub: main_user.pub,
+                        epub: main_user.epub,
+                    };
+                    query = querystring.stringify(query);
 
-                    var tmp = "~" + imports.app.state.query.pub;
-                    // var data = {};
+                    gun.user().leave();
+                    window.sessionStorage.clear();
 
-                    var link = {};
-                    link[tmp] = { '#': tmp };
-                    gun.user().get(dapp_pub_hash).get(imports.app.state.query.pub).put(link).get(tmp).once(function(data, key, msg, eve) {
-
-                        var query = {
-                            cert: new Buffer(d).toString("base64"),
-                            pub: main_user.pub,
-                            epub: main_user.epub,
-                        };
-                        query = querystring.stringify(query);
-
-                        gun.user().leave();
-                        window.sessionStorage.clear();
-
-                        setTimeout(function() {
-                            window.location = "https://" + domain + "/blank.html?" + query;
-                        }, 1000)
-                    });
+                    setTimeout(function() {
+                        window.location = "https://" + domain + "/blank.html?" + query;
+                    }, 1000)
 
                 });
                 // });
@@ -103468,8 +103460,8 @@ module.exports = function(imports, login, keychain) {
                         var domain = useOCAuth_domain;
 
                         if (domain == "localhost" && hostname == "localhost") domain = window.location.host;
-                        else if(domain == "localhost" && hostname != "localhost") domain = "www.peersocial.com";
-                        
+                        else if (domain == "localhost" && hostname != "localhost") domain = "www.peersocial.com";
+
                         domain = 'https://' + domain;
 
                         var popupOptions = "popup,location=1,toolbar=1,menubar=1,resizable=1,height=800,width=600";
@@ -103488,6 +103480,7 @@ module.exports = function(imports, login, keychain) {
                                 gun.user().leave();
                                 clearInterval(interval);
                                 imports.app.state.history.back();
+                                imports.app.state.history.reload();
                                 return;
                             }
 
@@ -103505,7 +103498,7 @@ module.exports = function(imports, login, keychain) {
                                         query.cert = Buffer.from(query.cert, "base64").toString("utf8");
                                         query.cert = await imports.app.sea.decrypt(query.cert, await imports.app.sea.secret(query.epub, temp_dapp_user));
                                         login.user_cert = query;
-                                        
+
                                         if (login.user) {
                                             gun.user().get("profile").get("seen").put(new Date().getTime(), function() {
 
@@ -103518,6 +103511,7 @@ module.exports = function(imports, login, keychain) {
                                     })();
                                 }
                                 else {
+                                    gun.user().leave();
                                     imports.app.state.history.back();
                                 }
                                 clearInterval(interval);
@@ -103537,7 +103531,7 @@ module.exports = function(imports, login, keychain) {
             return !!(imports.state.query.auth && imports.state.query.pub && imports.state.query.epub);
         }
     });
-    
+
     return authorize;
 };
 
