@@ -60,6 +60,8 @@ define(function(require, exports, module) {
                         $("#navbar-nav-right").html(e);
                     else
                         $("#navbar-nav-right").prepend(e);
+                        
+                    return e;
                 }
             }
         });

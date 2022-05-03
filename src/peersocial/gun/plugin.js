@@ -1,7 +1,7 @@
 define(function(require, exports, module) {
 
     appPlugin.consumes = ["app", "provable"];
-    appPlugin.provides = ["gun", "sea"];
+    appPlugin.provides = ["gun", "sea", "gunMask"];
 
     // if(window.global && window.global.nw_app_core)    appPlugin.consumes.push("nw_app");
 

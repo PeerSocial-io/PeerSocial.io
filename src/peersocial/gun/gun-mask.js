@@ -10,8 +10,14 @@ module.exports = function(gun) {
                 var _user = new $gun();
                 _user.graph.push(user);
                 _user.user = true;
+                Object.defineProperty(_user, 'is', {
+                    get() {
+                        return gun.user().is;
+                    }
+                });
                 return _user;
             };
+
             self.root = self;
         }
         var graph = [];

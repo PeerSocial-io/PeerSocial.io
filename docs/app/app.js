@@ -87636,8 +87636,14 @@ module.exports = function(gun) {
                 var _user = new $gun();
                 _user.graph.push(user);
                 _user.user = true;
+                Object.defineProperty(_user, 'is', {
+                    get() {
+                        return gun.user().is;
+                    }
+                });
                 return _user;
             };
+
             self.root = self;
         }
         var graph = [];
@@ -87704,7 +87710,7 @@ module.exports = function(gun) {
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
     appPlugin.consumes = ["app", "provable"];
-    appPlugin.provides = ["gun", "sea"];
+    appPlugin.provides = ["gun", "sea", "gunMask"];
 
     // if(window.global && window.global.nw_app_core)    appPlugin.consumes.push("nw_app");
 
@@ -87894,6 +87900,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                         $("#navbar-nav-right").html(e);
                     else
                         $("#navbar-nav-right").prepend(e);
+                        
+                    return e;
                 }
             }
         });
@@ -102953,7 +102961,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             var next = act.b;
             user().get("profile").once(function(profile) {
                 if (!profile) return act.done(profile_out);
-                
+
                 profile_out = profile;
 
                 next();
@@ -103007,6 +103015,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
     function appPlugin(options, imports, register) {
 
+        var { app , gun } = imports;
+
         var _self;
 
         register(null, {
@@ -103016,6 +103026,15 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
                     imports.app.on("login", function() {
                         // imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })); 
+
+                        imports.user.me(function(err, me, user) {
+                            if (err) console.log(err);
+                            loadProfileData(user, function(profile) {
+                                if(profile && profile.peer_profile_image)
+                                    app.user.login.menu.find(".user-avatar").attr("src", profile.peer_profile_image);
+                            });
+                        });
+                        
                     });
 
                     function openProfile(query) {
@@ -103026,7 +103045,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                 loadProfileData(user, function(profile) {
 
                                     if (!profile) profile = {};
-                                    
+
                                     // if (me.uid32 && me.alias)
                                     //     profile.url = me.uid32 + "@" + me.alias;
 
@@ -103735,19 +103754,21 @@ module.exports = function(imports) {
     };
 
     login.prepLogin = function() {
-        imports.layout.addNavBar(
+        login.menu = imports.layout.addNavBar(
             imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }), true
         );
     };
+    
+    // login.menu = false;
 
     login.prepLogout = function() {
         // imports.layout.addNavBar(
         //     imports.app.layout.ejs.render('<li class="nav-item active" id="logout_btn"><a class="nav-link" href="/logout"><%= Logout %><span class="sr-only"></span></a></li>', { Logout: "Logout" }), true
         // );
 
-        imports.layout.addNavBar(`<li class="nav-item dropdown active">
+        login.menu = imports.layout.addNavBar(`<li class="nav-item dropdown active">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <img class="rounded-circle" style="max-width: 32px;" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
+          <img class="user-avatar rounded-circle" style="max-width: 32px;" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
         </a>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="/profile">Profile</a>
@@ -103755,6 +103776,7 @@ module.exports = function(imports) {
           <a class="dropdown-item" href="/logout">Logout</a>
         </div>
       </li>`, {}, true);
+      
     };
 
     login.openLogin = function(done) {
@@ -104083,7 +104105,7 @@ module.exports = function(imports) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
-    appPlugin.consumes = ["app", "gun", "provable", "layout", "state"];
+    appPlugin.consumes = ["app", "gun", "provable", "layout", "state", "gunMask"];
     appPlugin.provides = ["user"];
 
     /* global $ */

@@ -21,7 +21,7 @@ define(function(require, exports, module) {
             var next = act.b;
             user().get("profile").once(function(profile) {
                 if (!profile) return act.done(profile_out);
-                
+
                 profile_out = profile;
 
                 next();
@@ -75,6 +75,8 @@ define(function(require, exports, module) {
 
     function appPlugin(options, imports, register) {
 
+        var { app , gun } = imports;
+
         var _self;
 
         register(null, {
@@ -84,6 +86,15 @@ define(function(require, exports, module) {
 
                     imports.app.on("login", function() {
                         // imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="profile_btn"><a class="nav-link" href="/profile"><%= title %><span class="sr-only"></span></a></li>', { title: "Profile" })); 
+
+                        imports.user.me(function(err, me, user) {
+                            if (err) console.log(err);
+                            loadProfileData(user, function(profile) {
+                                if(profile && profile.peer_profile_image)
+                                    app.user.login.menu.find(".user-avatar").attr("src", profile.peer_profile_image);
+                            });
+                        });
+                        
                     });
 
                     function openProfile(query) {
@@ -94,7 +105,7 @@ define(function(require, exports, module) {
                                 loadProfileData(user, function(profile) {
 
                                     if (!profile) profile = {};
-                                    
+
                                     // if (me.uid32 && me.alias)
                                     //     profile.url = me.uid32 + "@" + me.alias;
 

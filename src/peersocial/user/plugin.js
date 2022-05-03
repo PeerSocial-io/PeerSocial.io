@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
 
-    appPlugin.consumes = ["app", "gun", "provable", "layout", "state"];
+    appPlugin.consumes = ["app", "gun", "provable", "layout", "state", "gunMask"];
     appPlugin.provides = ["user"];
 
     /* global $ */

@@ -1,11 +1,11 @@
 module.exports = {
   apps: [{
-    name: "peersocial",
+    name: 'peersocial-build',
     script: 'run-build-and-wait.sh',
     watch: './src/.',
     ignore_watch: ["node_modules", "src/peersocial/server"],
   }, {
-    name: "peersocial",
+    name: 'peersocial',
     script: 'server.js',
     watch: './src/.',
     ignore_watch: ["node_modules"],
