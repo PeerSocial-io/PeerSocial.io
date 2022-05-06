@@ -5,7 +5,14 @@ module.exports = {
         var architect = require("./lib/architect");
         var events = require("events");
 
-        var config = [require("./server/plugin"), require("./server/REST/plugin")];
+        var config = [
+            require("./server/plugin"), 
+            require("./server/dapp_login"),
+            
+            require("./server/rest"), 
+            // require("./server/api/webpack"), 
+            
+        ];
 
         require("./config.js")(config, true);
 

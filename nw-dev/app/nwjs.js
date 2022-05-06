@@ -187,11 +187,11 @@ async function launch(args) {
   // })
 
 
-  // var port = 8765;//await getPort();
+  var port = 8766;//await getPort();
   
   if(DEBUG) win.showDevTools();
 
-  findPort(function(port) {
+  // findPort(function(port) {
 
 
     setupServer(port, (server) => {
@@ -214,7 +214,7 @@ async function launch(args) {
 
     });
 
-  })
+  // })
 }
 
 function quitApp(){

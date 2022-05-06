@@ -1,7 +1,7 @@
 // define(function(require, exports, module) {
 
 appPlugin.consumes = ["app", "gun", "server", "express"];
-appPlugin.provides = ["REST"];
+appPlugin.provides = ["dapp_login"];
 
 module.exports = appPlugin;
 
@@ -65,7 +65,7 @@ function appPlugin(options, imports, register) {
 
 
         register(null, {
-            REST: {
+            dapp_login: {
                 init: function() {
                     imports.app.on("start", function() {
 

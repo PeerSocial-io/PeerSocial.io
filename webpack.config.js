@@ -24,15 +24,15 @@ plugins.push(new CleanWebpackPlugin());
 plugins.push(new CopyWebpackPlugin({
     patterns: [{
         //Note:- No wildcard is specified hence will copy all files and folders
-        from: './src', //Will resolve to RepoDir/src/assets 
+        from: path.resolve(__dirname,'./src'), //Will resolve to RepoDir/src/assets 
         to: './' //Copies all files from above dest to dist/assets
     }, {
         //Note:- No wildcard is specified hence will copy all files and folders
-        from: './node_modules/gun', //Will resolve to RepoDir/src/assets 
+        from: path.resolve(__dirname,'./node_modules/gun'), //Will resolve to RepoDir/src/assets 
         to: './gun' //Copies all files from above dest to dist/assets
     }, {
         //Note:- No wildcard is specified hence will copy all files and folders
-        from: './node_modules/@fortawesome/fontawesome-free', //Will resolve to RepoDir/src/assets 
+        from: path.resolve(__dirname,'./node_modules/@fortawesome/fontawesome-free'), //Will resolve to RepoDir/src/assets 
         to: './fontawesome' //Copies all files from above dest to dist/assets
     }, ]
 }));
@@ -57,9 +57,13 @@ plugins.push(new HtmlWebpackPlugin({
 
 
 module.exports = {
+    context: __dirname,
+
     mode: process.env.NODE_ENV,
-    stats: 'minimal',
-    entry: ['./src/peersocial/app.js'],
+    // stats: 'minimal',
+    stats: 'normal',
+
+    entry: [path.resolve(__dirname, './src/peersocial/app.js')],
     externals: {
         fs: "commonjs fs",
         path: "commonjs path",
