@@ -1,12 +1,13 @@
 <div class="container bootstrap snippet">
-    <div class="row" style="padding-bottom:1px;">
-        <div class="col-sm-10"><div style="border: 1px solid #ddd;display:inline-block;"><h1 style="display: inline;"><%= me.alias %></h1>#<%= me.uid32 %></div></div>
+    <div class="row d-flex justify-content-around" class="text-center">
+        <div><h1 style="display: inline;"><%= me.alias %></h1>#<%= me.uid32 %></div>
     </div>
+    <hr/>
     <div class="row">
         <div class="col-sm-3">
             <div class="text-center">
                 <label for="upload_profile_picture">
-                    <img  src="<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" class="avatar img-circle img-thumbnail" class="avatar" alt="avatar">
+                    <img  src="<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>" style="width:100%" class="avatar" alt="avatar">
                 </label>
                 <input type="file" class="text-center center-block file-upload d-none" id="upload_profile_picture">
             </div>

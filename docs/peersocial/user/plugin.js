@@ -35,10 +35,11 @@ define(function(require, exports, module) {
             if (login.user) {
                 login.user().once(function(data) {
                     if (!data) data = {};
-                    data.uid32 = generateUID32(login.user().is.pub);
-                    data.alias = data.alias || login.user().is.pub;
-                    data.pub = data.pub || login.user().is.pub;
-                    callback(null, data, login.user);
+                    var $data = JSON.parse(JSON.stringify(data));
+                    $data.uid32 = generateUID32(login.user().is.pub);
+                    $data.alias = data.alias || login.user().is.pub;
+                    $data.pub = data.pub || login.user().is.pub;
+                    callback(null, $data, login.user);
                 });
             }
             else callback(new Error("User Not Logged in"));
@@ -62,15 +63,15 @@ define(function(require, exports, module) {
 
 
             function withPub(pub) {
-                if (login.user && "~" + login.user().is.pub == pub) {
+                if (login.user && login.user().is.pub == pub) {
                     me((err, data, user) => {
-                        callback(err, data, user, true);
+                        callback(err, JSON.parse(JSON.stringify(data)), user, true);
                     });
                 }
                 else
                 if (pub) {
                     gun.get("~" + pub).once((data) => {
-                        callback(null, data, () => { return gun.get("~" + pub); });
+                        callback(null, JSON.parse(JSON.stringify(data)), () => { return gun.get("~" + pub); });
                     });
                 }
                 else {
@@ -87,9 +88,9 @@ define(function(require, exports, module) {
                     init: function() {
 
 
-                        imports.app.state.$hash.on("login", function() {
+                        imports.app.state.$hash.on("/login", function(args, currentState, lastState, onDestroy) {
                             if (!login.user && !authorize()) {
-                                login.openLogin();
+                                login.openLogin(false, onDestroy);
                             }
                             if (login.user && !authorize()) {
                                 login.prepLogout();
@@ -97,7 +98,7 @@ define(function(require, exports, module) {
                             }
                         });
 
-                        imports.app.state.$hash.on("logout", function() {
+                        imports.app.state.$hash.on("/logout", function(args, currentState, lastState, onDestroy) {
                             login.userLogout();
                         });
 

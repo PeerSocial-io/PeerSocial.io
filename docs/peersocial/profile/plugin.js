@@ -22,7 +22,7 @@ define(function(require, exports, module) {
             user().get("profile").once(function(profile) {
                 if (!profile) return act.done(profile_out);
 
-                profile_out = profile;
+                profile_out = JSON.parse(JSON.stringify(profile));
 
                 next();
             });
@@ -117,6 +117,7 @@ define(function(require, exports, module) {
                                     }, { async: true }).then(function(profileLayout) {
                                         profileLayout = $(profileLayout);
 
+                                        $("#main-container").html("");
                                         $("#main-container").html(profileLayout);
 
                                         for (var i in profileTabs) {
@@ -150,12 +151,13 @@ define(function(require, exports, module) {
                         }
                     }
 
-                    imports.state.$hash.on("profile", openProfile);
+                    imports.state.$hash.on("/profile", openProfile);
 
                 },
                 add_profile_tab: function(tab_fn) {
                     profileTabs.push(tab_fn);
-                }
+                },
+                load:loadProfileData
             }
         });
 

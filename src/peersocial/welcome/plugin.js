@@ -12,7 +12,7 @@ define(function(require, exports, module) {
                 init: function() {
                     
                     
-                    imports.state.$hash.on("home",function(){
+                    imports.state.$hash.on("/",function(){
                         // if(!imports.app.nw_app){
                         if(!imports.gun.user().is){
                             $("#main-container").html(require("./welcome.html"))

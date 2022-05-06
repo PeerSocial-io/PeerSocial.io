@@ -10,12 +10,24 @@ define(function(require, exports, module) {
     function appPlugin(options, imports, register) {
         var Gun, gun;
 
-        /* global */
+        /* global $ GUN */
         Gun = require("gun");
         require("gun/sea");
         require("gun/nts");
+        require("gun/lib/unset");
+        require("gun/lib/not");
+        require("gun/lib/open");
+        require("gun/lib/load");
+        
+        GUN.chain.cert = function(){ 
+            var gun = this; 
+            
+            gun.on('out',console.log)
+            /* do stuff */; 
+            return gun; 
+        }
 
-        require("gun/lib/webrtc");
+        // require("gun/lib/webrtc");
 
         if (!Gun.log.once)
             Gun.log.once = function() {};
@@ -46,9 +58,6 @@ define(function(require, exports, module) {
             // super: true
         };
           
-           
-        console.log("GNOME_SHELL_SESSION_MODE", process.env.GNOME_SHELL_SESSION_MODE);
-
         gun = Gun(gunOptions); //"https://"+window.location.host+"/gun");
 
         // var thisHost = window.location.host;
@@ -104,6 +113,7 @@ define(function(require, exports, module) {
         // }
 
         gun.SEA = Gun.SEA;
+        gun.Gun = Gun;
 
         setTimeout(function() {
 

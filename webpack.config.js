@@ -10,8 +10,9 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const webpack_env = {};
 // console.log("process.env.NODE_ENV",process.env.NODE_ENV)
 // webpack_env['process.env.NODE_ENV'] = JSON.stringify(process.env.APP_ENV);
+webpack_env['process.env.APP_ENV'] = JSON.stringify(process.env.APP_ENV);
 webpack_env['process.env.DEBUG'] = JSON.stringify(process.env.APP_ENV == "production" ? false : true);
-webpack_env['process.env.DAPP_KEY'] = JSON.stringify(false);
+// webpack_env['process.env.DAPP_KEY'] = JSON.stringify(false);
 
 console.log("webpack_env", webpack_env);
 

@@ -13,23 +13,26 @@ define(function(require, exports, module) {
 
         function getPeerData(pub, done) {
             gun.get(pub).once(function(userData) {
-                if (userData && userData.profile)
+                var $userData = false;
+                if (userData && userData.profile) {
+                    $userData = JSON.parse(JSON.stringify(userData));
                     gun.get(pub).get("profile").once(function(profile) {
                         if (profile)
-                            userData.profile = profile;
+                            $userData.profile = JSON.parse(JSON.stringify(profile));
                         else {
-                            userData.profile = false;
+                            $userData.profile = false;
                         }
-                        done(userData, userData.profile, pub);
+                        done($userData, $userData.profile, pub);
                     });
+                }
                 else {
-                    if (!userData)
-                        userData = false;
 
-                    if (userData && !userData.profile)
-                        userData.profile = false;
+                    if (userData && !userData.profile){
+                        $userData = JSON.parse(JSON.stringify(userData));
+                        $userData.profile = false;
+                    }
 
-                    done(userData, userData.profile, pub);
+                    done($userData, $userData.profile, pub);
                 }
             });
         }
@@ -67,10 +70,20 @@ define(function(require, exports, module) {
                     $("#main-container").html("");
                     $("#main-container").append(peerListLayout);
 
+                    // _self.unsetPeers(console.log);
+
                     _self.listPeers(function(pList) {
                         for (var i in pList) {
 
-                            var peerCard = $(imports.app.layout.ejs.render(require("./peer-card.html"), { profile: pList[i].profile, bio: pList[i].bio, profileImage: pList[i].profileImage, alias: pList[i].alias, pub: pList[i].pub, uid32: pList[i].uid32, add: false }));
+                            var peerCard = $(imports.app.layout.ejs.render(require("./peer-card.html"), {
+                                profile: pList[i].profile,
+                                bio: pList[i].bio,
+                                profileImage: pList[i].profileImage,
+                                alias: pList[i].alias,
+                                pub: pList[i].pub,
+                                uid32: pList[i].uid32,
+                                add: false
+                            }));
                             peerListLayout.find(".peer-cards").append(peerCard);
 
                         }
@@ -207,23 +220,6 @@ define(function(require, exports, module) {
             });
         }
 
-        function peerIsAdded(pub, done) {
-            imports.profile.me(function(err, me, user) {
-                if (err) return done(false, true);
-                user().get("profile").once(function(profile) {
-                    if (profile && profile.peers) {
-                        user().get("profile").get("peers").once(function(peersL) {
-                            for (var i in peersL) {
-                                if (i == "~" + pub && peersL[i])
-                                    return done(true);
-                            }
-                            return done(false);
-                        });
-                    }
-                    else return done(false);
-                });
-            })
-        }
 
         function loadPeerProfile(query) {
             query = query[0].split("@");
@@ -232,10 +228,10 @@ define(function(require, exports, module) {
                     console.log(err)
                 }
                 else {
-                    peerIsAdded($user.pub, function(isMyPeer, notLoggedIn) {
+                    peerIsAdded($user.pub, function(isMyPeer, notLoggedIn, $_peer) {
 
                         user().get('profile').once((profile) => {
-                            $user.profile = profile;
+                            // $user.profile = profile;
                             // $user.peer_apps_dev = await user().get('profile').get("peerappsDev");
                             // $user.peer_apps_v2 = await user().get('profile').get("peerapps_v2");
 
@@ -243,7 +239,8 @@ define(function(require, exports, module) {
                                 user: $user,
                                 $user: user,
                                 isMyPeer: isMyPeer,
-                                notLoggedIn: notLoggedIn
+                                notLoggedIn: notLoggedIn,
+                                profile: profile
                             })
                             profileLayout = $(profileLayout);
 
@@ -263,7 +260,7 @@ define(function(require, exports, module) {
 
                                 peerConfirm("Do you want to remove this peer?", function(Yes) {
                                     if (Yes)
-                                        _self.removePeer($user.pub, (err, removed) => {
+                                        _self.removePeer($user.pub, function(err, removed) {
                                             if (!err && removed) {
                                                 console.log("removed peer");
                                                 imports.state.reload();
@@ -272,16 +269,16 @@ define(function(require, exports, module) {
                                 });
                             });
 
-                            if (profile) {
-                                if (profile.display_name)
-                                    user().get('profile').get("display_name").once(function(display_name) {
-                                        profileLayout.find("#display_name").text(display_name);
-                                    });
-                                if (profile.tagline)
-                                    user().get('profile').get("tagline").once(function(tagline) {
-                                        profileLayout.find("#tagline").text(tagline);
-                                    });
-                            }
+                            // if (profile) {
+                            //     if (profile.display_name)
+                            //         user().get('profile').get("display_name").once(function(display_name) {
+                            //             profileLayout.find("#display_name").text(display_name);
+                            //         });
+                            //     if (profile.tagline)
+                            //         user().get('profile').get("tagline").once(function(tagline) {
+                            //             profileLayout.find("#tagline").text(tagline);
+                            //         });
+                            // }
 
 
 
@@ -295,32 +292,62 @@ define(function(require, exports, module) {
             });
         }
 
+        function peerIsAdded(pub, done) {
+            imports.profile.me(function(err, me, user) {
+                if (err) return done(false, true);
+                imports.user.login.user().get("profile").once(function(profile) {
+                    if (profile && profile.peers) {
+
+
+
+                        // imports.user.login.user().get("profile").get("peers").get("~" + pub).once(function(peerObj, key) {
+                        //     if (peerObj && peerObj.added > 0) {
+                        //         return done(true, false, peerObj);
+                        //     }
+                        //     else {
+                        //         return done(false, false);
+                        //     }
+                        // });
+
+                        user().get("profile").get("peers").once(function(peersL) {
+                            for (var i in peersL) {
+                                if ("~" + pub == peersL[i])
+                                    return done(true, false, i);
+                            }
+                            return done(false, false);
+                        });
+                    }
+                    else return done(false, false);
+                });
+            });
+        }
+
         register(null, {
             peer: _self = {
                 init: function() {
                     imports.app.on("login", function() {
                         // imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="peers_btn"><a class="nav-link" href="/peers"><%= title %><span class="sr-only"></span></a></li>', { title: "Peers" }))
-                        
+
                         // $("#navbar-nav-right").prepend(
 
                         // );
                     });
-                    imports.state.$hash.on("peers", function() {
+                    imports.state.$hash.on("/peers", function() {
                         loadPeersPage();
                     });
-                    imports.state.$hash.on("peer", function(query) {
+                    imports.state.$hash.on("/peer", function(query) {
                         loadPeerProfile(query);
                     });
 
                     imports.app.on("start", () => {
-                        
+
                         var empty_dropdown = `<i class="fa-solid fa-circle-notch fa-spin"></i>`;
-                        
-                        
+
+
                         $("input#search").on("keydown", function(event) {
-                            if(event.key == "Enter"){
-                                 $("input#search").change();
-                                 return false;
+                            if (event.key == "Enter") {
+                                $("input#search").change();
+                                return false;
                             }
                             return true;
                         });
@@ -345,13 +372,23 @@ define(function(require, exports, module) {
                         var hideTimer = false;
 
                         $("#searchresults").html(empty_dropdown);
-                        
+
+
+                        $(document).click(function(event) {
+                            var ns = $(event.target).closest("#nav-search")
+                            var found = ns.length;
+
+                            if (!found) {
+                                $("#search").dropdown("hide");
+                            }
+                        });
+
                         $("input#search").change(function() {
                             if (val != $("input#search").val()) {
                                 val = $("input#search").val();
                             }
                             else return;
-                            
+
                             $("#searchresults").html(empty_dropdown);
                             $("#search").dropdown("show");
 
@@ -461,41 +498,47 @@ define(function(require, exports, module) {
 
                     })
                 },
+                isMyPeer: peerIsAdded,
                 addPeer: function(pub, callback) {
                     if (imports.gun.user().is) {
-                        getPeerData("~" + pub, function(data, profile, pubRoot) {
-                            if (data)
-                                imports.gun.user().get("profile").get("peers").set(pubRoot, (res) => {
-                                    if (!res.err) {
+                        peerIsAdded(pub, function(isMyPeer, notLoggedIn, peer) {
+                            getPeerData("~" + pub, function(data, profile, pubRoot) {
+                                if (data && !isMyPeer)
+                                    imports.gun.user().get("profile").get("peers").set("~" + pub, (res) => {
                                         console.log("added peer");
-                                        callback(null, true);
-                                    }
-                                    else callback(res.err);
-                                });
-                            else callback(data);
+                                        callback(null, data);
+                                    });
+                                else
+                                if (data && isMyPeer) {
+                                    callback("already a peer");
+                                }
+                                else callback("not a peer");
+                            });
                         });
-                        return;
-
                     }
                 },
                 removePeer: function(pub, callback) {
                     if (imports.gun.user().is) {
-                        getPeerData("~" + pub, function(data, profile, pubRoot) {
-                            if (data) {
-                                var myPeersList = imports.gun.user().get("profile").get("peers");
+                        peerIsAdded(pub, function(isMyPeer, notLoggedIn, peer) {
+                            if (isMyPeer) {
+                                imports.gun.user().get("profile").get("peers").get(peer).put(null, () => {
 
-                                myPeersList.unset(pubRoot);
-                                setTimeout(function() {
-
-                                    console.log("added removed");
+                                    console.log("removed peer");
                                     callback(null, true);
+                                });
 
-                                }, 500)
+                                // console.log(peer);
+                                // imports.gun.user().get("profile").get("peers").get("~" + pub).put({ added: 0 }, (res) => {
 
+                                //     console.log("removed peer");
+                                //     callback(null, true);
+                                // });
                             }
-                            else callback(data);
+                            else callback("not my peer");
                         });
-                        return;
+
+                        //     }
+                        // });
 
                     }
                 },
@@ -529,7 +572,24 @@ define(function(require, exports, module) {
                             });
                         }
                     })
-                }
+                },
+                unsetPeers: function(done) {
+                    imports.profile.me(function(err, me, user) {
+                        if (!err) {
+
+                            user().get("profile").get("peers").once(function(peersL) {
+                                for (var i in peersL) {
+                                    if (i != "_" && i != "#" && peersL[i]) {
+                                        imports.gun.user().get("profile").get("peers").get(i).put(null);
+                                        done(i, peersL[i]);
+                                    }
+                                }
+                                done("unset peers done");
+                            });
+                        }
+                    });
+                },
+
             }
         });
 

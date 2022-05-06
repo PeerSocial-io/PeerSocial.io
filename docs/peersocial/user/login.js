@@ -107,7 +107,7 @@ module.exports = function(imports) {
             imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }), true
         );
     };
-    
+
     // login.menu = false;
 
     login.prepLogout = function() {
@@ -119,16 +119,258 @@ module.exports = function(imports) {
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <img class="user-avatar rounded-circle" style="max-width: 32px;" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
         </a>
-        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+        <div class="dropdown-menu dropdown-menu-right text-center" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="/profile">Profile</a>
+          <a class="dropdown-item" href="/posts">Posts</a>
+          <a class="dropdown-item" href="/peers">Peers</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="/logout">Logout</a>
         </div>
       </li>`, {}, true);
-      
+
     };
 
-    login.openLogin = function(done) {
+    login.openLogin = function(done, onDestroy) {
+        // var done;
+        var canceled = false;
+        
+        var model = imports.app.layout.modal(loginModel, {
+            close: () => {
+                if (done)
+                    return done(canceled);
+                imports.app.state.history.back();
+            }
+        });
+
+        var createAccount = false;
+        var creating = false;
+        var creatingPair = false;
+
+        if (onDestroy)
+            onDestroy(function() {
+                model.close();
+            });
+
+
+        model.find(".close-modal").click(function() {
+            if (!createAccount) {
+                canceled = true;
+                model.modal('hide');
+            }
+            else {
+                createAccount = false;
+                model.find(".error").text("");
+                model.find("#confirmpwfield").hide().val("");
+                model.find("#password").val("");
+                model.find("#login_alias").text("Login");
+            }
+        });
+
+        model.find("#auth_apparatus").change(function() {
+            if (createAccount)
+                model.find("#cancel").click();
+
+            model.find(".error").text("");
+
+            model.find("#pubkey").attr("type", "password");
+
+            var value = $(this).val();
+
+            model.find(".login_ALIAS").hide();
+            model.find(".login_ONLYKEY-USB").hide();
+            model.find(".login_PUBKEY").hide();
+
+            model.find(".login_" + value).show();
+
+        });
+        model.find("#auth_apparatus").change();
+
+        model.find("#username").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login_alias").click();
+            }
+        });
+        model.find("#password").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login_alias").click();
+            }
+        });
+
+        model.find("#tag").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login_onlykey-usb").click();
+            }
+        });
+
+        var $login_pubkey = async(pair) => {
+            model.find("#pubkey").attr("type", "password");
+
+            try {
+                if (pair == "") throw ("Faile to load Key")
+                pair = JSON.parse(pair);
+            }
+            catch (e) {
+                // model.find(".error").text("Faile to load Key");
+                model.find(".error").css("color", "red").html("<b>Faile to load Key.</b>&nbsp;<a href='javascript:' id='create'>Generate Key?</a>");
+                var create = model.find(".error").find("#create");
+                create.click(function() {
+                    gun.SEA.pair().then((pair) => {
+                        pair = JSON.stringify(pair);
+                        model.find("#pubkey").val(pair).focusout(() => model.find("#pubkey").attr("type", "password")).focusin(() => model.find("#pubkey").attr("type", "text")).focus().select();
+                        model.find(".error").css("color", "red").html("<b>COPY PAIR SOMEWHERE SAFE!</b> and click Login");
+                        creatingPair = true;
+                        // console.log(pair);
+                    });
+                });
+                return;
+            }
+
+            gun.user().auth(pair, async function(res) {
+                if (!res.err) {
+                    if (login.user) {
+                        if (creatingPair) {
+                            creatingPair = false;
+                            await gun.user().get("pub").put(pair.pub);
+                            await gun.user().get("epub").put(pair.epub);
+                            await gun.user().get("alias").put("~" + pair.pub);
+                        }
+                        model.modal("hide");
+                        login.prepLogout();
+                        imports.app.emit("login", login.user);
+                    }
+                }
+            });
+
+        };
+
+        var $login_hardware = async(tag, pasconfm) => {
+            if (!imports.app.nw_app || !imports.app.nw_app.is_localhost)
+                ONLYKEY((OK) => {
+                    var ok = OK();
+                    ok_login(ok);
+                });
+            else
+                ok_login(imports.app.nw_app.onlykey);
+
+            function ok_login(ok) {
+                if (!tag) tag = "";
+
+                ok.derive_public_key(tag, 1, false, (err, key) => {
+                    ok.derive_shared_secret(tag, key, 1, false, (err, sharedsec, key2) => {
+                        $login(tag, sharedsec, createAccount == tag ? sharedsec : false);
+                    });
+                });
+            }
+        };
+
+        var $login = async(usr, pas, pasconfm) => {
+            if (creating) return;
+
+            model.find("#password_error").text("");
+            model.find("#confirm-password_error").text("");
+
+            if (pasconfm) {
+                if (!(pasconfm == pas && usr == createAccount)) {
+                    model.find("#password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
+                    model.find("#confirm-password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
+                    return;
+                }
+                else {
+                    if (!(usr == createAccount)) {
+                        createAccount = false;
+                        pasconfm = "";
+                        model.find(".error").text("");
+                        model.find("#tag_error").text("");
+                        model.find("#pubkey_error").text("");
+                        model.find("#password_error").text("");
+                        model.find("#confirm-password_error").text("");
+                        model.find("#confirm-password").val("");
+                        model.find("#confirmpwfield").hide();
+                    }
+                }
+            }
+
+            if (usr && pas) {
+                login.getUserPub(usr, function(error, usr_pub) {
+                    gun.user().auth(usr_pub || usr, pas, function(res) {
+                        if (!res.err) {
+                            if (login.user) {
+                                model.modal("hide");
+                                login.prepLogout();
+                                // me((err, $me, $user) => {
+                                //     if (err) console.log(err);
+                                //     var uid32 = generateUID32("~" + $me.pub);
+                                //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
+                                imports.app.emit("login", login.user);
+
+                                // });
+                            }
+                        }
+                        else {
+                            if (res.err == "Wrong user or password.") {
+                                // var uid = false;
+                                // if (usr.indexOf("#") > -1) {
+                                //     usr = usr.split("#");
+                                //     uid = usr[1];
+                                //     usr = usr[0];
+                                // }
+                                // gun.aliasToPub("@" + usr, uid, (pub) => {
+                                //     if (!pub) {
+                                if (createAccount && !creating) {
+                                    creating = true;
+                                    gun.user().create(usr, pas, function(ack) {
+                                        if (ack.pub) {
+                                            creating = false;
+                                            $login(usr, pas);
+                                        }
+                                    }, {
+                                        already: true
+                                    });
+                                }
+                                else {
+                                    model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='javascript:' id='create'>Create User?</a>");
+                                    var create = model.find(".error").find("#create");
+                                    create.click(function() {
+                                        model.find("#confirmpwfield").show().focus();
+                                        model.find("#login_alias").text("Create Account");
+                                        model.find(".error").text("Creating Account");
+                                        createAccount = usr;
+                                    });
+                                }
+                                //     }
+                                //     else {
+                                //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
+                                //     }
+                                // });
+                            }
+                        }
+
+                    });
+
+                })
+            }
+
+        };
+
+        model.find("#login_alias").click(() => {
+            var usr = model.find("#username").val();
+            var pas = model.find("#password").val();
+            var pasconfm = model.find("#confirm-password").val();
+            $login(usr, pas, pasconfm);
+        });
+
+        model.find("#login_onlykey-usb").click(() => {
+            var tag = model.find("#tag").val();
+            $login_hardware(tag);
+        });
+
+        model.find("#login_pubkey").click(() => {
+            var tag = model.find("#pubkey").val();
+            $login_pubkey(tag);
+        });
+    };
+
+    login.openLogin_ = function(done) {
 
         var model = $(loginModel);
 
@@ -144,7 +386,7 @@ module.exports = function(imports) {
 
         var canceled = false;
 
-        model.find(".cancel-login").click(function() {
+        model.find(".close-modal").click(function() {
             if (!createAccount) {
                 canceled = true;
                 model.modal('hide');
@@ -160,15 +402,15 @@ module.exports = function(imports) {
         model.on("hide.bs.modal", function() {
             if (done)
                 return done(canceled);
-            if (imports.app.state.lastHash)
-                imports.app.state.hash = imports.app.state.lastHash;
-            else {
-                if (imports.app.state.history.length > 0)
-                    imports.app.state.history.back();
-                else {
-                    imports.app.state.hash = "home";
-                }
-            }
+            // if (imports.app.state.lastHash)
+            //     imports.app.state.hash = imports.app.state.lastHash;
+            // else {
+            //     if (imports.app.state.history.length > 0)
+            imports.app.state.history.back();
+            // else {
+            //     imports.app.state.hash = "/";
+            // }
+            // }
         });
         model.on("hidden.bs.modal", () => {
             model.modal("dispose");

@@ -318,7 +318,7 @@ define(function(require, exports, module) {
             
                     });
 
-                    imports.state.$hash.on("peerapp2-run", (query) => {
+                    imports.state.$hash.on("/peerapp2-run", (query) => {
 
                         var $query = parse_app_query(query);
 
@@ -358,7 +358,7 @@ define(function(require, exports, module) {
                     });
 
 
-                    imports.state.$hash.on("peerapp2-open", async(query, currentState, lastHash, onDestroy ) => {
+                    imports.state.$hash.on("/peerapp2-open", async(query, currentState, lastHash, onDestroy ) => {
                         onDestroy(()=>{
                             if (ace_editor_window) {
                                 ace_editor_$editor.destroy();

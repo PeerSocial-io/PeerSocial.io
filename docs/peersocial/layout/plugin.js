@@ -47,6 +47,7 @@ define(function(require, exports, module) {
                     });
 
                 },
+                modal:require("./modal")(imports),
                 get: function($selector) {
                     return $($selector);
                 },

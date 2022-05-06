@@ -37032,120 +37032,132 @@ module.exports = __webpack_require__(/*! ./gun.js */ "./node_modules/gun/gun.js"
 
 /***/ }),
 
-/***/ "./node_modules/gun/lib/webrtc.js":
-/*!****************************************!*\
-  !*** ./node_modules/gun/lib/webrtc.js ***!
-  \****************************************/
+/***/ "./node_modules/gun/lib/load.js":
+/*!**************************************!*\
+  !*** ./node_modules/gun/lib/load.js ***!
+  \**************************************/
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-;(function(){
-	var Gun = (typeof window !== "undefined")? window.Gun : __webpack_require__(/*! ../gun */ "./node_modules/gun/gun.js");
+var Gun = (typeof window !== "undefined")? window.Gun : __webpack_require__(/*! ../gun */ "./node_modules/gun/gun.js");
+Gun.chain.open || __webpack_require__(/*! ./open */ "./node_modules/gun/lib/open.js");
 
-	Gun.on('opt', function(root){
-		this.to.next(root);
-		var opt = root.opt;
-		if(root.once){ return }
-		if(!Gun.Mesh){ return }
-		if(false === opt.RTCPeerConnection){ return }
+Gun.chain.load = function(cb, opt, at){
+	(opt = opt || {}).off = !0;
+	return this.open(cb, opt, at);
+}
 
-		var env;
-		if(typeof window !== "undefined"){ env = window }
-		if(typeof __webpack_require__.g !== "undefined"){ env = __webpack_require__.g }
-		env = env || {};
+/***/ }),
 
-		var rtcpc = opt.RTCPeerConnection || env.RTCPeerConnection || env.webkitRTCPeerConnection || env.mozRTCPeerConnection;
-		var rtcsd = opt.RTCSessionDescription || env.RTCSessionDescription || env.webkitRTCSessionDescription || env.mozRTCSessionDescription;
-		var rtcic = opt.RTCIceCandidate || env.RTCIceCandidate || env.webkitRTCIceCandidate || env.mozRTCIceCandidate;
-		if(!rtcpc || !rtcsd || !rtcic){ return }
-		opt.RTCPeerConnection = rtcpc;
-		opt.RTCSessionDescription = rtcsd;
-		opt.RTCIceCandidate = rtcic;
-		opt.rtc = opt.rtc || {'iceServers': [
-      {urls: 'stun:stun.l.google.com:19302'},
-      {urls: "stun:stun.sipgate.net:3478"}/*,
-      {urls: "stun:stun.stunprotocol.org"},
-      {urls: "stun:stun.sipgate.net:10000"},
-      {urls: "stun:217.10.68.152:10000"},
-      {urls: 'stun:stun.services.mozilla.com'}*/ 
-    ]};
-    // TODO: Select the most appropriate stuns. 
-    // FIXME: Find the wire throwing ICE Failed
-    // The above change corrects at least firefox RTC Peer handler where it **throws** on over 6 ice servers, and updates url: to urls: removing deprecation warning 
-    opt.rtc.dataChannel = opt.rtc.dataChannel || {ordered: false, maxRetransmits: 2};
-    opt.rtc.sdp = opt.rtc.sdp || {mandatory: {OfferToReceiveAudio: false, OfferToReceiveVideo: false}};
-    opt.announce = function(to){
-			root.on('out', {rtc: {id: opt.pid, to:to}}); // announce ourself
-    };
-		var mesh = opt.mesh = opt.mesh || Gun.Mesh(root);
-		root.on('create', function(at){
-			this.to.next(at);
-			setTimeout(opt.announce, 1);
+/***/ "./node_modules/gun/lib/not.js":
+/*!*************************************!*\
+  !*** ./node_modules/gun/lib/not.js ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+if(typeof window !== "undefined"){
+  var Gun = window.Gun;
+} else { 
+  var Gun = __webpack_require__(/*! ../gun */ "./node_modules/gun/gun.js");
+}
+
+var u;
+
+Gun.chain.not = function(cb, opt, t){
+	return this.get(ought, {not: cb});
+}
+
+function ought(at, ev){ ev.off();
+	if(at.err || (u !== at.put)){ return }
+	if(!this.not){ return }
+	this.not.call(at.gun, at.get, function(){ console.log("Please report this bug on https://gitter.im/amark/gun and in the issues."); need.to.implement; });
+}
+
+/***/ }),
+
+/***/ "./node_modules/gun/lib/open.js":
+/*!**************************************!*\
+  !*** ./node_modules/gun/lib/open.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+var Gun = (typeof window !== "undefined")? window.Gun : __webpack_require__(/*! ../gun */ "./node_modules/gun/gun.js");
+
+Gun.chain.open = function(cb, opt, at, depth){ // this is a recursive function, BEWARE!
+	depth = depth || 1;
+	opt = opt || {}; // init top level options.
+	opt.doc = opt.doc || {};
+	opt.ids = opt.ids || {};
+	opt.any = opt.any || cb;
+	opt.meta = opt.meta || false;
+	opt.eve = opt.eve || {off: function(){ // collect all recursive events to unsubscribe to if needed.
+		Object.keys(opt.eve.s).forEach(function(i,e){ // switch to CPU scheduled setTimeout.each?
+			if(e = opt.eve.s[i]){ e.off() }
 		});
-		root.on('in', function(msg){
-			if(msg.rtc){ open(msg) }
-			this.to.next(msg);
-		});
-
-		function open(msg){
-			var rtc = msg.rtc, peer, tmp;
-			if(!rtc || !rtc.id){ return }
-			delete opt.announce[rtc.id]; /// remove after connect
-			if(tmp = rtc.answer){
-				if(!(peer = opt.peers[rtc.id] || open[rtc.id]) || peer.remoteSet){ return }
-				tmp.sdp = tmp.sdp.replace(/\\r\\n/g, '\r\n')
-				return peer.setRemoteDescription(peer.remoteSet = new opt.RTCSessionDescription(tmp)); 
+		opt.eve.s = {};
+	}, s:{}}
+	return this.on(function(data, key, ctx, eve){ // subscribe to 1 deeper of data!
+		clearTimeout(opt.to); // do not trigger callback if bunch of changes...
+		opt.to = setTimeout(function(){ // but schedule the callback to fire soon!
+			if(!opt.any){ return }
+			opt.any.call(opt.at.$, opt.doc, opt.key, opt, opt.eve); // call it.
+			if(opt.off){ // check for unsubscribing.
+				opt.eve.off();
+				opt.any = null;
 			}
-			if(tmp = rtc.candidate){
-				peer = opt.peers[rtc.id] || open[rtc.id] || open({rtc: {id: rtc.id}});
-				return peer.addIceCandidate(new opt.RTCIceCandidate(tmp));
+		}, opt.wait || 9);
+		opt.at = opt.at || ctx; // opt.at will always be the first context it finds.
+		opt.key = opt.key || key;
+		opt.eve.s[this._.id] = eve; // collect all the events together.
+		if(true === Gun.valid(data)){ // if primitive value...
+			if(!at){
+				opt.doc = data;
+			} else {
+				at[key] = data;
 			}
-			//if(opt.peers[rtc.id]){ return }
-			if(open[rtc.id]){ return }
-			(peer = new opt.RTCPeerConnection(opt.rtc)).id = rtc.id;
-			var wire = peer.wire = peer.createDataChannel('dc', opt.rtc.dataChannel);
-			open[rtc.id] = peer;
-			wire.onclose = function(){
-				delete open[rtc.id];
-				mesh.bye(peer);
-				//reconnect(peer);
-			};
-			wire.onerror = function(err){};
-			wire.onopen = function(e){
-				//delete open[rtc.id];
-				mesh.hi(peer);
-			}
-			wire.onmessage = function(msg){
-				if(!msg){ return }
-				mesh.hear(msg.data || msg, peer);
-			};
-			peer.onicecandidate = function(e){ // source: EasyRTC!
-        if(!e.candidate){ return }
-        root.on('out', {'@': msg['#'], rtc: {candidate: e.candidate, id: opt.pid}});
-			}
-			peer.ondatachannel = function(e){
-				var rc = e.channel;
-				rc.onmessage = wire.onmessage;
-				rc.onopen = wire.onopen;
-				rc.onclose = wire.onclose;
-			}
-			if(tmp = rtc.offer){
-				rtc.offer.sdp = rtc.offer.sdp.replace(/\\r\\n/g, '\r\n')
-				peer.setRemoteDescription(new opt.RTCSessionDescription(tmp)); 
-				peer.createAnswer(function(answer){
-					peer.setLocalDescription(answer);
-					root.on('out', {'@': msg['#'], rtc: {answer: answer, id: opt.pid}});
-				}, function(){}, opt.rtc.sdp);
+			return;
+		}
+		var tmp = this; // else if a sub-object, CPU schedule loop over properties to do recursion.
+		setTimeout.each(Object.keys(data), function(key, val){
+			if('_' === key && !opt.meta){ return }
+			val = data[key];
+			var doc = at || opt.doc, id; // first pass this becomes the root of open, then at is passed below, and will be the parent for each sub-document/object.
+			if(!doc){ return } // if no "parent"
+			if('string' !== typeof (id = Gun.valid(val))){ // if primitive...
+				doc[key] = val;
 				return;
 			}
-			peer.createOffer(function(offer){
-				peer.setLocalDescription(offer);
-				root.on('out', {'@': msg['#'], rtc: {offer: offer, id: opt.pid}});
-			}, function(){}, opt.rtc.sdp);
-			return peer;
-		}
-	});
-	var noop = function(){};
-}());
+			if(opt.ids[id]){ // if we've already seen this sub-object/document
+				doc[key] = opt.ids[id]; // link to itself, our already in-memory one, not a new copy.
+				return;
+			}
+			if(opt.depth <= depth){ // stop recursive open at max depth.
+				doc[key] = doc[key] || val; // show link so app can load it if need.
+				return;
+			} // now open up the recursion of sub-documents!
+			tmp.get(key).open(opt.any, opt, opt.ids[id] = doc[key] = {}, depth+1); // 3rd param is now where we are "at".
+		});
+	})
+}
+
+/***/ }),
+
+/***/ "./node_modules/gun/lib/unset.js":
+/*!***************************************!*\
+  !*** ./node_modules/gun/lib/unset.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+var Gun = (typeof window !== "undefined")? window.Gun : __webpack_require__(/*! ../gun */ "./node_modules/gun/gun.js");
+
+const rel_ = '#';  // '#'
+const node_ = '_';  // '_'
+
+Gun.chain.unset = function(node){
+	if( this && node && node[node_] && node[node_].put && node[node_].put[node_] && node[node_].put[node_][rel_] ){
+		this.put( { [node[node_].put[node_][rel_]]:null} );
+	}
+	return this;
+}
 
 
 /***/ }),
@@ -81169,7 +81181,7 @@ module.exports = "<div class=\"container\">\n\n    <div class=\"jumbotron p-4 p-
   \********************************************/
 /***/ ((module) => {
 
-module.exports = "<div class=\"container\">\n\n<img src=\"/peersocial/layout/tenor-12215996.gif\" alt=\"LOADING...\"></img>\n\n</div>";
+module.exports = "<div class=\"container\">\n    <div class=\"d-flex justify-content-around text-center\">\n\n        <div class=\"spinner-border\" role=\"status\">\n            <span class=\"sr-only\">Loading...</span>\n        </div>\n\n    </div>\n</div>";
 
 /***/ }),
 
@@ -81199,7 +81211,7 @@ module.exports = "<!--<ul class=\"list-unstyled\">-->\n<% for(var i in peer_list
   \*********************************************/
 /***/ ((module) => {
 
-module.exports = "<div class=\"card\" style=\"width: 18rem;\">\n    <img class=\"card-img-top\" src=\"<%- (profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_1x.png') %>\" alt=\"Card image cap\">\n    <div class=\"card-body\">\n        <h5 class=\"card-title\"><%- alias %>#<%- uid32 %></h5>\n        <p class=\"card-text\"><%- bio %></p>\n        <a href=\"/peer~<%- uid32 %>@<%- alias %>\" class=\"btn btn-primary\">View Peer</a> \n    </div>\n</div>";
+module.exports = "<div class=\"card\" style=\"width: 18rem;\">\n    <img class=\"card-img-top\" src=\"<%- (profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_1x.png') %>\" alt=\"Card image cap\">\n    <div class=\"card-body\">\n        <h5 class=\"card-title\"><%- alias %>#<%- uid32 %></h5>\n        <p class=\"card-text\"><%- (profile ? profile.display_name : '').substr(0, 16) %><br/>\n                <%- (profile ? profile.tagline : '').substr(0, 16) %></p>\n        <a href=\"/peer/~<%- pub %>\" class=\"btn btn-primary\">View Peer</a> \n    </div>\n</div>";
 
 /***/ }),
 
@@ -81229,7 +81241,37 @@ module.exports = "<div>\n<style>\n.peer-cards > .card {\n    display: inline-blo
   \********************************************/
 /***/ ((module) => {
 
-module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <!--left col-->\n\n\n            <div class=\"text-center\">\n                <img src=\"<%- (user.profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" alt=\"avatar\">\n            </div><br/>\n            <div class=\"row\" style=\"padding-bottom:1px;\">\n                <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= user.alias %></h1>#<%= user.uid32 %></div></div>\n            </div><br/>\n            <ul class=\"list-group text-center\">\n                <li class=\"list-group-item\" id=\"display_name\"><%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>\n                <li class=\"list-group-item\" id=\"tagline\"><%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>\n            </ul>\n            <hr/>\n\n            <!--<div class=\"panel panel-default\">-->\n            <!--    <div class=\"panel-heading\">-->\n            <!--        <span><%- (user.profile && user.profile.first_name ? user.profile.first_name :'') %></span>-->\n            <!--        <span><%- (user.profile && user.profile.last_name ? user.profile.last_name :'') %></span></div>-->\n            <!--    <div class=\"panel-body\">-->\n\n            <!--        <span><%- (user.profile && user.profile.location ? user.profile.location :'') %></span>-->\n            <!--    </div>-->\n            <!--</div>-->\n\n            <% if(!notLoggedIn)\n                if(!isMyPeer){ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-primary\" id=\"addPeer\">Add Peer</a>\n            <% }else{ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-danger\" id=\"removePeer\">Remove Peer</a>\n            <% } %>\n            <br/>\n        </div>\n        <!--/col-3-->\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n\n            <ul class=\"nav nav-tabs\" id=\"myTab\" role=\"tablist\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link active\" id=\"home-tab\" data-toggle=\"tab\" href=\"#profile-main1\" role=\"tab\" aria-controls=\"home\" aria-selected=\"true\">Profile</a>-->\n                <!--</li>-->\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" id=\"profile-tab\" data-toggle=\"tab\" href=\"#profile-main2\" role=\"tab\" aria-controls=\"profile\" aria-selected=\"false\">Peer Apps</a>-->\n                <!--</li>-->\n                <!--\n                <li class=\"nav-item\">\n                    <a class=\"nav-link active\" id=\"profile-tab\" data-toggle=\"tab\" href=\"#profile-apps\" role=\"tab\" aria-controls=\"profile-apps\" aria-selected=\"false\">Peer Apps V2</a>\n                </li>\n                -->\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" id=\"messages-tab\" data-toggle=\"tab\" href=\"#profile-main3\" role=\"tab\" aria-controls=\"messages\" aria-selected=\"false\">Profile3</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--<div class=\"tab-pane active\" role=\"tabpanel\" id=\"profile-main1\">-->\n\n                <!--    <div class=\"container\">-->\n\n                <!--        <ul class=\"list-group\">-->\n                <!--            <li class=\"list-group-item\">Display Name: <%- (user.profile && user.profile.display_name ? user.profile.display_name :'') %></li>-->\n                <!--            <li class=\"list-group-item\">Tagline: <%- (user.profile && user.profile.tagline ? user.profile.tagline :'') %></li>-->\n                <!--        </ul>-->\n\n                <!--    </div>-->\n\n                <!--</div>-->\n                <!--/tab-pane-->\n                \n                \n                <div class=\"tab-pane active\" role=\"tabpanel\" id=\"profile-apps\">\n\n                    \n\n                </div>\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main3\">page3</div>-->\n\n            </div>\n            <!--/tab-pane-->\n        </div>\n        <!--/tab-content-->\n\n    </div>\n    <!--/col-9-->\n</div>\n<!--/row-->";
+module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n\n            <div class=\"text-center\">\n                <img src=\"<%- (user.profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" alt=\"avatar\">\n            </div><br/>\n            <div class=\"row\" style=\"padding-bottom:1px;\">\n                <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= user.alias %></h1>#<%= user.uid32 %></div></div>\n            </div><br/>\n            <ul class=\"list-group text-center\">\n                <li class=\"list-group-item\" id=\"display_name\"><%- (profile && profile.display_name ? profile.display_name :'') %></li>\n                <li class=\"list-group-item\" id=\"tagline\"><%- (profile && profile.tagline ? profile.tagline :'') %></li>\n            </ul>\n            <hr/>\n\n\n            <% if(!notLoggedIn)\n                if(!isMyPeer){ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-primary\" id=\"addPeer\">Add Peer</a>\n            <% }else{ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-danger\" id=\"removePeer\">Remove Peer</a>\n            <% } %>\n            <br/>\n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n\n            <ul class=\"nav nav-tabs\" id=\"myTab\" role=\"tablist\">\n            </ul>\n\n            <div class=\"tab-content\">\n                \n                \n                <div class=\"tab-pane active\" role=\"tabpanel\" id=\"profile-apps\">\n\n                    \n\n                </div>\n\n            </div>\n        </div>\n\n    </div>\n</div>";
+
+/***/ }),
+
+/***/ "./src/peersocial/posts/post_box.html":
+/*!********************************************!*\
+  !*** ./src/peersocial/posts/post_box.html ***!
+  \********************************************/
+/***/ ((module) => {
+
+module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n    <div class=\"modal-dialog\" role=\"document\">\n        <div class=\"modal-content\">\n            <div class=\"modal-header\">\n                <h5 class=\"modal-title\" id=\"exampleModalLabel\">Public Post</h5>\n                <button type=\"button\" class=\"close close-modal\" aria-label=\"Close\">\n          <span aria-hidden=\"true\">&times;</span>\n        </button>\n            </div>\n            <div class=\"modal-body\">\n\n\n                <form id=\"postForm_select_type\" class=\"d-flex justify-content-between\">\n                    <div class=\"form-check form-check-inline\">\n                        <input class=\"form-check-input\" type=\"radio\" name=\"postRadios\" id=\"inlineCheckbox1\" value=\"type_message\" checked>\n                        <label class=\"form-check-label\" for=\"inlineCheckbox1\">Message</label>\n                    </div>\n                    <div class=\"form-check form-check-inline\">\n                        <input class=\"form-check-input\" type=\"radio\" name=\"postRadios\" id=\"inlineCheckbox2\" value=\"type_media\" disabled>\n                        <label class=\"form-check-label\" for=\"inlineCheckbox2\">Media</label>\n                    </div>\n                    <div class=\"form-check form-check-inline\">\n                        <input class=\"form-check-input\" type=\"radio\" name=\"postRadios\" id=\"inlineCheckbox3\" value=\"type_status\" disabled>\n                        <label class=\"form-check-label\" for=\"inlineCheckbox3\">Status</label>\n                    </div>\n                </form>\n\n                <hr/>\n\n                <div class=\"view_type_message\">\n                    <form id=\"postForm_MESSAGE\">\n                        <textarea class=\"form-control\" id=\"type_message_input\" rows=\"3\"></textarea>\n                    </form>\n                </div>\n\n            </div>\n            <div class=\"modal-footer d-flex justify-content-around\">\n                <button type=\"button\" class=\"btn btn-primary\" id=\"post_message\">Post</button>\n                <button type=\"button\" class=\"btn btn-secondary close-modal\" id=\"cancel\">Cancel</button>\n            </div>\n        </div>\n    </div>\n</div>";
+
+/***/ }),
+
+/***/ "./src/peersocial/posts/post_feed.html":
+/*!*********************************************!*\
+  !*** ./src/peersocial/posts/post_feed.html ***!
+  \*********************************************/
+/***/ ((module) => {
+
+module.exports = "<div class=\"container\">\n    <div class=\"row text-center rounded-circle\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-12\">\n            <a href=\"/peer/~<%= userData.pub %>\"><img src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar rounded-circle\" alt=\"avatar\" /></a>\n\n            <br/>\n\n            <a href=\"/peer/~<%= userData.pub %>\">\n                <%= userData.alias %>#\n                    <%= userData.uid32 %>\n            </a>\n            <br/>\n            \n            <% if(isMe) { %>\n            <a class=\"btn btn-success\" href=\"/posts/new\">New Post</a>\n            <% } %>\n        </div>\n    </div>\n    <hr/>\n    <div class=\"row\">\n        <div class=\"col-sm-2\">\n        </div>\n        <div class=\"col-sm-8\" id=\"post_feed\">\n            <div class=\"text-center\">\n\n                <div class=\"spinner-border\" role=\"status\">\n                    <span class=\"sr-only\">Loading...</span>\n                </div>\n\n            </div>\n        </div>\n    </div>\n</div>";
+
+/***/ }),
+
+/***/ "./src/peersocial/posts/post_view_message.html":
+/*!*****************************************************!*\
+  !*** ./src/peersocial/posts/post_view_message.html ***!
+  \*****************************************************/
+/***/ ((module) => {
+
+module.exports = "<div class=\"card border-info\">\n    <div class=\"card-header\"><%= post.type %></div>\n    <div class=\"card-body text-info text-right\">\n        <p class=\"card-text text-left\"><%= post.data %></p>\n        <% if(post.timestamp) { %>\n        <time class=\"timeago\" datetime=\"<%= (new Date(post.timestamp).toISOString()) %>\"><%= (new Date(post.timestamp).toString()) %></time>\n        <% } %>\n    </div>\n</div>\n<hr/>";
 
 /***/ }),
 
@@ -81249,7 +81291,7 @@ module.exports = "<div class=\"tab-pane active\">\n    <form class=\"form\" acti
   \*********************************************/
 /***/ ((module) => {
 
-module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\" style=\"padding-bottom:1px;\">\n        <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div></div>\n    </div>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <label for=\"upload_profile_picture\">\n                    <img  src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" class=\"avatar\" alt=\"avatar\">\n                </label>\n                <input type=\"file\" class=\"text-center center-block file-upload d-none\" id=\"upload_profile_picture\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer/~<%= me.pub %>\">View Public Profile</a>\n            </div><br>\n            <div>\n                Last Seen <time class=\"timeago\" datetime=\"<%= (new Date(profile.seen).toISOString()) %>\"><%= (new Date(profile.seen).toString()) %></time>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
+module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row d-flex justify-content-around\" class=\"text-center\">\n        <div><h1 style=\"display: inline;\"><%= me.alias %></h1>#<%= me.uid32 %></div>\n    </div>\n    <hr/>\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n            <div class=\"text-center\">\n                <label for=\"upload_profile_picture\">\n                    <img  src=\"<%- ( (profile && profile.peer_profile_image) || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" style=\"width:100%\" class=\"avatar\" alt=\"avatar\">\n                </label>\n                <input type=\"file\" class=\"text-center center-block file-upload d-none\" id=\"upload_profile_picture\">\n            </div>\n            </hr><br>\n\n            <div>\n                <a class=\"btn btn-secondary btn-block\" href=\"/peer/~<%= me.pub %>\">View Public Profile</a>\n            </div><br>\n            <div>\n                Last Seen <time class=\"timeago\" datetime=\"<%= (new Date(profile.seen).toISOString()) %>\"><%= (new Date(profile.seen).toString()) %></time>\n            </div><br>\n            \n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n            \n            .nav-tabs > .nav-item > .nav-link {\n                border-top: 1px solid #ddd;\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n            \n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n    </div>\n</div>";
 
 /***/ }),
 
@@ -81259,7 +81301,7 @@ module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"
   \**********************************************/
 /***/ ((module) => {
 
-module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n  <div class=\"modal-dialog\" role=\"document\">\n    <div class=\"modal-content\">\n      <div class=\"modal-header\">\n        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Peer Login</h5>\n        <button type=\"button\" class=\"close cancel-login\" aria-label=\"Close\">\n          <span aria-hidden=\"true\">&times;</span>\n        </button>\n      </div>\n      <div class=\"modal-body\">\n        <select class=\"custom-select\" id=\"auth_apparatus\">\n          <option value=\"ALIAS\" selected>Alias</option>\n          <option value=\"PUBKEY\">PUBKEY</option>\n          <option value=\"ONLYKEY-USB\">ONLYKEY-USB</option>\n        </select>\n        \n        <div class=\"login_ALIAS\">\n          <form id=\"loginForm_ALIAS\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">Alias:</label>\n              <input type=\"text\" class=\"form-control\" id=\"username\">\n              <div id=\"username_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n            <div class=\"form-group\" id=\"pwfield\">\n              <label for=\"message-text\" class=\"col-form-label\">Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"password\"></input>\n              <div id=\"password_error\"></div>\n            </div>\n            <div class=\"form-group\" id=\"confirmpwfield\" style=\"display:none;\">\n              <label for=\"message-text\" class=\"col-form-label\">Confirm Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"confirm-password\"></input>\n              <div id=\"confirm-password_error\"></div>\n            </div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_alias\">Login</button>\n          </div>\n        </div>\n        \n        \n        <div class=\"login_ONLYKEY-USB\">\n          <form id=\"loginForm_ONLYKEY-USB\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">TAG:</label>\n              <input type=\"text\" class=\"form-control\" id=\"tag\">\n              <div id=\"tag_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_onlykey-usb\"><i class=\"fa-brands fa-usb\"></i></button>\n          </div>\n        </div>\n        \n        <div class=\"login_PUBKEY\">\n          <form id=\"loginForm_PUBKEY\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">PUBKEY:</label>\n              <input type=\"password\" class=\"form-control\" id=\"pubkey\">\n              <div id=\"pubkey_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_pubkey\">Login</button>\n          </div>\n        </div>\n        \n        \n      </div>\n      <div class=\"modal-footer\">\n        <button type=\"button\" class=\"btn btn-secondary cancel-login\" id=\"cancel\">Cancel</button>\n      </div>\n    </div>\n  </div>\n</div>";
+module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n  <div class=\"modal-dialog\" role=\"document\">\n    <div class=\"modal-content\">\n      <div class=\"modal-header\">\n        <h5 class=\"modal-title\" id=\"exampleModalLabel\">Peer Login</h5>\n        <button type=\"button\" class=\"close close-modal\" aria-label=\"Close\">\n          <span aria-hidden=\"true\">&times;</span>\n        </button>\n      </div>\n      <div class=\"modal-body\">\n        <select class=\"custom-select\" id=\"auth_apparatus\">\n          <option value=\"ALIAS\" selected>Alias</option>\n          <option value=\"PUBKEY\">PUBKEY</option>\n          <option value=\"ONLYKEY-USB\">ONLYKEY-USB</option>\n        </select>\n        \n        <div class=\"login_ALIAS\">\n          <form id=\"loginForm_ALIAS\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">Alias:</label>\n              <input type=\"text\" class=\"form-control\" id=\"username\">\n              <div id=\"username_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n            <div class=\"form-group\" id=\"pwfield\">\n              <label for=\"message-text\" class=\"col-form-label\">Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"password\"></input>\n              <div id=\"password_error\"></div>\n            </div>\n            <div class=\"form-group\" id=\"confirmpwfield\" style=\"display:none;\">\n              <label for=\"message-text\" class=\"col-form-label\">Confirm Password:</label>\n              <input type=\"password\" class=\"form-control\" id=\"confirm-password\"></input>\n              <div id=\"confirm-password_error\"></div>\n            </div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_alias\">Login</button>\n          </div>\n        </div>\n        \n        \n        <div class=\"login_ONLYKEY-USB\">\n          <form id=\"loginForm_ONLYKEY-USB\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">TAG:</label>\n              <input type=\"text\" class=\"form-control\" id=\"tag\">\n              <div id=\"tag_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_onlykey-usb\"><i class=\"fa-brands fa-usb\"></i></button>\n          </div>\n        </div>\n        \n        <div class=\"login_PUBKEY\">\n          <form id=\"loginForm_PUBKEY\">\n            <div class=\"form-group\">\n              <label for=\"recipient-name\" class=\"col-form-label\">PUBKEY:</label>\n              <input type=\"password\" class=\"form-control\" id=\"pubkey\">\n              <div id=\"pubkey_error\"></div>\n            </div>\n            <div class=\"error\"></div>\n          </form>\n          <div class=\"d-flex justify-content-between\">\n            <button type=\"button\" class=\"btn btn-primary\" id=\"login_pubkey\">Login</button>\n          </div>\n        </div>\n        \n        \n      </div>\n      <div class=\"modal-footer\">\n        <button type=\"button\" class=\"btn btn-secondary close-modal\" id=\"cancel\">Cancel</button>\n      </div>\n    </div>\n  </div>\n</div>";
 
 /***/ }),
 
@@ -87571,9 +87613,10 @@ function config (name) {
 
 module.exports = (config, server) => {
 
-
+    console.log("App Mode", "development");
+    
     if (server) {
-        
+
     }
     else {
 
@@ -87582,7 +87625,7 @@ module.exports = (config, server) => {
         config.push(__webpack_require__(/*! ./state/plugin */ "./src/peersocial/state/plugin.js"));
         config.push(__webpack_require__(/*! ./gun/plugin */ "./src/peersocial/gun/plugin.js"));
         config.push(__webpack_require__(/*! ./user/plugin */ "./src/peersocial/user/plugin.js"));
-        
+
         //app
         config.push(__webpack_require__(/*! ./welcome/plugin */ "./src/peersocial/welcome/plugin.js"));
         config.push(__webpack_require__(/*! ./profile/plugin */ "./src/peersocial/profile/plugin.js"));
@@ -87601,12 +87644,15 @@ module.exports = (config, server) => {
 /*!*************************************!*\
   !*** ./src/peersocial/dapp_info.js ***!
   \*************************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+/* provided dependency */ var process = __webpack_require__(/*! process/browser */ "./node_modules/process/browser.js");
 var dapp_info  = {};
 
-if(false)
-    {}
+if(process.env.DAPP_KEY){
+    dapp_info.DAPP_KEY = process.env.DAPP_KEY;
+    console.log('process.env.DAPP_KEY',process.env.DAPP_KEY)
+}
 
 dapp_info.DAPP_PUB = "SRmb-SMPPB_5NU13ncuOh5LgHL1alp6jfZcjZKSIunE.8J_26wW0sTF1fW-6bCQhMVtYftYHoDTKw27o0n1u3h4";
 dapp_info.name= "peersocial.io";
@@ -87706,7 +87752,6 @@ module.exports = function(gun) {
   \**************************************/
 /***/ ((module, exports, __webpack_require__) => {
 
-/* provided dependency */ var process = __webpack_require__(/*! process/browser */ "./node_modules/process/browser.js");
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
 
     appPlugin.consumes = ["app", "provable"];
@@ -87719,12 +87764,24 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     function appPlugin(options, imports, register) {
         var Gun, gun;
 
-        /* global */
+        /* global $ GUN */
         Gun = __webpack_require__(/*! gun */ "./node_modules/gun/browser.js");
         __webpack_require__(/*! gun/sea */ "./node_modules/gun/sea.js");
         __webpack_require__(/*! gun/nts */ "./node_modules/gun/nts.js");
+        __webpack_require__(/*! gun/lib/unset */ "./node_modules/gun/lib/unset.js");
+        __webpack_require__(/*! gun/lib/not */ "./node_modules/gun/lib/not.js");
+        __webpack_require__(/*! gun/lib/open */ "./node_modules/gun/lib/open.js");
+        __webpack_require__(/*! gun/lib/load */ "./node_modules/gun/lib/load.js");
+        
+        GUN.chain.cert = function(){ 
+            var gun = this; 
+            
+            gun.on('out',console.log)
+            /* do stuff */; 
+            return gun; 
+        }
 
-        __webpack_require__(/*! gun/lib/webrtc */ "./node_modules/gun/lib/webrtc.js");
+        // require("gun/lib/webrtc");
 
         if (!Gun.log.once)
             Gun.log.once = function() {};
@@ -87755,9 +87812,6 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             // super: true
         };
           
-           
-        console.log("GNOME_SHELL_SESSION_MODE", process.env.GNOME_SHELL_SESSION_MODE);
-
         gun = Gun(gunOptions); //"https://"+window.location.host+"/gun");
 
         // var thisHost = window.location.host;
@@ -87813,6 +87867,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         // }
 
         gun.SEA = Gun.SEA;
+        gun.Gun = Gun;
 
         setTimeout(function() {
 
@@ -87829,6 +87884,91 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
 }).call(exports, __webpack_require__, exports, module),
 		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+/***/ }),
+
+/***/ "./src/peersocial/layout/modal.js":
+/*!****************************************!*\
+  !*** ./src/peersocial/layout/modal.js ***!
+  \****************************************/
+/***/ ((module) => {
+
+module.exports = function(imports) {
+
+    return function(html, options) {
+        /* globals $ */
+
+        var goBack = false;
+
+        var model = $(html);
+
+        if (!options)
+            options = {};
+        else if(options.goBack) goBack = true;
+
+
+        var $options = {
+            backHash: "/",
+            open: function() {},
+            hide: function() {},
+            show: function() {},
+            close: function($goBack) {
+                if ($goBack) {
+                    // if (imports.app.state.lastHash)
+                    //     imports.app.state.hash = imports.app.state.lastHash;
+                    // else {
+                    // if (imports.app.state.history.length > 0)
+                        imports.app.state.back();
+                    // else {
+                    //     if (typeof options.backHash == "function")
+                    //         imports.app.state.hash = options.backHash();
+                    //     else
+                    //         imports.app.state.hash = options.backHash;
+                    // }
+                    // }
+                }
+            }
+        };
+
+        for (var i in $options)
+            if (!options[i])
+                options[i] = $options[i];
+
+        model.modal({
+            show: true,
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        model.cancel = function() {
+            model.close(true);
+        };
+
+        model.close = function($goBack) {
+            if (!(typeof $goBack == "undefined"))
+                goBack = $goBack ? true : false;
+            model.modal('hide');
+        };
+
+        model.find(".close-modal").click(model.cancel);
+
+        model.on("hide.bs.modal", function() {
+            if (options.close)
+                options.close(goBack);
+        });
+
+        model.on("hidden.bs.modal", () => {
+            model.modal("dispose");
+            model.remove();
+        });
+
+        if (options.open)
+            model.on("shown.bs.modal", options.open);
+
+        return model;
+    };
+
+};
 
 /***/ }),
 
@@ -87887,6 +88027,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     });
 
                 },
+                modal:__webpack_require__(/*! ./modal */ "./src/peersocial/layout/modal.js")(imports),
                 get: function($selector) {
                     return $($selector);
                 },
@@ -102364,23 +102505,26 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         function getPeerData(pub, done) {
             gun.get(pub).once(function(userData) {
-                if (userData && userData.profile)
+                var $userData = false;
+                if (userData && userData.profile) {
+                    $userData = JSON.parse(JSON.stringify(userData));
                     gun.get(pub).get("profile").once(function(profile) {
                         if (profile)
-                            userData.profile = profile;
+                            $userData.profile = JSON.parse(JSON.stringify(profile));
                         else {
-                            userData.profile = false;
+                            $userData.profile = false;
                         }
-                        done(userData, userData.profile, pub);
+                        done($userData, $userData.profile, pub);
                     });
+                }
                 else {
-                    if (!userData)
-                        userData = false;
 
-                    if (userData && !userData.profile)
-                        userData.profile = false;
+                    if (userData && !userData.profile){
+                        $userData = JSON.parse(JSON.stringify(userData));
+                        $userData.profile = false;
+                    }
 
-                    done(userData, userData.profile, pub);
+                    done($userData, $userData.profile, pub);
                 }
             });
         }
@@ -102418,10 +102562,20 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     $("#main-container").html("");
                     $("#main-container").append(peerListLayout);
 
+                    // _self.unsetPeers(console.log);
+
                     _self.listPeers(function(pList) {
                         for (var i in pList) {
 
-                            var peerCard = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-card.html */ "./src/peersocial/peers/peer-card.html"), { profile: pList[i].profile, bio: pList[i].bio, profileImage: pList[i].profileImage, alias: pList[i].alias, pub: pList[i].pub, uid32: pList[i].uid32, add: false }));
+                            var peerCard = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./peer-card.html */ "./src/peersocial/peers/peer-card.html"), {
+                                profile: pList[i].profile,
+                                bio: pList[i].bio,
+                                profileImage: pList[i].profileImage,
+                                alias: pList[i].alias,
+                                pub: pList[i].pub,
+                                uid32: pList[i].uid32,
+                                add: false
+                            }));
                             peerListLayout.find(".peer-cards").append(peerCard);
 
                         }
@@ -102558,23 +102712,6 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             });
         }
 
-        function peerIsAdded(pub, done) {
-            imports.profile.me(function(err, me, user) {
-                if (err) return done(false, true);
-                user().get("profile").once(function(profile) {
-                    if (profile && profile.peers) {
-                        user().get("profile").get("peers").once(function(peersL) {
-                            for (var i in peersL) {
-                                if (i == "~" + pub && peersL[i])
-                                    return done(true);
-                            }
-                            return done(false);
-                        });
-                    }
-                    else return done(false);
-                });
-            })
-        }
 
         function loadPeerProfile(query) {
             query = query[0].split("@");
@@ -102583,10 +102720,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     console.log(err)
                 }
                 else {
-                    peerIsAdded($user.pub, function(isMyPeer, notLoggedIn) {
+                    peerIsAdded($user.pub, function(isMyPeer, notLoggedIn, $_peer) {
 
                         user().get('profile').once((profile) => {
-                            $user.profile = profile;
+                            // $user.profile = profile;
                             // $user.peer_apps_dev = await user().get('profile').get("peerappsDev");
                             // $user.peer_apps_v2 = await user().get('profile').get("peerapps_v2");
 
@@ -102594,7 +102731,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                 user: $user,
                                 $user: user,
                                 isMyPeer: isMyPeer,
-                                notLoggedIn: notLoggedIn
+                                notLoggedIn: notLoggedIn,
+                                profile: profile
                             })
                             profileLayout = $(profileLayout);
 
@@ -102614,7 +102752,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
                                 peerConfirm("Do you want to remove this peer?", function(Yes) {
                                     if (Yes)
-                                        _self.removePeer($user.pub, (err, removed) => {
+                                        _self.removePeer($user.pub, function(err, removed) {
                                             if (!err && removed) {
                                                 console.log("removed peer");
                                                 imports.state.reload();
@@ -102623,16 +102761,16 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                 });
                             });
 
-                            if (profile) {
-                                if (profile.display_name)
-                                    user().get('profile').get("display_name").once(function(display_name) {
-                                        profileLayout.find("#display_name").text(display_name);
-                                    });
-                                if (profile.tagline)
-                                    user().get('profile').get("tagline").once(function(tagline) {
-                                        profileLayout.find("#tagline").text(tagline);
-                                    });
-                            }
+                            // if (profile) {
+                            //     if (profile.display_name)
+                            //         user().get('profile').get("display_name").once(function(display_name) {
+                            //             profileLayout.find("#display_name").text(display_name);
+                            //         });
+                            //     if (profile.tagline)
+                            //         user().get('profile').get("tagline").once(function(tagline) {
+                            //             profileLayout.find("#tagline").text(tagline);
+                            //         });
+                            // }
 
 
 
@@ -102646,32 +102784,62 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             });
         }
 
+        function peerIsAdded(pub, done) {
+            imports.profile.me(function(err, me, user) {
+                if (err) return done(false, true);
+                imports.user.login.user().get("profile").once(function(profile) {
+                    if (profile && profile.peers) {
+
+
+
+                        // imports.user.login.user().get("profile").get("peers").get("~" + pub).once(function(peerObj, key) {
+                        //     if (peerObj && peerObj.added > 0) {
+                        //         return done(true, false, peerObj);
+                        //     }
+                        //     else {
+                        //         return done(false, false);
+                        //     }
+                        // });
+
+                        user().get("profile").get("peers").once(function(peersL) {
+                            for (var i in peersL) {
+                                if ("~" + pub == peersL[i])
+                                    return done(true, false, i);
+                            }
+                            return done(false, false);
+                        });
+                    }
+                    else return done(false, false);
+                });
+            });
+        }
+
         register(null, {
             peer: _self = {
                 init: function() {
                     imports.app.on("login", function() {
                         // imports.layout.addNavBar(imports.app.layout.ejs.render('<li class="nav-item active" id="peers_btn"><a class="nav-link" href="/peers"><%= title %><span class="sr-only"></span></a></li>', { title: "Peers" }))
-                        
+
                         // $("#navbar-nav-right").prepend(
 
                         // );
                     });
-                    imports.state.$hash.on("peers", function() {
+                    imports.state.$hash.on("/peers", function() {
                         loadPeersPage();
                     });
-                    imports.state.$hash.on("peer", function(query) {
+                    imports.state.$hash.on("/peer", function(query) {
                         loadPeerProfile(query);
                     });
 
                     imports.app.on("start", () => {
-                        
+
                         var empty_dropdown = `<i class="fa-solid fa-circle-notch fa-spin"></i>`;
-                        
-                        
+
+
                         $("input#search").on("keydown", function(event) {
-                            if(event.key == "Enter"){
-                                 $("input#search").change();
-                                 return false;
+                            if (event.key == "Enter") {
+                                $("input#search").change();
+                                return false;
                             }
                             return true;
                         });
@@ -102696,13 +102864,23 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                         var hideTimer = false;
 
                         $("#searchresults").html(empty_dropdown);
-                        
+
+
+                        $(document).click(function(event) {
+                            var ns = $(event.target).closest("#nav-search")
+                            var found = ns.length;
+
+                            if (!found) {
+                                $("#search").dropdown("hide");
+                            }
+                        });
+
                         $("input#search").change(function() {
                             if (val != $("input#search").val()) {
                                 val = $("input#search").val();
                             }
                             else return;
-                            
+
                             $("#searchresults").html(empty_dropdown);
                             $("#search").dropdown("show");
 
@@ -102812,41 +102990,47 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
                     })
                 },
+                isMyPeer: peerIsAdded,
                 addPeer: function(pub, callback) {
                     if (imports.gun.user().is) {
-                        getPeerData("~" + pub, function(data, profile, pubRoot) {
-                            if (data)
-                                imports.gun.user().get("profile").get("peers").set(pubRoot, (res) => {
-                                    if (!res.err) {
+                        peerIsAdded(pub, function(isMyPeer, notLoggedIn, peer) {
+                            getPeerData("~" + pub, function(data, profile, pubRoot) {
+                                if (data && !isMyPeer)
+                                    imports.gun.user().get("profile").get("peers").set("~" + pub, (res) => {
                                         console.log("added peer");
-                                        callback(null, true);
-                                    }
-                                    else callback(res.err);
-                                });
-                            else callback(data);
+                                        callback(null, data);
+                                    });
+                                else
+                                if (data && isMyPeer) {
+                                    callback("already a peer");
+                                }
+                                else callback("not a peer");
+                            });
                         });
-                        return;
-
                     }
                 },
                 removePeer: function(pub, callback) {
                     if (imports.gun.user().is) {
-                        getPeerData("~" + pub, function(data, profile, pubRoot) {
-                            if (data) {
-                                var myPeersList = imports.gun.user().get("profile").get("peers");
+                        peerIsAdded(pub, function(isMyPeer, notLoggedIn, peer) {
+                            if (isMyPeer) {
+                                imports.gun.user().get("profile").get("peers").get(peer).put(null, () => {
 
-                                myPeersList.unset(pubRoot);
-                                setTimeout(function() {
-
-                                    console.log("added removed");
+                                    console.log("removed peer");
                                     callback(null, true);
+                                });
 
-                                }, 500)
+                                // console.log(peer);
+                                // imports.gun.user().get("profile").get("peers").get("~" + pub).put({ added: 0 }, (res) => {
 
+                                //     console.log("removed peer");
+                                //     callback(null, true);
+                                // });
                             }
-                            else callback(data);
+                            else callback("not my peer");
                         });
-                        return;
+
+                        //     }
+                        // });
 
                     }
                 },
@@ -102880,7 +103064,24 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             });
                         }
                     })
-                }
+                },
+                unsetPeers: function(done) {
+                    imports.profile.me(function(err, me, user) {
+                        if (!err) {
+
+                            user().get("profile").get("peers").once(function(peersL) {
+                                for (var i in peersL) {
+                                    if (i != "_" && i != "#" && peersL[i]) {
+                                        imports.gun.user().get("profile").get("peers").get(i).put(null);
+                                        done(i, peersL[i]);
+                                    }
+                                }
+                                done("unset peers done");
+                            });
+                        }
+                    });
+                },
+
             }
         });
 
@@ -102899,34 +103100,194 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
     /* global $ */
-    appPlugin.consumes = ["app", "user", "gun", "state", "user", "profile", "peer"];
+    appPlugin.consumes = ["app", "user", "gun", "state", "user", "profile", "peer", "layout"];
     appPlugin.provides = ["posts"];
-    
+
     return appPlugin;
 
     function appPlugin(options, imports, register) {
+
+        var {
+            app,
+            layout,
+            user,
+            gun,
+            state,
+            user,
+            profile,
+            peer
+        } = imports;
+
+        var login = user.login;
+
+        var {
+            SEA,
+            Gun
+        } = gun;
 
         var _self;
 
         register(null, {
             posts: _self = {
                 init: function() {
-                    imports.state.$hash.on("posts", function() {
-                        
-                        loadPeersPosts();
-                        
+                    imports.state.$hash.on("/posts", function(args, currentState, lastState, onDestroy) {
+                        if (args.length == 0) {
+                            loadPostFeed(false, onDestroy);
+                        }
+                        else {
+                            loadPostFeed(args[0], onDestroy);
+                        }
                     });
 
                 }
             }
         });
 
-    }
-    
-    function loadPeersPosts(){
-        
-    }
 
+        function loadPostFeed($pub, onDestroy) {
+            var act = {};
+
+            act.a = () => {
+                if(login.user)
+                    act.b("~"+login.user().is.pub);
+                else act.z();
+            };
+
+            act.b = (pub) => {
+                user.getUser(pub, false, function(err, userData, user, isMe) {
+                    if (err) console.log(err);
+                    profile.load(user, function(profile) {
+                        var profileLayout = $(imports.app.layout.ejs.render(__webpack_require__(/*! ./post_feed.html */ "./src/peersocial/posts/post_feed.html"), {
+                            userData: userData,
+                            isMe:isMe,
+                            profile: profile
+                        }));
+                        $("#main-container").html(profileLayout);
+
+                        var posts = [];
+                        user().get("test_posts").once(function($posts) {
+                            var count = 0;
+                            var recCount = 0;
+                            for (var i in $posts) {
+                                if (i != "_" && i != "#" && $posts[i] && !$posts[i]['#'])
+                                    count += 1;
+                            }
+                            for (var i in $posts) {
+                                if (i != "_" && i != "#" && $posts[i] && !$posts[i]['#']) {
+                                    (function(hash,timestamp){
+                                    user().get("test_posts#").get(hash).once(async ($post, hash) => {
+                                        if ($post) {
+                                            var post = await SEA.verify($post, userData.pub);
+                                            post.timestamp = timestamp;
+                                            if (post)
+                                                posts.push(post);
+                                        }
+                                        recCount += 1;
+                                        if (count == recCount)
+                                            act.c(posts, profileLayout, userData, profile);
+                                    });
+                                    })($posts[i], $posts._[">"][i] );
+                                }
+
+                            }
+                        });
+
+                    });
+                });
+            };
+
+            act.c = (posts, profileLayout, userData, profile) => {
+                var feedCleared = false;
+                
+                for (var i in posts) {
+                    if(!posts[i].data) continue;
+                    
+                    var post_view_message = imports.app.layout.ejs.render(__webpack_require__(/*! ./post_view_message.html */ "./src/peersocial/posts/post_view_message.html"), {
+                        post: posts[i]
+                    });
+
+                    if(!feedCleared){
+                        profileLayout.find("#post_feed").html("");
+                        feedCleared = true;
+                    }
+                    profileLayout.find("#post_feed").prepend(post_view_message);
+                }
+            };
+            
+            act.z = ()=>{//fail
+                
+            };
+
+            if (!$pub) {
+                act.a();
+            }
+            else {
+                switch ($pub) {
+                    case 'new':
+                        user.me(function(err, me, $user) {
+                            if (err) return;
+
+                            var model = layout.modal(__webpack_require__(/*! ./post_box.html */ "./src/peersocial/posts/post_box.html"));
+
+
+                            model.find("#post_message").click(async() => {
+                                // alert("posting");
+                                var message = model.find("#type_message_input").val();
+
+                                message = await SEA.sign({
+                                    type: "message",
+                                    data: message
+                                    // , timestamp: new Date().getTime()
+                                }, login.user()._.sea);
+
+                                SEA.work(message, null, function(hash) {
+                                    $user().get("test_posts#").get(hash).put(message, function() {
+                                        $user().get("test_posts").set(hash, function(data, key) {
+                                            console.log("test_posts", data, key);
+                                            model.close(true);
+                                        });
+                                    });
+
+                                }, { name: "SHA-256" });
+
+
+                            });
+
+                            onDestroy(function() {
+                                model.close();
+                            });
+                        });
+                        break;
+
+                    default:
+                         act.b($pub);
+                }
+            }
+
+        }
+
+        function createPost() {
+
+
+            let message = { text: 'hello' };
+            let userPub = gun.user().is.pub;
+
+            // Logged in user writes a message in his signed graph. Notice, it should be an object in order to have a soul
+            gun.user().get('messages').set(message).on(async(data, key) => {
+                let soul = Gun.node.soul(data);
+                let hash = await SEA.work(soul, null, null, { name: 'SHA-256' });
+                gun.get('#messages').get(userPub + '#' + hash).put(soul); // User puts a hashed soul of the message in a public content-addressed node
+            });
+            // then anyone can list messages of a particular userPub right from the private graph
+            gun.get('#messages').get({ '.': { '*': userPub } }).map().once(soul => {
+                gun.user(userPub).get('messages').get(soul).once(d => {
+                    console.log(d); // 'hello world!', true
+                });
+            });
+
+        }
+
+    }
 }).call(exports, __webpack_require__, exports, module),
 		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
@@ -102962,7 +103323,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             user().get("profile").once(function(profile) {
                 if (!profile) return act.done(profile_out);
 
-                profile_out = profile;
+                profile_out = JSON.parse(JSON.stringify(profile));
 
                 next();
             });
@@ -103057,6 +103418,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                     }, { async: true }).then(function(profileLayout) {
                                         profileLayout = $(profileLayout);
 
+                                        $("#main-container").html("");
                                         $("#main-container").html(profileLayout);
 
                                         for (var i in profileTabs) {
@@ -103090,12 +103452,13 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                         }
                     }
 
-                    imports.state.$hash.on("profile", openProfile);
+                    imports.state.$hash.on("/profile", openProfile);
 
                 },
                 add_profile_tab: function(tab_fn) {
                     profileTabs.push(tab_fn);
-                }
+                },
+                load:loadProfileData
             }
         });
 
@@ -103149,7 +103512,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 /***/ ((module, exports, __webpack_require__) => {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
-
+    /* globals $ */
     var EventEmitter = (__webpack_require__(/*! events */ "./node_modules/events/events.js").EventEmitter);
     var url = __webpack_require__(/*! url */ "./node_modules/url/url.js");
     var cookie = __webpack_require__(/*! cookie */ "./node_modules/cookie/index.js");
@@ -103158,37 +103521,66 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         exdays = exdays || 365;
         const d = new Date();
         d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-        
-        Math.floor((60 * 60 * 24 * 7)/1000)
-        
+
+        Math.floor((60 * 60 * 24 * 7) / 1000);
+
         let _cookie = cookie.serialize(cname, cvalue);
-        
-        _cookie += "; Max-Age=" + Math.floor((60 * 60 * 24 * exdays)/1000);
+
+        _cookie += "; Max-Age=" + Math.floor((60 * 60 * 24 * exdays) / 1000);
         _cookie += "; Expires=" + d.toUTCString();
         _cookie += "; Path=/";
         // cookie += "; Domain=";
-         document.cookie = _cookie;
+        document.cookie = _cookie;
     }
-    
-    
-    console.log(cookie.parse(document.cookie));
 
-    document.cookie = setCookie("checkthis","yes");
-
-    console.log(cookie.parse(document.cookie));
-    
     function AppState() {
 
         var _self = this;
         this.currentState = History.getState();
         this.lastState = false;
 
-        if (this.currentState.hash.split("?")[0] == '/') {
-            _self.pushState("/home", "Home");
-            this.currentState = History.getState();
-        }
+        // window.onbeforeunload = function() {
+        //     return true;
+        // };
+
+        // window.addEventListener('unload', function(event) {
+        //     console.log('GOOD BYE!');
+        // });
+
+        const events = [
+            "pagehide", "pageshow",
+            "unload", "load"
+        ];
+
+        const eventLogger = event => {
+            switch (event.type) {
+                case "pagehide":
+                case "pageshow":
+                    let isPersisted = event.persisted ? "persisted" : "not persisted";
+                    console.log('Event:', event.type, '-', isPersisted);
+                    break;
+                default:
+                    console.log('Event:', event.type);
+                    break;
+            }
+        };
+
+        events.forEach(eventName =>
+            window.addEventListener(eventName, eventLogger)
+        );
+
+
+        // if (this.currentState.hash.split("?")[0] == '/') {
+        //     _self.pushState("/home", "Home");
+        //     this.currentState = History.getState();
+        // }
 
         History.Adapter.bind(window, 'statechange', function() { // Note: We are using statechange instead of popstate
+            if (!_self.is_replaceState) {
+                _self.lastState = _self.currentState;
+            }
+            _self.is_replaceState = false;
+
             _self.currentState = History.getState(); // Note: We are using History.getState() instead of event.state  
             _self.emitCurrentState();
         });
@@ -103197,7 +103589,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             $(e.target).find("a").click(function() {
                 var urlPath = $(this).attr('href');
                 var title = $(this).text();
-                if (urlPath.indexOf("/") == 0) {
+                if (urlPath && urlPath.indexOf("/") == 0) {
                     //var _hash = urlPath.split("?")[0].split("~").shift().substring(1);
 
                     var $url = url.parse(urlPath, true);
@@ -103205,7 +103597,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     $path = $path.split("/");
                     $path.shift();
 
-                    var _hash = $path.shift();
+                    var _hash = "/" + $path.shift();
 
                     if (appState.$hash._events[_hash]) {
                         _self.pushState(urlPath, title, urlPath);
@@ -103213,19 +103605,18 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     }
                     return false; // prevents default click action of <a ...>
                 }
-                else if (urlPath.indexOf("#") > -1) {
+                else if (urlPath && urlPath.indexOf("#") > -1) {
                     //urlPath = "/"+urlPath.substring(urlPath.indexOf("#")+1);
                     //_self.pushState(urlPath, title, urlPath);
                 }
-            })
+                else
+                    return false; // cancel click
+            });
         });
 
         function animate(timestamp) {
 
-            appState.$hash.emit("/render", timestamp);
-
-            if (_self.lastHash)
-                appState.$hash.emit("/render-" + _self.lastHash, timestamp);
+            appState.$hash.emit("render", timestamp);
 
             window.requestAnimationFrame(animate);
         }
@@ -103238,6 +103629,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         //       return false; // prevents default click action of <a ...>
         //   });
 
+        // _self.replaceState()
     }
 
     AppState.prototype = new EventEmitter();
@@ -103247,34 +103639,45 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     AppState.prototype.init = function() {
 
         var _self = this;
-        //console.log("state",_self.currentState);
 
-
-        // Change our States
-        // 	History.pushState({state:1}, "State 1", "?state=1"); // logs {state:1}, "State 1", "?state=1"
-        // 	History.pushState({state:2}, "State 2", "?state=2"); // logs {state:2}, "State 2", "?state=2"
-        // 	History.replaceState({state:3}, "State 3", "?state=3"); // logs {state:3}, "State 3", "?state=3"
-        // 	History.pushState(null, null, "?state=4"); // logs {}, '', "?state=4"
-        // 	History.back(); // logs {state:3}, "State 3", "?state=3"
-        // 	History.back(); // logs {state:1}, "State 1", "?state=1"
-        // 	History.back(); // logs {}, "Home Page", "?"
-        // 	History.go(2); // logs {state:3}, "State 3", "?state=3"
-
-
-
-        setInterval(function() {
-
-        }, 5000);
+        return; //app called init
 
     };
 
     AppState.prototype.pushState = function(urlPath, title) {
-        title = "PeerSocial " + (typeof title == "string" && title != "undefined" ? title : false) || 0;
-        $("title").text(title);
-        History.pushState({ urlPath: urlPath }, title || "PeerSocial", urlPath);
+        title = "PeerSocial.io" + (typeof title == "string" && title != "undefined" ? " " + title : "");
+
+        if (typeof urlPath == "string")
+            urlPath = { urlPath: urlPath };
+
+        if (!urlPath) urlPath = {};
+
+        if (!urlPath.urlPath) {
+            var $url = url.parse(this.currentState.url, true);
+            urlPath.urlPath = $url.path;
+        }
+        urlPath.render_time = (new Date).getTime();
+
+        History.pushState(urlPath, title, urlPath.urlPath);
+        $("title").text(title); //set new title after pushState :)
     };
     AppState.prototype.replaceState = function(urlPath, title) {
-        History.replaceState({ urlPath: urlPath }, "PeerSocial " + title || 0, urlPath);
+
+        title = "PeerSocial.io" + (typeof title == "string" && title != "undefined" ? " " + title : "");
+
+        if (typeof urlPath == "string")
+            urlPath = { urlPath: urlPath };
+
+        if (!urlPath) urlPath = {};
+
+        if (!urlPath.urlPath) {
+            var $url = url.parse(this.currentState.url, true);
+            urlPath.urlPath = $url.path;
+        }
+        urlPath.render_time = (new Date).getTime();
+        this.is_replaceState = true;
+        History.replaceState(urlPath, title, urlPath.urlPath);
+        $("title").text(title); //set new title after pushState :)
     };
 
     AppState.prototype.currentState_destructors = [];
@@ -103282,45 +103685,47 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     AppState.prototype.emitCurrentState = function() {
 
         var _self = this;
+        appState.$hash.once("render", function() {
 
-        appState.$hash.emit('200', appState.currentHash, appState.lastHash);
-        while (_self.currentState_destructors.length) {
-            _self.currentState_destructors.pop()();
-        }
+            appState.$hash.emit('200', appState.currentState, appState.lastState);
 
-        setTimeout(function() {
+            while (_self.currentState_destructors.length) {
+                _self.currentState_destructors.pop()();
+            }
 
-            var $url = url.parse(_self.currentState.url, true);
-            var $path = $url.pathname + ($url.hash || '');
-            $path = $path.split("/");
-            $path.shift();
+            setTimeout(function() {
+                appState.$hash.once("render", function() {
 
-            var _hash = $path.shift();
-            // if (_hash == "index.html") _hash = "home";
-            if (appState.$hash._events[_hash]) {
-                appState.$hash.emit(_hash, $path, appState.currentState, appState.lastHash, function onDestroy(fn) {
-                    if (typeof fn == "function") _self.currentState_destructors.push(fn);
+                    var $url = url.parse(_self.currentState.url, true);
+                    var $path = $url.pathname + ($url.hash || '');
+                    $path = $path.split("/");
+                    $path.shift();
+
+                    var _hash = "/" + $path.shift();
+                    // if (_hash == "index.html") _hash = "home";
+                    if (appState.$hash._events[_hash]) {
+                        appState.$hash.emit(_hash, $path, appState.currentState, appState.lastState, function onDestroy(fn) {
+                            if (typeof fn == "function") _self.currentState_destructors.push(fn);
+                        });
+
+                    }
+                    else {
+                        appState.$hash.emit('404', appState.currentState, appState.lastState);
+                    }
+
                 });
-
-            }
-            else {
-                appState.$hash.emit('404', appState.currentHash, appState.lastHash);
-            }
-
-        }, 1)
-    }
+            }, 300)
+        });
+    };
 
     Object.defineProperty(
         AppState.prototype,
         'hash', {
             get: function() {
-                return this.currentHash;
+                throw new Error("BAD");
             },
             set: function(hash) {
-                if (hash == this.currentHash)
-                    this.emitCurrentState()
-                else
-                    this.history.setHash(hash);
+                throw new Error("BAD");
             }
         }
     );
@@ -103339,9 +103744,12 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     AppState.prototype.history = History;
 
     AppState.prototype.reload = function() {
-        this.emitCurrentState()
-    }
+        this.emitCurrentState();
+    };
 
+    AppState.prototype.back = function() {
+        this.history.back();
+    };
 
     var appState = new AppState();
 
@@ -103356,7 +103764,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         imports.app.on("start", () => {
             setTimeout(function() {
 
-                appState.emitCurrentState();
+                // appState.emitCurrentState();
+
+                // if(!appState.currentState.data.urlPath)
+                appState.replaceState();
 
             }, 100)
         });
@@ -103758,7 +104169,7 @@ module.exports = function(imports) {
             imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }), true
         );
     };
-    
+
     // login.menu = false;
 
     login.prepLogout = function() {
@@ -103770,16 +104181,258 @@ module.exports = function(imports) {
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <img class="user-avatar rounded-circle" style="max-width: 32px;" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
         </a>
-        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+        <div class="dropdown-menu dropdown-menu-right text-center" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="/profile">Profile</a>
+          <a class="dropdown-item" href="/posts">Posts</a>
+          <a class="dropdown-item" href="/peers">Peers</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="/logout">Logout</a>
         </div>
       </li>`, {}, true);
-      
+
     };
 
-    login.openLogin = function(done) {
+    login.openLogin = function(done, onDestroy) {
+        // var done;
+        var canceled = false;
+        
+        var model = imports.app.layout.modal(loginModel, {
+            close: () => {
+                if (done)
+                    return done(canceled);
+                imports.app.state.history.back();
+            }
+        });
+
+        var createAccount = false;
+        var creating = false;
+        var creatingPair = false;
+
+        if (onDestroy)
+            onDestroy(function() {
+                model.close();
+            });
+
+
+        model.find(".close-modal").click(function() {
+            if (!createAccount) {
+                canceled = true;
+                model.modal('hide');
+            }
+            else {
+                createAccount = false;
+                model.find(".error").text("");
+                model.find("#confirmpwfield").hide().val("");
+                model.find("#password").val("");
+                model.find("#login_alias").text("Login");
+            }
+        });
+
+        model.find("#auth_apparatus").change(function() {
+            if (createAccount)
+                model.find("#cancel").click();
+
+            model.find(".error").text("");
+
+            model.find("#pubkey").attr("type", "password");
+
+            var value = $(this).val();
+
+            model.find(".login_ALIAS").hide();
+            model.find(".login_ONLYKEY-USB").hide();
+            model.find(".login_PUBKEY").hide();
+
+            model.find(".login_" + value).show();
+
+        });
+        model.find("#auth_apparatus").change();
+
+        model.find("#username").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login_alias").click();
+            }
+        });
+        model.find("#password").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login_alias").click();
+            }
+        });
+
+        model.find("#tag").keyup(function(event) {
+            if (event.keyCode == 13) { //enter
+                model.find("#login_onlykey-usb").click();
+            }
+        });
+
+        var $login_pubkey = async(pair) => {
+            model.find("#pubkey").attr("type", "password");
+
+            try {
+                if (pair == "") throw ("Faile to load Key")
+                pair = JSON.parse(pair);
+            }
+            catch (e) {
+                // model.find(".error").text("Faile to load Key");
+                model.find(".error").css("color", "red").html("<b>Faile to load Key.</b>&nbsp;<a href='javascript:' id='create'>Generate Key?</a>");
+                var create = model.find(".error").find("#create");
+                create.click(function() {
+                    gun.SEA.pair().then((pair) => {
+                        pair = JSON.stringify(pair);
+                        model.find("#pubkey").val(pair).focusout(() => model.find("#pubkey").attr("type", "password")).focusin(() => model.find("#pubkey").attr("type", "text")).focus().select();
+                        model.find(".error").css("color", "red").html("<b>COPY PAIR SOMEWHERE SAFE!</b> and click Login");
+                        creatingPair = true;
+                        // console.log(pair);
+                    });
+                });
+                return;
+            }
+
+            gun.user().auth(pair, async function(res) {
+                if (!res.err) {
+                    if (login.user) {
+                        if (creatingPair) {
+                            creatingPair = false;
+                            await gun.user().get("pub").put(pair.pub);
+                            await gun.user().get("epub").put(pair.epub);
+                            await gun.user().get("alias").put("~" + pair.pub);
+                        }
+                        model.modal("hide");
+                        login.prepLogout();
+                        imports.app.emit("login", login.user);
+                    }
+                }
+            });
+
+        };
+
+        var $login_hardware = async(tag, pasconfm) => {
+            if (!imports.app.nw_app || !imports.app.nw_app.is_localhost)
+                ONLYKEY((OK) => {
+                    var ok = OK();
+                    ok_login(ok);
+                });
+            else
+                ok_login(imports.app.nw_app.onlykey);
+
+            function ok_login(ok) {
+                if (!tag) tag = "";
+
+                ok.derive_public_key(tag, 1, false, (err, key) => {
+                    ok.derive_shared_secret(tag, key, 1, false, (err, sharedsec, key2) => {
+                        $login(tag, sharedsec, createAccount == tag ? sharedsec : false);
+                    });
+                });
+            }
+        };
+
+        var $login = async(usr, pas, pasconfm) => {
+            if (creating) return;
+
+            model.find("#password_error").text("");
+            model.find("#confirm-password_error").text("");
+
+            if (pasconfm) {
+                if (!(pasconfm == pas && usr == createAccount)) {
+                    model.find("#password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
+                    model.find("#confirm-password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
+                    return;
+                }
+                else {
+                    if (!(usr == createAccount)) {
+                        createAccount = false;
+                        pasconfm = "";
+                        model.find(".error").text("");
+                        model.find("#tag_error").text("");
+                        model.find("#pubkey_error").text("");
+                        model.find("#password_error").text("");
+                        model.find("#confirm-password_error").text("");
+                        model.find("#confirm-password").val("");
+                        model.find("#confirmpwfield").hide();
+                    }
+                }
+            }
+
+            if (usr && pas) {
+                login.getUserPub(usr, function(error, usr_pub) {
+                    gun.user().auth(usr_pub || usr, pas, function(res) {
+                        if (!res.err) {
+                            if (login.user) {
+                                model.modal("hide");
+                                login.prepLogout();
+                                // me((err, $me, $user) => {
+                                //     if (err) console.log(err);
+                                //     var uid32 = generateUID32("~" + $me.pub);
+                                //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
+                                imports.app.emit("login", login.user);
+
+                                // });
+                            }
+                        }
+                        else {
+                            if (res.err == "Wrong user or password.") {
+                                // var uid = false;
+                                // if (usr.indexOf("#") > -1) {
+                                //     usr = usr.split("#");
+                                //     uid = usr[1];
+                                //     usr = usr[0];
+                                // }
+                                // gun.aliasToPub("@" + usr, uid, (pub) => {
+                                //     if (!pub) {
+                                if (createAccount && !creating) {
+                                    creating = true;
+                                    gun.user().create(usr, pas, function(ack) {
+                                        if (ack.pub) {
+                                            creating = false;
+                                            $login(usr, pas);
+                                        }
+                                    }, {
+                                        already: true
+                                    });
+                                }
+                                else {
+                                    model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='javascript:' id='create'>Create User?</a>");
+                                    var create = model.find(".error").find("#create");
+                                    create.click(function() {
+                                        model.find("#confirmpwfield").show().focus();
+                                        model.find("#login_alias").text("Create Account");
+                                        model.find(".error").text("Creating Account");
+                                        createAccount = usr;
+                                    });
+                                }
+                                //     }
+                                //     else {
+                                //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
+                                //     }
+                                // });
+                            }
+                        }
+
+                    });
+
+                })
+            }
+
+        };
+
+        model.find("#login_alias").click(() => {
+            var usr = model.find("#username").val();
+            var pas = model.find("#password").val();
+            var pasconfm = model.find("#confirm-password").val();
+            $login(usr, pas, pasconfm);
+        });
+
+        model.find("#login_onlykey-usb").click(() => {
+            var tag = model.find("#tag").val();
+            $login_hardware(tag);
+        });
+
+        model.find("#login_pubkey").click(() => {
+            var tag = model.find("#pubkey").val();
+            $login_pubkey(tag);
+        });
+    };
+
+    login.openLogin_ = function(done) {
 
         var model = $(loginModel);
 
@@ -103795,7 +104448,7 @@ module.exports = function(imports) {
 
         var canceled = false;
 
-        model.find(".cancel-login").click(function() {
+        model.find(".close-modal").click(function() {
             if (!createAccount) {
                 canceled = true;
                 model.modal('hide');
@@ -103811,15 +104464,15 @@ module.exports = function(imports) {
         model.on("hide.bs.modal", function() {
             if (done)
                 return done(canceled);
-            if (imports.app.state.lastHash)
-                imports.app.state.hash = imports.app.state.lastHash;
-            else {
-                if (imports.app.state.history.length > 0)
-                    imports.app.state.history.back();
-                else {
-                    imports.app.state.hash = "home";
-                }
-            }
+            // if (imports.app.state.lastHash)
+            //     imports.app.state.hash = imports.app.state.lastHash;
+            // else {
+            //     if (imports.app.state.history.length > 0)
+            imports.app.state.history.back();
+            // else {
+            //     imports.app.state.hash = "/";
+            // }
+            // }
         });
         model.on("hidden.bs.modal", () => {
             model.modal("dispose");
@@ -104140,10 +104793,11 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             if (login.user) {
                 login.user().once(function(data) {
                     if (!data) data = {};
-                    data.uid32 = generateUID32(login.user().is.pub);
-                    data.alias = data.alias || login.user().is.pub;
-                    data.pub = data.pub || login.user().is.pub;
-                    callback(null, data, login.user);
+                    var $data = JSON.parse(JSON.stringify(data));
+                    $data.uid32 = generateUID32(login.user().is.pub);
+                    $data.alias = data.alias || login.user().is.pub;
+                    $data.pub = data.pub || login.user().is.pub;
+                    callback(null, $data, login.user);
                 });
             }
             else callback(new Error("User Not Logged in"));
@@ -104167,15 +104821,15 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
 
             function withPub(pub) {
-                if (login.user && "~" + login.user().is.pub == pub) {
+                if (login.user && login.user().is.pub == pub) {
                     me((err, data, user) => {
-                        callback(err, data, user, true);
+                        callback(err, JSON.parse(JSON.stringify(data)), user, true);
                     });
                 }
                 else
                 if (pub) {
                     gun.get("~" + pub).once((data) => {
-                        callback(null, data, () => { return gun.get("~" + pub); });
+                        callback(null, JSON.parse(JSON.stringify(data)), () => { return gun.get("~" + pub); });
                     });
                 }
                 else {
@@ -104192,9 +104846,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                     init: function() {
 
 
-                        imports.app.state.$hash.on("login", function() {
+                        imports.app.state.$hash.on("/login", function(args, currentState, lastState, onDestroy) {
                             if (!login.user && !authorize()) {
-                                login.openLogin();
+                                login.openLogin(false, onDestroy);
                             }
                             if (login.user && !authorize()) {
                                 login.prepLogout();
@@ -104202,7 +104856,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             }
                         });
 
-                        imports.app.state.$hash.on("logout", function() {
+                        imports.app.state.$hash.on("/logout", function(args, currentState, lastState, onDestroy) {
                             login.userLogout();
                         });
 
@@ -104251,7 +104905,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 init: function() {
                     
                     
-                    imports.state.$hash.on("home",function(){
+                    imports.state.$hash.on("/",function(){
                         // if(!imports.app.nw_app){
                         if(!imports.gun.user().is){
                             $("#main-container").html(__webpack_require__(/*! ./welcome.html */ "./src/peersocial/welcome/welcome.html"))
@@ -104638,11 +105292,15 @@ setTimeout(function() {
 
     architect(config, function(err, app) {
         if (err) return console.error(err.message);
+        
+        if(app.services.app.debug)
+            window.$app = app.services.app;//so we can access it in devConsole
+            
         for (var i in app.services) {
             if (app.services[i].init) app.services[i].init(app);
             app.services.app[i] = app.services[i];
         }
-
+        
         app.services.app.emit("start");
 
 

@@ -200,7 +200,7 @@ function appPlugin(options, imports, register) {
     // console.log('Server started on port ' + port + ' with /gun');
     server.init = function() {
 
-        server.listen(port, function() {
+        server.listen(port, "0.0.0.0", function() {
             console.log('Server started on port ' + port + ' with /gun');
 
             express_app.use(function(req, res, next) {

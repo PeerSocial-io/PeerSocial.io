@@ -1,8 +1,9 @@
 module.exports = (config, server) => {
 
-
+    console.log("App Mode", process.env.APP_ENV);
+    
     if (server) {
-        
+
     }
     else {
 
@@ -11,7 +12,7 @@ module.exports = (config, server) => {
         config.push(require("./state/plugin"));
         config.push(require("./gun/plugin"));
         config.push(require("./user/plugin"));
-        
+
         //app
         config.push(require("./welcome/plugin"));
         config.push(require("./profile/plugin"));

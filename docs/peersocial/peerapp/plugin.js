@@ -23,7 +23,7 @@ define(function(require, exports, module) {
                 init: function() {
 
 
-                    imports.state.$hash.on("peerapp-run", async(query) => {
+                    imports.state.$hash.on("/peerapp-run", async(query) => {
                         query = query.split("@");
                         var id = query[1].split("~");
                         query[1] = id[0];
@@ -44,7 +44,7 @@ define(function(require, exports, module) {
                     });
 
 
-                    imports.state.$hash.on("peerapp-view", async(query) => {
+                    imports.state.$hash.on("/peerapp-view", async(query) => {
                         query = query.split("@");
                         var id = query[1].split("~");
                         query[1] = id[0];
@@ -76,7 +76,7 @@ define(function(require, exports, module) {
                         })
                     });
 
-                    imports.state.$hash.on("peerapp-edit", async(query) => {
+                    imports.state.$hash.on("/peerapp-edit", async(query) => {
                         query = query.split("@");
                         var id = query[1].split("~");
                         query[1] = id[0];
@@ -130,7 +130,7 @@ define(function(require, exports, module) {
 
                     /*  
 
-                    imports.state.$hash.on("peerapp-test", async(id) => {
+                    imports.state.$hash.on("/peerapp-test", async(id) => {
 
                         if (imports.gun.user().is) {
                             imports.user.me(async function(err, me, user) {
@@ -148,7 +148,7 @@ define(function(require, exports, module) {
                     */
                     /*
                     
-                    imports.state.$hash.on("peerapp-edit", async(id) => {
+                    imports.state.$hash.on("/peerapp-edit", async(id) => {
 
                         if (imports.gun.user().is) {
                             imports.user.me(async function(err, me, user) {
@@ -203,7 +203,7 @@ define(function(require, exports, module) {
                     */
 
                     /*
-                    imports.state.$hash.on("peerapp", function() {
+                    imports.state.$hash.on("/peerapp", function() {
                         if (imports.gun.user().is) {
                             imports.user.me(async function(err, me, user) {
                                 //var profileImage = await user.get("profileImage");

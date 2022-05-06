@@ -107,7 +107,7 @@ module.exports = function(imports) {
             imports.app.layout.ejs.render('<li class="nav-item active" id="login_btn"><a class="nav-link" href="/login"><%= login %><span class="sr-only"></span></a></li>', { login: "Login" }), true
         );
     };
-    
+
     // login.menu = false;
 
     login.prepLogout = function() {
@@ -119,32 +119,40 @@ module.exports = function(imports) {
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <img class="user-avatar rounded-circle" style="max-width: 32px;" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
         </a>
-        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+        <div class="dropdown-menu dropdown-menu-right text-center" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="/profile">Profile</a>
+          <a class="dropdown-item" href="/posts">Posts</a>
+          <a class="dropdown-item" href="/peers">Peers</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="/logout">Logout</a>
         </div>
       </li>`, {}, true);
-      
+
     };
 
-    login.openLogin = function(done) {
-
-        var model = $(loginModel);
-
-        model.modal({
-            show: true,
-            backdrop: 'static',
-            keyboard: false
+    login.openLogin = function(done, onDestroy) {
+        // var done;
+        var canceled = false;
+        
+        var model = imports.app.layout.modal(loginModel, {
+            close: () => {
+                if (done)
+                    return done(canceled);
+                imports.app.state.history.back();
+            }
         });
 
         var createAccount = false;
         var creating = false;
         var creatingPair = false;
 
-        var canceled = false;
+        if (onDestroy)
+            onDestroy(function() {
+                model.close();
+            });
 
-        model.find(".cancel-login").click(function() {
+
+        model.find(".close-modal").click(function() {
             if (!createAccount) {
                 canceled = true;
                 model.modal('hide');
@@ -156,27 +164,6 @@ module.exports = function(imports) {
                 model.find("#password").val("");
                 model.find("#login_alias").text("Login");
             }
-        });
-        model.on("hide.bs.modal", function() {
-            if (done)
-                return done(canceled);
-            if (imports.app.state.lastHash)
-                imports.app.state.hash = imports.app.state.lastHash;
-            else {
-                if (imports.app.state.history.length > 0)
-                    imports.app.state.history.back();
-                else {
-                    imports.app.state.hash = "home";
-                }
-            }
-        });
-        model.on("hidden.bs.modal", () => {
-            model.modal("dispose");
-            model.remove();
-        });
-        model.on("shown.bs.modal", () => {
-
-            model.find("#username").focus();
         });
 
         model.find("#auth_apparatus").change(function() {
@@ -381,7 +368,6 @@ module.exports = function(imports) {
             var tag = model.find("#pubkey").val();
             $login_pubkey(tag);
         });
-
     };
 
     login.userLogout = function() {

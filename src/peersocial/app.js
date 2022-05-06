@@ -40,11 +40,15 @@ setTimeout(function() {
 
     architect(config, function(err, app) {
         if (err) return console.error(err.message);
+        
+        if(app.services.app.debug)
+            window.$app = app.services.app;//so we can access it in devConsole
+            
         for (var i in app.services) {
             if (app.services[i].init) app.services[i].init(app);
             app.services.app[i] = app.services[i];
         }
-
+        
         app.services.app.emit("start");
 
 
