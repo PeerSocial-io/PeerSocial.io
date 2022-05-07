@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
     /* global $ */
-    appPlugin.consumes = ["app", "state", "profile", "user", "gun", "layout"];
+    appPlugin.consumes = ["app", "state", "profile", "user", "gun", "layout", "posts"];
     appPlugin.provides = ["peer"];
 
     return appPlugin;
@@ -9,7 +9,7 @@ define(function(require, exports, module) {
 
         var _self;
 
-        var gun = imports.gun;
+        var { gun, posts } = imports;
 
         function getPeerData(pub, done) {
             gun.get(pub).once(function(userData) {
@@ -27,7 +27,7 @@ define(function(require, exports, module) {
                 }
                 else {
 
-                    if (userData && !userData.profile){
+                    if (userData && !userData.profile) {
                         $userData = JSON.parse(JSON.stringify(userData));
                         $userData.profile = false;
                     }
@@ -220,9 +220,10 @@ define(function(require, exports, module) {
             });
         }
 
+        var profileTabs = [];
 
-        function loadPeerProfile(query) {
-            query = query[0].split("@");
+        function loadPeerProfile($query) {
+            var query = $query[0].split("@");
             imports.user.getUser(query[1] || query[0], query[1] ? query[0] : false, function(err, $user, user) {
                 if (err) {
                     console.log(err)
@@ -284,6 +285,13 @@ define(function(require, exports, module) {
 
 
                             $("#main-container").html(profileLayout);
+
+                            for (var i in profileTabs) {
+                                profileTabs[i]($query, $user, user, profile, profileLayout);
+                            }
+
+
+                            // profileLayout.find(".nav-tabs").find("[href='/peer/" + query.join("/") + "']").addClass("active")
 
                         });
                     });
@@ -589,10 +597,38 @@ define(function(require, exports, module) {
                         }
                     });
                 },
-
+                add_profile_tab: function(tab_fn) {
+                    profileTabs.push(tab_fn);
+                },
             }
         });
 
+        _self.add_profile_tab(function(query, me, user, profile, profileLayout) {
+            var tab = $('<li class="nav-item"><a class="nav-link" href="/peer/' + query[0] + '">Posts</a></li>');
+            profileLayout.find("#profileTabs").append(tab);
+
+            if (!query[1]) {
+                tab.find("a").addClass("active");
+                profileLayout.find(".tab-content").append("posts:" + JSON.stringify(query));
+            }
+            // profileLayout.find(".tab-content").append(""+JSON.stringify(query));
+
+
+        });
+
+
+        _self.add_profile_tab(function(query, me, user, profile, profileLayout) {
+            var tab = $('<li class="nav-item"><a class="nav-link" href="/peer/' + query[0] + '/media">Media</a></li>');
+            profileLayout.find("#profileTabs").append(tab);
+            if (query[1] == "media") {
+                tab.find("a").addClass("active");
+                profileLayout.find(".tab-content").append("media:" + JSON.stringify(query));
+            }
+            // profileLayout.find(".tab-content").append(""+JSON.stringify(query));
+
+
+            
+        });
     }
 
 });

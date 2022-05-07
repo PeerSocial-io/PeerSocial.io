@@ -81241,7 +81241,7 @@ module.exports = "<div>\n<style>\n.peer-cards > .card {\n    display: inline-blo
   \********************************************/
 /***/ ((module) => {
 
-module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n\n            <div class=\"text-center\">\n                <img src=\"<%- (user.profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" alt=\"avatar\">\n            </div><br/>\n            <div class=\"row\" style=\"padding-bottom:1px;\">\n                <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= user.alias %></h1>#<%= user.uid32 %></div></div>\n            </div><br/>\n            <ul class=\"list-group text-center\">\n                <li class=\"list-group-item\" id=\"display_name\"><%- (profile && profile.display_name ? profile.display_name :'') %></li>\n                <li class=\"list-group-item\" id=\"tagline\"><%- (profile && profile.tagline ? profile.tagline :'') %></li>\n            </ul>\n            <hr/>\n\n\n            <% if(!notLoggedIn)\n                if(!isMyPeer){ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-primary\" id=\"addPeer\">Add Peer</a>\n            <% }else{ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-danger\" id=\"removePeer\">Remove Peer</a>\n            <% } %>\n            <br/>\n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n\n            <ul class=\"nav nav-tabs\" id=\"myTab\" role=\"tablist\">\n            </ul>\n\n            <div class=\"tab-content\">\n                \n                \n                <div class=\"tab-pane active\" role=\"tabpanel\" id=\"profile-apps\">\n\n                    \n\n                </div>\n\n            </div>\n        </div>\n\n    </div>\n</div>";
+module.exports = "<div class=\"container bootstrap snippet\">\n    <div class=\"row\">\n        <div class=\"col-sm-3\">\n\n            <div class=\"text-center\">\n                <img src=\"<%- (user.profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_2x.png') %>\" class=\"avatar img-circle img-thumbnail\" alt=\"avatar\">\n            </div><br/>\n            <div class=\"row\" style=\"padding-bottom:1px;\">\n                <div class=\"col-sm-10\"><div style=\"border: 1px solid #ddd;display:inline-block;\"><h1 style=\"display: inline;\"><%= user.alias %></h1>#<%= user.uid32 %></div></div>\n            </div><br/>\n            <ul class=\"list-group text-center\">\n                <li class=\"list-group-item\" id=\"display_name\"><%- (profile && profile.display_name ? profile.display_name :'') %></li>\n                <li class=\"list-group-item\" id=\"tagline\"><%- (profile && profile.tagline ? profile.tagline :'') %></li>\n            </ul>\n            <hr/>\n\n\n            <% if(!notLoggedIn)\n                if(!isMyPeer){ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-primary\" id=\"addPeer\">Add Peer</a>\n            <% }else{ %>\n                <a href=\"javascript:undefined;\" class=\"btn btn-block btn-danger\" id=\"removePeer\">Remove Peer</a>\n            <% } %>\n            <br/>\n        </div>\n        <style>\n            .tab-content {\n                border-left: 1px solid #ddd;\n                border-right: 1px solid #ddd;\n                border-bottom: 1px solid #ddd;\n                padding: 10px;\n            }\n\n            .nav-tabs {\n                margin-bottom: 0;\n            }\n        </style>\n        <div class=\"col-sm-9\">\n\n            <ul class=\"nav nav-tabs\" id=\"profileTabs\">\n                <!--<li class=\"nav-item\">-->\n                <!--    <a class=\"nav-link\" href=\"/profile\">Profile</a>-->\n                <!--</li>-->\n            </ul>\n\n            <div class=\"tab-content\">\n                <!--/tab-pane-->\n                <!--<div class=\"tab-pane\" role=\"tabpanel\" id=\"profile-main2\">page2</div>-->\n                \n            </div>\n        </div>\n\n    </div>\n</div>";
 
 /***/ }),
 
@@ -87990,16 +87990,20 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
     function appPlugin(options, imports, register) {
 
         $(document).on('DOMNodeInserted', function(e) {
-            $(e.target).find("time").timeago();
-
-            $(e.target).find(".dropdown-item").each((i, e) => {
-                var self = $(e);
-                self.click(() => {
-                    var dropdown_id = self.closest(".dropdown-menu").attr("aria-labelledby");
-                    self.closest('.navbar-collapse').collapse('hide');
-                    $("#"+dropdown_id).dropdown('hide');
+            var $ta = $(e.target).find("time");
+            if($ta.length) 
+                $ta.timeago();
+            
+            var ddi = $(e.target).find(".dropdown-item");
+            if(ddi.length)
+                $(e.target).find(".dropdown-item").each((i, e) => {
+                    var self = $(e);
+                    self.click(() => {
+                        var dropdown_id = self.closest(".dropdown-menu").attr("aria-labelledby");
+                        self.closest('.navbar-collapse').collapse('hide');
+                        $("#"+dropdown_id).dropdown('hide');
+                    });
                 });
-            });
             
         });
 
@@ -102492,7 +102496,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
     /* global $ */
-    appPlugin.consumes = ["app", "state", "profile", "user", "gun", "layout"];
+    appPlugin.consumes = ["app", "state", "profile", "user", "gun", "layout", "posts"];
     appPlugin.provides = ["peer"];
 
     return appPlugin;
@@ -102501,7 +102505,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         var _self;
 
-        var gun = imports.gun;
+        var { gun, posts } = imports;
 
         function getPeerData(pub, done) {
             gun.get(pub).once(function(userData) {
@@ -102519,7 +102523,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                 }
                 else {
 
-                    if (userData && !userData.profile){
+                    if (userData && !userData.profile) {
                         $userData = JSON.parse(JSON.stringify(userData));
                         $userData.profile = false;
                     }
@@ -102712,9 +102716,10 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             });
         }
 
+        var profileTabs = [];
 
-        function loadPeerProfile(query) {
-            query = query[0].split("@");
+        function loadPeerProfile($query) {
+            var query = $query[0].split("@");
             imports.user.getUser(query[1] || query[0], query[1] ? query[0] : false, function(err, $user, user) {
                 if (err) {
                     console.log(err)
@@ -102776,6 +102781,13 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
 
                             $("#main-container").html(profileLayout);
+
+                            for (var i in profileTabs) {
+                                profileTabs[i]($query, $user, user, profile, profileLayout);
+                            }
+
+
+                            // profileLayout.find(".nav-tabs").find("[href='/peer/" + query.join("/") + "']").addClass("active")
 
                         });
                     });
@@ -103081,10 +103093,38 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                         }
                     });
                 },
-
+                add_profile_tab: function(tab_fn) {
+                    profileTabs.push(tab_fn);
+                },
             }
         });
 
+        _self.add_profile_tab(function(query, me, user, profile, profileLayout) {
+            var tab = $('<li class="nav-item"><a class="nav-link" href="/peer/' + query[0] + '">Posts</a></li>');
+            profileLayout.find("#profileTabs").append(tab);
+
+            if (!query[1]) {
+                tab.find("a").addClass("active");
+                profileLayout.find(".tab-content").append("posts:" + JSON.stringify(query));
+            }
+            // profileLayout.find(".tab-content").append(""+JSON.stringify(query));
+
+
+        });
+
+
+        _self.add_profile_tab(function(query, me, user, profile, profileLayout) {
+            var tab = $('<li class="nav-item"><a class="nav-link" href="/peer/' + query[0] + '/media">Media</a></li>');
+            profileLayout.find("#profileTabs").append(tab);
+            if (query[1] == "media") {
+                tab.find("a").addClass("active");
+                profileLayout.find(".tab-content").append("media:" + JSON.stringify(query));
+            }
+            // profileLayout.find(".tab-content").append(""+JSON.stringify(query));
+
+
+            
+        });
     }
 
 }).call(exports, __webpack_require__, exports, module),
@@ -103100,7 +103140,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
     /* global $ */
-    appPlugin.consumes = ["app", "user", "gun", "state", "user", "profile", "peer", "layout"];
+    appPlugin.consumes = ["app", "user", "gun", "state", "user", "profile", "layout"];
     appPlugin.provides = ["posts"];
 
     return appPlugin;
@@ -103114,8 +103154,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             gun,
             state,
             user,
-            profile,
-            peer
+            profile
         } = imports;
 
         var login = user.login;
@@ -103211,6 +103250,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                         feedCleared = true;
                     }
                     profileLayout.find("#post_feed").prepend(post_view_message);
+                    profileLayout.find("#type_message_input").focus();
                 }
             };
             
@@ -104430,262 +104470,6 @@ module.exports = function(imports) {
             var tag = model.find("#pubkey").val();
             $login_pubkey(tag);
         });
-    };
-
-    login.openLogin_ = function(done) {
-
-        var model = $(loginModel);
-
-        model.modal({
-            show: true,
-            backdrop: 'static',
-            keyboard: false
-        });
-
-        var createAccount = false;
-        var creating = false;
-        var creatingPair = false;
-
-        var canceled = false;
-
-        model.find(".close-modal").click(function() {
-            if (!createAccount) {
-                canceled = true;
-                model.modal('hide');
-            }
-            else {
-                createAccount = false;
-                model.find(".error").text("");
-                model.find("#confirmpwfield").hide().val("");
-                model.find("#password").val("");
-                model.find("#login_alias").text("Login");
-            }
-        });
-        model.on("hide.bs.modal", function() {
-            if (done)
-                return done(canceled);
-            // if (imports.app.state.lastHash)
-            //     imports.app.state.hash = imports.app.state.lastHash;
-            // else {
-            //     if (imports.app.state.history.length > 0)
-            imports.app.state.history.back();
-            // else {
-            //     imports.app.state.hash = "/";
-            // }
-            // }
-        });
-        model.on("hidden.bs.modal", () => {
-            model.modal("dispose");
-            model.remove();
-        });
-        model.on("shown.bs.modal", () => {
-
-            model.find("#username").focus();
-        });
-
-        model.find("#auth_apparatus").change(function() {
-            if (createAccount)
-                model.find("#cancel").click();
-
-            model.find(".error").text("");
-
-            model.find("#pubkey").attr("type", "password");
-
-            var value = $(this).val();
-
-            model.find(".login_ALIAS").hide();
-            model.find(".login_ONLYKEY-USB").hide();
-            model.find(".login_PUBKEY").hide();
-
-            model.find(".login_" + value).show();
-
-        });
-        model.find("#auth_apparatus").change();
-
-        model.find("#username").keyup(function(event) {
-            if (event.keyCode == 13) { //enter
-                model.find("#login_alias").click();
-            }
-        });
-        model.find("#password").keyup(function(event) {
-            if (event.keyCode == 13) { //enter
-                model.find("#login_alias").click();
-            }
-        });
-
-        model.find("#tag").keyup(function(event) {
-            if (event.keyCode == 13) { //enter
-                model.find("#login_onlykey-usb").click();
-            }
-        });
-
-        var $login_pubkey = async(pair) => {
-            model.find("#pubkey").attr("type", "password");
-
-            try {
-                if (pair == "") throw ("Faile to load Key")
-                pair = JSON.parse(pair);
-            }
-            catch (e) {
-                // model.find(".error").text("Faile to load Key");
-                model.find(".error").css("color", "red").html("<b>Faile to load Key.</b>&nbsp;<a href='javascript:' id='create'>Generate Key?</a>");
-                var create = model.find(".error").find("#create");
-                create.click(function() {
-                    gun.SEA.pair().then((pair) => {
-                        pair = JSON.stringify(pair);
-                        model.find("#pubkey").val(pair).focusout(() => model.find("#pubkey").attr("type", "password")).focusin(() => model.find("#pubkey").attr("type", "text")).focus().select();
-                        model.find(".error").css("color", "red").html("<b>COPY PAIR SOMEWHERE SAFE!</b> and click Login");
-                        creatingPair = true;
-                        // console.log(pair);
-                    });
-                });
-                return;
-            }
-
-            gun.user().auth(pair, async function(res) {
-                if (!res.err) {
-                    if (login.user) {
-                        if (creatingPair) {
-                            creatingPair = false;
-                            await gun.user().get("pub").put(pair.pub);
-                            await gun.user().get("epub").put(pair.epub);
-                            await gun.user().get("alias").put("~" + pair.pub);
-                        }
-                        model.modal("hide");
-                        login.prepLogout();
-                        imports.app.emit("login", login.user);
-                    }
-                }
-            });
-
-        };
-
-        var $login_hardware = async(tag, pasconfm) => {
-            if (!imports.app.nw_app || !imports.app.nw_app.is_localhost)
-                ONLYKEY((OK) => {
-                    var ok = OK();
-                    ok_login(ok);
-                });
-            else
-                ok_login(imports.app.nw_app.onlykey);
-
-            function ok_login(ok) {
-                if (!tag) tag = "";
-
-                ok.derive_public_key(tag, 1, false, (err, key) => {
-                    ok.derive_shared_secret(tag, key, 1, false, (err, sharedsec, key2) => {
-                        $login(tag, sharedsec, createAccount == tag ? sharedsec : false);
-                    });
-                });
-            }
-        };
-
-        var $login = async(usr, pas, pasconfm) => {
-            if (creating) return;
-
-            model.find("#password_error").text("");
-            model.find("#confirm-password_error").text("");
-
-            if (pasconfm) {
-                if (!(pasconfm == pas && usr == createAccount)) {
-                    model.find("#password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
-                    model.find("#confirm-password_error").css("color", "red").html("<b>Passwords Do Not Match</a>");
-                    return;
-                }
-                else {
-                    if (!(usr == createAccount)) {
-                        createAccount = false;
-                        pasconfm = "";
-                        model.find(".error").text("");
-                        model.find("#tag_error").text("");
-                        model.find("#pubkey_error").text("");
-                        model.find("#password_error").text("");
-                        model.find("#confirm-password_error").text("");
-                        model.find("#confirm-password").val("");
-                        model.find("#confirmpwfield").hide();
-                    }
-                }
-            }
-
-            if (usr && pas) {
-                login.getUserPub(usr, function(error, usr_pub) {
-                    gun.user().auth(usr_pub || usr, pas, function(res) {
-                        if (!res.err) {
-                            if (login.user) {
-                                model.modal("hide");
-                                login.prepLogout();
-                                // me((err, $me, $user) => {
-                                //     if (err) console.log(err);
-                                //     var uid32 = generateUID32("~" + $me.pub);
-                                //     if (!$me.uid32 || $me.uid32 != uid32) $user.get("uid32").put(uid32);
-                                imports.app.emit("login", login.user);
-
-                                // });
-                            }
-                        }
-                        else {
-                            if (res.err == "Wrong user or password.") {
-                                // var uid = false;
-                                // if (usr.indexOf("#") > -1) {
-                                //     usr = usr.split("#");
-                                //     uid = usr[1];
-                                //     usr = usr[0];
-                                // }
-                                // gun.aliasToPub("@" + usr, uid, (pub) => {
-                                //     if (!pub) {
-                                if (createAccount && !creating) {
-                                    creating = true;
-                                    gun.user().create(usr, pas, function(ack) {
-                                        if (ack.pub) {
-                                            creating = false;
-                                            $login(usr, pas);
-                                        }
-                                    }, {
-                                        already: true
-                                    });
-                                }
-                                else {
-                                    model.find(".error").css("color", "red").html("<b>" + res.err + "</b>&nbsp;<a href='javascript:' id='create'>Create User?</a>");
-                                    var create = model.find(".error").find("#create");
-                                    create.click(function() {
-                                        model.find("#confirmpwfield").show().focus();
-                                        model.find("#login_alias").text("Create Account");
-                                        model.find(".error").text("Creating Account");
-                                        createAccount = usr;
-                                    });
-                                }
-                                //     }
-                                //     else {
-                                //         model.find(".error").css("color", "red").html("<b>" + res.err + "</b>");
-                                //     }
-                                // });
-                            }
-                        }
-
-                    });
-
-                })
-            }
-
-        };
-
-        model.find("#login_alias").click(() => {
-            var usr = model.find("#username").val();
-            var pas = model.find("#password").val();
-            var pasconfm = model.find("#confirm-password").val();
-            $login(usr, pas, pasconfm);
-        });
-
-        model.find("#login_onlykey-usb").click(() => {
-            var tag = model.find("#tag").val();
-            $login_hardware(tag);
-        });
-
-        model.find("#login_pubkey").click(() => {
-            var tag = model.find("#pubkey").val();
-            $login_pubkey(tag);
-        });
-
     };
 
     login.userLogout = function() {

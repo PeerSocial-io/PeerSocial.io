@@ -1,6 +1,6 @@
 define(function(require, exports, module) {
     /* global $ */
-    appPlugin.consumes = ["app", "user", "gun", "state", "user", "profile", "peer", "layout"];
+    appPlugin.consumes = ["app", "user", "gun", "state", "user", "profile", "layout"];
     appPlugin.provides = ["posts"];
 
     return appPlugin;
@@ -14,8 +14,7 @@ define(function(require, exports, module) {
             gun,
             state,
             user,
-            profile,
-            peer
+            profile
         } = imports;
 
         var login = user.login;
@@ -111,6 +110,7 @@ define(function(require, exports, module) {
                         feedCleared = true;
                     }
                     profileLayout.find("#post_feed").prepend(post_view_message);
+                    profileLayout.find("#type_message_input").focus();
                 }
             };
             

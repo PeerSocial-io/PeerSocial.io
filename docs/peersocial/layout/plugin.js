@@ -10,16 +10,20 @@ define(function(require, exports, module) {
     function appPlugin(options, imports, register) {
 
         $(document).on('DOMNodeInserted', function(e) {
-            $(e.target).find("time").timeago();
-
-            $(e.target).find(".dropdown-item").each((i, e) => {
-                var self = $(e);
-                self.click(() => {
-                    var dropdown_id = self.closest(".dropdown-menu").attr("aria-labelledby");
-                    self.closest('.navbar-collapse').collapse('hide');
-                    $("#"+dropdown_id).dropdown('hide');
+            var $ta = $(e.target).find("time");
+            if($ta.length) 
+                $ta.timeago();
+            
+            var ddi = $(e.target).find(".dropdown-item");
+            if(ddi.length)
+                $(e.target).find(".dropdown-item").each((i, e) => {
+                    var self = $(e);
+                    self.click(() => {
+                        var dropdown_id = self.closest(".dropdown-menu").attr("aria-labelledby");
+                        self.closest('.navbar-collapse').collapse('hide');
+                        $("#"+dropdown_id).dropdown('hide');
+                    });
                 });
-            });
             
         });
 
