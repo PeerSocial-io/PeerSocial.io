@@ -4,21 +4,32 @@ module.exports = function(imports) {
     var gun = imports.gun;
     var SEA = imports.gun.SEA;
 
-    /*
+    
     SEA.name = (async(cb, opt) => {
         try {
-            if (cb) { try { cb() } catch (e) { console.log(e) } }
+            if (cb) { 
+                try { 
+                    cb();
+                } 
+                catch (e) { 
+                    console.log(e); 
+                }
+            }
             return;
         }
         catch (e) {
             console.log(e);
             SEA.err = e;
-            if (SEA.throw) { throw e }
-            if (cb) { cb() }
+            if (SEA.throw) { 
+                throw e;
+            }
+            if (cb) { 
+                cb();
+            }
             return;
         }
     });
-    */
+    
 
     // var generateUID32 = function(pub) {
     //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
@@ -53,9 +64,9 @@ module.exports = function(imports) {
     });
 
     Object.defineProperty(login, 'user_cert', {
-        set(query) {
+        set(cert) {
             if (gun.user().is) {
-                gun.user().is.cert = query;
+                gun.user().is.cert = cert;
             }
         }
     });

@@ -11,6 +11,8 @@ define(function(require, exports, module) {
 
         var { gun, posts } = imports;
 
+        var SEA = gun.SEA;
+
         function getPeerData(pub, done) {
             gun.get(pub).once(function(userData) {
                 var $userData = false;
@@ -222,7 +224,7 @@ define(function(require, exports, module) {
 
         var profileTabs = [];
 
-        function loadPeerProfile($query) {
+        function loadPeerProfile($query, onDestroy) {
             var query = $query[0].split("@");
             imports.user.getUser(query[1] || query[0], query[1] ? query[0] : false, function(err, $user, user) {
                 if (err) {
@@ -287,7 +289,7 @@ define(function(require, exports, module) {
                             $("#main-container").html(profileLayout);
 
                             for (var i in profileTabs) {
-                                profileTabs[i]($query, $user, user, profile, profileLayout);
+                                profileTabs[i]($query, $user, user, profile, profileLayout, onDestroy);
                             }
 
 
@@ -338,13 +340,13 @@ define(function(require, exports, module) {
 
                         // $("#navbar-nav-right").prepend(
 
-                        // );
+                        // );s
                     });
                     imports.state.$hash.on("/peers", function() {
                         loadPeersPage();
                     });
-                    imports.state.$hash.on("/peer", function(query) {
-                        loadPeerProfile(query);
+                    imports.state.$hash.on("/peer", function(query, currentState, lastState, onDestroy) {
+                        loadPeerProfile(query, onDestroy);
                     });
 
                     imports.app.on("start", () => {
@@ -603,32 +605,91 @@ define(function(require, exports, module) {
             }
         });
 
-        _self.add_profile_tab(function(query, me, user, profile, profileLayout) {
+        _self.add_profile_tab(function(query, userData, user, profile, profileLayout, onDestroy) {
             var tab = $('<li class="nav-item"><a class="nav-link" href="/peer/' + query[0] + '">Posts</a></li>');
             profileLayout.find("#profileTabs").append(tab);
 
-            if (!query[1]) {
+            if (!query[1]) { //posts
                 tab.find("a").addClass("active");
-                profileLayout.find(".tab-content").append("posts:" + JSON.stringify(query));
+
+                // var posts = [];
+                user().get("test_posts").map().on(function(hash, key, soul, chain) {
+                    onDestroy(function(){
+                        chain.off()
+                    })
+                    user().get("test_posts#").get(hash).once(async($post, hash) => {
+                        if ($post) {
+                            var post = await SEA.verify($post, userData.pub);
+
+                            if (post && post.data && post.type) {
+
+                                var tab = profileLayout.find(".tab-content");
+                                
+                                var $hash = Buffer.from(hash,"base64").toString("hex");
+                                
+                                if (tab.find("#" + $hash).length == 0) {
+                                    post.timestamp = soul.put[">"];
+                                    var post_view_message = $(imports.app.layout.ejs.render(require("../posts/post_view_message.html"), {
+                                        post: post
+                                    }));
+
+                                    post_view_message.attr("id", $hash);
+                                    post_view_message.data( "timestamp", post.timestamp );
+                                    
+                                    profileLayout.find(".tab-content").prepend(post_view_message);
+                                    profileLayout.find(".tab-content").find(".user-post").sort(function(a, b) {
+                                        return $(b).data("timestamp") - $(a).data("timestamp");
+                                    }).appendTo( profileLayout.find(".tab-content") );
+                                }
+                            }
+                        }
+                    });
+
+
+                    // var count = 0;
+                    // var recCount = 0;
+                    // for (var i in $posts) {
+                    //     if (i != "_" && i != "#" && $posts[i] && !$posts[i]['#'])
+                    //         count += 1;
+                    // }
+                    // for (var i in $posts) {
+                    //     if (i != "_" && i != "#" && $posts[i] && !$posts[i]['#']) {
+                    //         (function(hash, timestamp) {
+                    //             user().get("test_posts#").get(hash).once(async($post, hash) => {
+                    //                 if ($post) {
+                    //                     var post = await SEA.verify($post, userData.pub);
+                    //                     post.timestamp = timestamp;
+                    //                     if (post)
+                    //                         posts.push(post);
+                    //                 }
+                    //                 recCount += 1;
+                    //                 if (count == recCount){
+
+                    //                     // act.c(posts, profileLayout, userData, profile);
+                    //                 }
+                    //             });
+                    //         })($posts[i], $posts._[">"][i]);
+                    //     }
+
+                    // }
+                });
+
+
             }
-            // profileLayout.find(".tab-content").append(""+JSON.stringify(query));
-
-
         });
 
 
-        _self.add_profile_tab(function(query, me, user, profile, profileLayout) {
-            var tab = $('<li class="nav-item"><a class="nav-link" href="/peer/' + query[0] + '/media">Media</a></li>');
-            profileLayout.find("#profileTabs").append(tab);
-            if (query[1] == "media") {
-                tab.find("a").addClass("active");
-                profileLayout.find(".tab-content").append("media:" + JSON.stringify(query));
-            }
-            // profileLayout.find(".tab-content").append(""+JSON.stringify(query));
+        if (false) {
+            _self.add_profile_tab(function(query, me, user, profile, profileLayout) {
+                var tab = $('<li class="nav-item"><a class="nav-link" href="/peer/' + query[0] + '/media">Media</a></li>');
+                profileLayout.find("#profileTabs").append(tab);
 
-
-            
-        });
+                if (query[1] == "media") { //media
+                    tab.find("a").addClass("active");
+                    profileLayout.find(".tab-content").append("media:" + JSON.stringify(query));
+                }
+            });
+        }
     }
 
 });

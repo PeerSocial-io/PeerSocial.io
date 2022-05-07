@@ -110,7 +110,6 @@ define(function(require, exports, module) {
                         feedCleared = true;
                     }
                     profileLayout.find("#post_feed").prepend(post_view_message);
-                    profileLayout.find("#type_message_input").focus();
                 }
             };
             
@@ -127,7 +126,9 @@ define(function(require, exports, module) {
                         user.me(function(err, me, $user) {
                             if (err) return;
 
-                            var model = layout.modal(require("./post_box.html"));
+                            var model = layout.modal(require("./post_box.html"), { open: ()=>{
+                                model.find("#type_message_input").focus().trigger('click');
+                            }});
 
 
                             model.find("#post_message").click(async() => {
@@ -137,7 +138,7 @@ define(function(require, exports, module) {
                                 message = await SEA.sign({
                                     type: "message",
                                     data: message
-                                    // , timestamp: new Date().getTime()
+                                    , timestamp: new Date().getTime()// should be untrusted.. use gun's TS instead
                                 }, login.user()._.sea);
 
                                 SEA.work(message, null, function(hash) {

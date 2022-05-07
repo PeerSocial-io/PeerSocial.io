@@ -81271,7 +81271,7 @@ module.exports = "<div class=\"container\">\n    <div class=\"row text-center ro
   \*****************************************************/
 /***/ ((module) => {
 
-module.exports = "<div class=\"card border-info\">\n    <div class=\"card-header\"><%= post.type %></div>\n    <div class=\"card-body text-info text-right\">\n        <p class=\"card-text text-left\"><%= post.data %></p>\n        <% if(post.timestamp) { %>\n        <time class=\"timeago\" datetime=\"<%= (new Date(post.timestamp).toISOString()) %>\"><%= (new Date(post.timestamp).toString()) %></time>\n        <% } %>\n    </div>\n</div>\n<hr/>";
+module.exports = "<div class=\"user-post\">\n    <div class=\"card border-info\">\n        <div class=\"card-header\">\n            <%= post.type %>\n        </div>\n        <div class=\"card-body text-info text-right\">\n            <p class=\"card-text text-left\">\n                <%= post.data %>\n            </p>\n            <% if(post.timestamp) { %>\n                <time class=\"timeago\" datetime=\"<%= (new Date(post.timestamp).toISOString()) %>\"><%= (new Date(post.timestamp).toString()) %></time>\n            <% } %>\n        </div>\n    </div>\n    <hr/>\n</div>";
 
 /***/ }),
 
@@ -81311,7 +81311,7 @@ module.exports = "<div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" 
   \**************************************************/
 /***/ ((module) => {
 
-module.exports = "<div class=\"container\">\n\n    <div class=\"jumbotron p-4 p-md-5 text-white rounded bg-dark\">\n        <div class=\"col-md-6 px-0\">\n            <h1 class=\"display-4 font-italic\">Thanks for joining!</h1>\n            <p class=\"lead my-3\">Your making a difference just by participating.</p>\n        </div>\n    </div>\n\n    <div>\n        <h1>Welcome!</h1>\n        <p>Now your asking what to do with peer social.</p>\n\n        <h1>Add a Peer!</h1>\n        <p>Click Add Peer. Of you if know a peer alias#code click <a href=\"/peers\">HERE</a> and click `Lookup Peer`</p>\n\n        <!--<h1>Add a PeerApp!</h1>-->\n        <!--<p>Once you have added a friend that has created some apps.. then you can run them by visiting there profile and clicking on there app. </p>-->\n\n\n        <h1>Get the Source!</h1>\n        <p>Want the Source? Well here it is. <a href=\"https://github.com/PeerSocial-io/PeerSocial.io\">https://github.com/PeerSocial-io/PeerSocial.io</a><br/><br/>\n            \n            Reason you would want the source.\n            <ul>\n                <li>Run your own local peer.</li>\n                <li>Less restrictions to the core code.</li>\n                <li>Provide a PeerSocial.io PeerService.</li>\n                <li>Help Contribute to the core code.</li>\n                <li>Learn how it works.</li>\n                <li>Forking for your community.</li>\n                <li>Expanding the network.</li>\n            </ul> \n        </p>    \n\n        <div>\n            <h1>Let's talk about it.</h1>\n            <a class=\"discord-chat-link\" href=\"https://discord.gg/rHM4GmR\">\n                <span>Discord Chat: https://discord.gg/rHM4GmR</span>\n            </a>\n        </div>\n\n        <br/>\n        <br/>\n\n\n    </div>\n\n</div>";
+module.exports = "<div class=\"container\">\n\n    <div class=\"jumbotron p-4 p-md-5 text-white rounded bg-dark\">\n        <div class=\"col-md-6 px-0\">\n            <h1 class=\"display-4 font-italic\">Thanks for joining!</h1>\n            <p class=\"lead my-3\">Your making a difference just by participating.</p>\n        </div>\n    </div>\n\n    <div>\n        <h1>Welcome!</h1>\n        <p>Now your asking what to do with peer social.</p>\n\n        <h1>Add a Peer!</h1>\n        <p>Click Add Peer. Of you if know a peer alias#code click <a href=\"/peers\">HERE</a> and click `Lookup Peer`</p>\n\n        <!--<h1>Add a PeerApp!</h1>-->\n        <!--<p>Once you have added a friend that has created some apps.. then you can run them by visiting there profile and clicking on there app. </p>-->\n\n\n        <h1>Get the Source!</h1>\n        <p>Want the Source? Well here it is. <a href=\"https://github.com/PeerSocial-io/PeerSocial.io\">https://github.com/PeerSocial-io/PeerSocial.io</a><br/><br/>\n            \n            Reason you would want the source.\n            <ul>\n                <li>Run your own local peer.</li>\n                <li>NO restrictions to the core code.</li>\n                <li>Provide a PeerSocial.io PeerService.</li>\n                <li>Help Contribute to the core code.</li>\n                <li>Learn how it works.</li>\n                <li>Forking for your community.</li>\n                <li>Expanding the network.</li>\n            </ul> \n        </p>    \n\n        <div>\n            <h1>Let's talk about it.</h1>\n            <a class=\"discord-chat-link\" href=\"https://discord.gg/rHM4GmR\">\n                <span>Discord Chat: https://discord.gg/rHM4GmR</span>\n            </a>\n        </div>\n\n        <br/>\n        <br/>\n\n\n    </div>\n\n</div>";
 
 /***/ }),
 
@@ -81321,7 +81321,7 @@ module.exports = "<div class=\"container\">\n\n    <div class=\"jumbotron p-4 p-
   \*********************************************/
 /***/ ((module) => {
 
-module.exports = "<div class=\"container\">\n        \n    <div class=\"jumbotron p-4 p-md-5 text-white rounded bg-dark\">\n        <div class=\"col-md-6 px-0\">\n            <h1 class=\"display-4 font-italic\">PeerSocial.io</h1>\n            <p class=\"lead my-3\">A Social network for peers, by peers</p>\n        </div>\n    </div>\n    \n    <div>\n        <h1>Welcome</h1>\n        <p>Welcome to PeerSocial.io, a P2P driven social network. The Goal is to have a friendly network of apps to share and create interactions. Think of this like Every Social Media Network there is rolled into one. But there is a catch! We have to build it.</p>\n    \n        <h1>Decentralized Use</h1>\n        <p>We intend this app to be decentralized. Allowing You and your Peers to control what you see and do with your own code. </p>\n    \n        <h1>Example use</h1>\n        <h5>Alice and Bob</h5>\n        <p>Bob is a Developer and Alice is a peer. Bob has this idea to build a game, so he builds it in PeerSocial.io. Bob then publishes the code to his profile. Alice then can now run the published code on PeerSocial.io, allowing both Bob and Alice to interact\n            within the game together with GUN and PeerSocial.io. </p>\n        <p>This above example has a lot of holes to be filled. For example <b>TRUST</b> , as we work on that dont forget a lot of people blindly trust a developer to be perfect and honest. And a Bad Peer may try to attack a Good Peer using the Example use.</p>\n    \n        <h1>What Comes with PeerSocial.io</h1>\n        <p>PeerSocial.io comes with the basic stuff, Peer and Profile Management, and Most importantly \"PeerApp\" Management Framework</p>\n        <p>With These 3 Things, A Peer who can code in PeerSocial.io can create a \"PeerApp\" called PeerFeed. and PeerFeed can be a feed of posts that a peer follows that uses that app.</p>\n    \n    \n        <h1>How Does PeerSocial.io Work</h1>\n        <p>First Lets Talk about where the peer data is stored, GUN is an ecosystem of tools that let you build community run and encrypted applications. Storing the data in a p2p network with GUN allows you to interact with the cloud in a different way of communication using the tools we have today.\n            <a href=\"https://gun.eco\">Take a look Here </a></p>\n    \n        <p>So anybody can take the source and modify it for their community needs.. or they can build within PeerSocial.io and expand within it.</p>\n    \n        <h1>Privacy</h1>\n        <p>Privacy is always a concern and you should take that into account when building and using apps in the community. PeerSocial.io.io has no liability to your data. You are the person responable for your own actions.</p>\n    \n        <h1>How new is this?</h1>\n        <p>SocialPeer.io was conceived on 12/15/2019, so its just a baby. Expect things to break or just not work! we know this. So I invite you to contribute to help grow and fix these issues with us.</p>\n        \n        <h1>The Source?</h1>\n        <p>It Lives @ <a href=\"https://github.com/PeerSocial-io/PeerSocial.io\">https://github.com/PeerSocial-io/PeerSocial.io</a></p>\n    \n        <div>\n            <h1>Let's talk about it.</h1>\n            <a class=\"discord-chat-link\" href=\"https://discord.gg/rHM4GmR\">\n                <span>Discord Chat: https://discord.gg/rHM4GmR</span>\n            </a>\n            <br/><br/>\n            <a class=\"donate-with-crypto\" href=\"https://commerce.coinbase.com/checkout/61daff8b-5c13-44a2-bdd8-80688ad934e5\">\n            <span>Donate with Crypto</span>\n          </a>\n    \n            <script src=\"https://commerce.coinbase.com/v1/checkout.js?version=201807\">\n            </script>\n        </div>\n    \n        <br/>\n        <br/>\n    \n    \n    </div>\n\n</div>\n\n";
+module.exports = "<div class=\"container\">\n\n    <div class=\"jumbotron p-4 p-md-5 text-white rounded bg-dark\">\n        <div class=\"col-md-6 px-0\">\n            <h1 class=\"display-4 font-italic\">PeerSocial.io</h1>\n            <p class=\"lead my-3\">A Social network for peers, by peers</p>\n        </div>\n    </div>\n\n    <div>\n        <h1>Welcome</h1>\n        <p>Welcome to PeerSocial.io, a P2P Social Network. The goal is to have a friendly network of apps to share and create interactions. Think of this like Every Social Media Network there is rolled into one. But there is a catch! We have to build it.</p>\n\n        <h1>Decentralized!</h1>\n        <p>This is decentralized with central services. You are in control of your data. Private Data is Encrypted. Stored in the public. Protected with encryption.</p>\n\n        <h1>OpenSource!</h1>\n        <p>This is OpenSource, So anybody can take the source and modify it for their community needs, or they can build within PeerSocial.io and expand within it. Now let's talk about where the peer data is stored, GUN is an ecosystem of tools that let you build community-run and encrypted applications. Storing the data within a p2p network with GUN allows you to interact with others in a different way of communication.\n            <a href=\"https://gun.eco\">Take a look at GUN</a></p>\n\n        <h1>Privacy!</h1>\n        <p>Privacy is always a concern and PeerSocial.io has no liability or rights to your data. You are the person responsible for your data and actions.</p>\n\n        <h1>How new is this?</h1>\n        <p>SocialPeer.io was conceived on 12/15/2019 and is currently in beta. So I invite you to contribute to help grow and fix these issues with us.</p>\n\n        <h1>The Source?</h1>\n        <p>It Lives @ <a href=\"https://github.com/PeerSocial-io/PeerSocial.io\">https://github.com/PeerSocial-io/PeerSocial.io</a></p>\n\n        <div>\n            <h1>Let's talk about it.</h1>\n            <a class=\"discord-chat-link\" href=\"https://discord.gg/rHM4GmR\">\n                <span>Discord Chat: https://discord.gg/rHM4GmR</span>\n            </a>\n\n            <script src=\"https://commerce.coinbase.com/v1/checkout.js?version=201807\">\n            </script>\n        </div>\n\n        <br/>\n        <br/>\n\n\n    </div>\n\n</div>\n";
 
 /***/ }),
 
@@ -87898,35 +87898,21 @@ module.exports = function(imports) {
     return function(html, options) {
         /* globals $ */
 
-        var goBack = false;
+        var $canceled = false;
 
         var model = $(html);
 
         if (!options)
             options = {};
-        else if(options.goBack) goBack = true;
+        else if(options.goBack) $canceled = true;
 
 
         var $options = {
-            backHash: "/",
             open: function() {},
-            hide: function() {},
-            show: function() {},
-            close: function($goBack) {
-                if ($goBack) {
-                    // if (imports.app.state.lastHash)
-                    //     imports.app.state.hash = imports.app.state.lastHash;
-                    // else {
-                    // if (imports.app.state.history.length > 0)
-                        imports.app.state.back();
-                    // else {
-                    //     if (typeof options.backHash == "function")
-                    //         imports.app.state.hash = options.backHash();
-                    //     else
-                    //         imports.app.state.hash = options.backHash;
-                    // }
-                    // }
-                }
+            close: function(canceled) {
+                if (canceled) 
+                    imports.app.state.back();
+                
             }
         };
 
@@ -87944,9 +87930,9 @@ module.exports = function(imports) {
             model.close(true);
         };
 
-        model.close = function($goBack) {
-            if (!(typeof $goBack == "undefined"))
-                goBack = $goBack ? true : false;
+        model.close = function(canceled) {
+            if (!(typeof canceled == "undefined"))
+                $canceled = canceled ? true : false;
             model.modal('hide');
         };
 
@@ -87954,7 +87940,7 @@ module.exports = function(imports) {
 
         model.on("hide.bs.modal", function() {
             if (options.close)
-                options.close(goBack);
+                options.close($canceled);
         });
 
         model.on("hidden.bs.modal", () => {
@@ -102494,6 +102480,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
   \****************************************/
 /***/ ((module, exports, __webpack_require__) => {
 
+/* provided dependency */ var Buffer = __webpack_require__(/*! buffer */ "./node_modules/buffer/index.js")["Buffer"];
 var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(require, exports, module) {
     /* global $ */
     appPlugin.consumes = ["app", "state", "profile", "user", "gun", "layout", "posts"];
@@ -102506,6 +102493,8 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
         var _self;
 
         var { gun, posts } = imports;
+
+        var SEA = gun.SEA;
 
         function getPeerData(pub, done) {
             gun.get(pub).once(function(userData) {
@@ -102718,7 +102707,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
         var profileTabs = [];
 
-        function loadPeerProfile($query) {
+        function loadPeerProfile($query, onDestroy) {
             var query = $query[0].split("@");
             imports.user.getUser(query[1] || query[0], query[1] ? query[0] : false, function(err, $user, user) {
                 if (err) {
@@ -102783,7 +102772,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                             $("#main-container").html(profileLayout);
 
                             for (var i in profileTabs) {
-                                profileTabs[i]($query, $user, user, profile, profileLayout);
+                                profileTabs[i]($query, $user, user, profile, profileLayout, onDestroy);
                             }
 
 
@@ -102834,13 +102823,13 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
 
                         // $("#navbar-nav-right").prepend(
 
-                        // );
+                        // );s
                     });
                     imports.state.$hash.on("/peers", function() {
                         loadPeersPage();
                     });
-                    imports.state.$hash.on("/peer", function(query) {
-                        loadPeerProfile(query);
+                    imports.state.$hash.on("/peer", function(query, currentState, lastState, onDestroy) {
+                        loadPeerProfile(query, onDestroy);
                     });
 
                     imports.app.on("start", () => {
@@ -103099,32 +103088,81 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
             }
         });
 
-        _self.add_profile_tab(function(query, me, user, profile, profileLayout) {
+        _self.add_profile_tab(function(query, userData, user, profile, profileLayout, onDestroy) {
             var tab = $('<li class="nav-item"><a class="nav-link" href="/peer/' + query[0] + '">Posts</a></li>');
             profileLayout.find("#profileTabs").append(tab);
 
-            if (!query[1]) {
+            if (!query[1]) { //posts
                 tab.find("a").addClass("active");
-                profileLayout.find(".tab-content").append("posts:" + JSON.stringify(query));
+
+                // var posts = [];
+                user().get("test_posts").map().on(function(hash, key, soul, chain) {
+                    onDestroy(function(){
+                        chain.off()
+                    })
+                    user().get("test_posts#").get(hash).once(async($post, hash) => {
+                        if ($post) {
+                            var post = await SEA.verify($post, userData.pub);
+
+                            if (post && post.data && post.type) {
+
+                                var tab = profileLayout.find(".tab-content");
+                                
+                                var $hash = Buffer.from(hash,"base64").toString("hex");
+                                
+                                if (tab.find("#" + $hash).length == 0) {
+                                    post.timestamp = soul.put[">"];
+                                    var post_view_message = $(imports.app.layout.ejs.render(__webpack_require__(/*! ../posts/post_view_message.html */ "./src/peersocial/posts/post_view_message.html"), {
+                                        post: post
+                                    }));
+
+                                    post_view_message.attr("id", $hash);
+                                    post_view_message.data( "timestamp", post.timestamp );
+                                    
+                                    profileLayout.find(".tab-content").prepend(post_view_message);
+                                    profileLayout.find(".tab-content").find(".user-post").sort(function(a, b) {
+                                        return $(b).data("timestamp") - $(a).data("timestamp");
+                                    }).appendTo( profileLayout.find(".tab-content") );
+                                }
+                            }
+                        }
+                    });
+
+
+                    // var count = 0;
+                    // var recCount = 0;
+                    // for (var i in $posts) {
+                    //     if (i != "_" && i != "#" && $posts[i] && !$posts[i]['#'])
+                    //         count += 1;
+                    // }
+                    // for (var i in $posts) {
+                    //     if (i != "_" && i != "#" && $posts[i] && !$posts[i]['#']) {
+                    //         (function(hash, timestamp) {
+                    //             user().get("test_posts#").get(hash).once(async($post, hash) => {
+                    //                 if ($post) {
+                    //                     var post = await SEA.verify($post, userData.pub);
+                    //                     post.timestamp = timestamp;
+                    //                     if (post)
+                    //                         posts.push(post);
+                    //                 }
+                    //                 recCount += 1;
+                    //                 if (count == recCount){
+
+                    //                     // act.c(posts, profileLayout, userData, profile);
+                    //                 }
+                    //             });
+                    //         })($posts[i], $posts._[">"][i]);
+                    //     }
+
+                    // }
+                });
+
+
             }
-            // profileLayout.find(".tab-content").append(""+JSON.stringify(query));
-
-
         });
 
 
-        _self.add_profile_tab(function(query, me, user, profile, profileLayout) {
-            var tab = $('<li class="nav-item"><a class="nav-link" href="/peer/' + query[0] + '/media">Media</a></li>');
-            profileLayout.find("#profileTabs").append(tab);
-            if (query[1] == "media") {
-                tab.find("a").addClass("active");
-                profileLayout.find(".tab-content").append("media:" + JSON.stringify(query));
-            }
-            // profileLayout.find(".tab-content").append(""+JSON.stringify(query));
-
-
-            
-        });
+        if (false) {}
     }
 
 }).call(exports, __webpack_require__, exports, module),
@@ -103250,7 +103288,6 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                         feedCleared = true;
                     }
                     profileLayout.find("#post_feed").prepend(post_view_message);
-                    profileLayout.find("#type_message_input").focus();
                 }
             };
             
@@ -103267,7 +103304,9 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                         user.me(function(err, me, $user) {
                             if (err) return;
 
-                            var model = layout.modal(__webpack_require__(/*! ./post_box.html */ "./src/peersocial/posts/post_box.html"));
+                            var model = layout.modal(__webpack_require__(/*! ./post_box.html */ "./src/peersocial/posts/post_box.html"), { open: ()=>{
+                                model.find("#type_message_input").focus().trigger('click');
+                            }});
 
 
                             model.find("#post_message").click(async() => {
@@ -103277,7 +103316,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function(re
                                 message = await SEA.sign({
                                     type: "message",
                                     data: message
-                                    // , timestamp: new Date().getTime()
+                                    , timestamp: new Date().getTime()// should be untrusted.. use gun's TS instead
                                 }, login.user()._.sea);
 
                                 SEA.work(message, null, function(hash) {
@@ -104106,21 +104145,32 @@ module.exports = function(imports) {
     var gun = imports.gun;
     var SEA = imports.gun.SEA;
 
-    /*
+    
     SEA.name = (async(cb, opt) => {
         try {
-            if (cb) { try { cb() } catch (e) { console.log(e) } }
+            if (cb) { 
+                try { 
+                    cb();
+                } 
+                catch (e) { 
+                    console.log(e); 
+                }
+            }
             return;
         }
         catch (e) {
             console.log(e);
             SEA.err = e;
-            if (SEA.throw) { throw e }
-            if (cb) { cb() }
+            if (SEA.throw) { 
+                throw e;
+            }
+            if (cb) { 
+                cb();
+            }
             return;
         }
     });
-    */
+    
 
     // var generateUID32 = function(pub) {
     //     return imports.provable.toInt(imports.provable.sha256(pub)).toString().substring(0, 4);
@@ -104155,9 +104205,9 @@ module.exports = function(imports) {
     });
 
     Object.defineProperty(login, 'user_cert', {
-        set(query) {
+        set(cert) {
             if (gun.user().is) {
-                gun.user().is.cert = query;
+                gun.user().is.cert = cert;
             }
         }
     });

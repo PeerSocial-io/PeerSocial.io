@@ -1,10 +1,16 @@
-<div class="card border-info">
-    <div class="card-header"><%= post.type %></div>
-    <div class="card-body text-info text-right">
-        <p class="card-text text-left"><%= post.data %></p>
-        <% if(post.timestamp) { %>
-        <time class="timeago" datetime="<%= (new Date(post.timestamp).toISOString()) %>"><%= (new Date(post.timestamp).toString()) %></time>
-        <% } %>
+<div class="user-post">
+    <div class="card border-info">
+        <div class="card-header">
+            <%= post.type %>
+        </div>
+        <div class="card-body text-info text-right">
+            <p class="card-text text-left">
+                <%= post.data %>
+            </p>
+            <% if(post.timestamp) { %>
+                <time class="timeago" datetime="<%= (new Date(post.timestamp).toISOString()) %>"><%= (new Date(post.timestamp).toString()) %></time>
+            <% } %>
+        </div>
     </div>
+    <hr/>
 </div>
-<hr/>
