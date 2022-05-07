@@ -28,14 +28,12 @@
 
 
 
-    <script src="/app/app.js"></script>
-    
+    <script src="/peersocial/lib/jquery.js"></script>
     <script src="/bootstrap/js/bootstrap.bundle.js"></script>
     <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
     <script src="/peersocial/lib/timeago.jquery.js"></script>
 
-    
+
 </head>
 
 <body>
@@ -64,7 +62,16 @@
 
     <main role="main" class="container-fluid" id="main-container">
 
+        <div class="container">
+            <div class="d-flex justify-content-around text-center">
 
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+
+            </div>
+        </div>
+        
     </main>
 
     <div style="text-align: center;" id="app-footer">
@@ -99,6 +106,8 @@
 
 
     <!--<script data-main="/peersocial/app" src="/peersocial/lib/require.js"></script>-->
+
+    <script src="/app/app.js"></script>
 
 </body>
 
