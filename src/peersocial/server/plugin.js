@@ -18,7 +18,7 @@ var express = require('express');
 var cookieParser = require('cookie-parser');
 var cookie = require('cookie');
 
-function genHTTPS() {
+function genHTTPS(fileNames) {
     var forge = require('node-forge');
     forge.options.usePureJavaScript = true;
 
@@ -97,6 +97,14 @@ function genHTTPS() {
     cert.sign(keys.privateKey);
     var pubKey = pki.certificateToPem(cert);
 
+    if (fileNames && fileNames.key && fileNames.cert) {
+        if (!fs.existsSync(fileNames.cert) && !fs.existsSync(fileNames.key)) {
+            fs.writeFileSync(fileNames.key, privKey);
+            fs.writeFileSync(fileNames.cert, pubKey);
+            
+        }
+    }
+
     return {
         key: privKey,
         cert: pubKey
@@ -126,17 +134,19 @@ function appPlugin(options, imports, register) {
     express_app.use(Gun.serve);
 
     var http_options = {};
+    http_options.key = path.resolve('./', './cert-server.key');
+    http_options.cert = path.resolve('./', './cert-server.cert');
 
     var use_https = false;
-    if (fs.existsSync(path.resolve('./', './ssl-cert/server.key'))) {
+    if (fs.existsSync(http_options.cert) && fs.existsSync(http_options.key)) {
         use_https = true;
         console.log("HTTPS enabled");
-        http_options.key = fs.readFileSync(path.resolve('./', './ssl-cert/server.key'));
-        http_options.cert = fs.readFileSync(path.resolve('./', './ssl-cert/server.cert'));
+        http_options.key = fs.readFileSync(http_options.key);
+        http_options.cert = fs.readFileSync(http_options.cert);
     }
     else if (process.env.GEN_HTTPS) {
         use_https = true;
-        var cert = genHTTPS();
+        var cert = genHTTPS(http_options);
         console.log("GEN_HTTPS:HTTPS enabled");
         http_options.key = cert.key;
         http_options.cert = cert.cert;
@@ -204,14 +214,14 @@ function appPlugin(options, imports, register) {
             console.log('Server started on port ' + port + ' with /gun');
 
             express_app.use(function(req, res, next) {
-                
+
                 console.log('Cookies: ', req.cookies)
 
                 // Cookies that have been signed
                 console.log('Signed Cookies: ', req.signedCookies)
 
                 res.cookie('dapp', imports.app.dapp_info.pub, {
-                    signed: true, 
+                    signed: true,
                     maxAge: 60 * 60 * 24 * 7 // 1 week
                 });
 

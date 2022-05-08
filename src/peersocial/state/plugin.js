@@ -75,11 +75,11 @@ define(function(require, exports, module) {
         $(document).on('DOMNodeInserted', function(e) {
             $(e.target).find("a").click(function() {
                 var urlPath = $(this).attr('href');
+                var $url = url.parse(urlPath, true);
                 var title = $(this).text();
                 if (urlPath && urlPath.indexOf("/") == 0) {
                     //var _hash = urlPath.split("?")[0].split("~").shift().substring(1);
 
-                    var $url = url.parse(urlPath, true);
                     var $path = $url.pathname + ($url.hash || '');
                     $path = $path.split("/");
                     $path.shift();
@@ -89,15 +89,15 @@ define(function(require, exports, module) {
                     if (appState.$hash._events[_hash]) {
                         _self.pushState(urlPath, title, urlPath);
                         e.preventDefault();
+                        return false; // prevents default click action of <a ...>
                     }
-                    return false; // prevents default click action of <a ...>
                 }
                 else if (urlPath && urlPath.indexOf("#") > -1) {
                     //urlPath = "/"+urlPath.substring(urlPath.indexOf("#")+1);
                     //_self.pushState(urlPath, title, urlPath);
                 }
-                else
-                    return false; // cancel click
+                // else
+                //     return false; // cancel click
             });
         });
 

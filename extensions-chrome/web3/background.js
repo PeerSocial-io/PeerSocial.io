@@ -1,33 +1,16 @@
-// This file is currently an empty template for any potential future RPC operations.
+(function(sr) {
+	/* globals chrome globalThis ServiceWorkerGlobalScope */
 
-var win;
-try { 
-	win = browser }
-catch (e) {}
-try { 
-	win = win || chrome }
-catch (e) {}
+	if (globalThis && globalThis instanceof ServiceWorkerGlobalScope && typeof window == "undefined")
+		globalThis.window = globalThis;
 
+	// window.localStorage = chrome.storage.local;
 
-win.runtime.onSuspend.addListener(function() {
-	console.log("Suspended");
-});
-
-// listen to the content script sending requests to this extension:
-win.runtime.onMessage.addListener(function(msg, info, ack) {
-	var tmp;
-	//console.log("background:", msg);
-	msg._ = {}; // overwrite _ as it is reserved or may not be serializable.
-	if (tmp = msg.rpc) {
-		if (!(tmp = win.RPC[tmp] || win.RPC[tmp[0]])) { // check if we support the operation.
-			ack({ err: "Command '" + tmp + "' not found." });
-			return;
-		}
-		tmp(msg, ack, info); // call it!
-		return true;
+	try {
+		importScripts("app/background.js");
 	}
-	return true;
-});
+	catch (e) {
+		console.log(e);
+	}
 
-
-win.RPC = {};
+}());

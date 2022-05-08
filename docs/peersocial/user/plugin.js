@@ -50,15 +50,28 @@ define(function(require, exports, module) {
                 callback = $uid32;
                 $uid32 = false;
             }
-
-            if (alias[0] == "~")
-                alias = { pub: alias.substring(1) };
-
-            if (typeof alias == "object") {
-                withPub(alias.pub);
+            if (typeof alias == "function") {
+                callback = alias;
+                alias = false;
+                $uid32 = false;
             }
-            else {
-                gun.aliasToPub("@" + alias, $uid32, withPub);
+            
+            if(!alias){
+                me(function(err, userData, user){
+                    if(!err && userData){
+                        withPub(userData.pub);
+                    }
+                });
+            }else{
+                if (alias[0] == "~")
+                    alias = { pub: alias.substring(1) };
+    
+                if (typeof alias == "object") {
+                    withPub(alias.pub);
+                }
+                else {
+                    gun.aliasToPub("@" + alias, $uid32, withPub);
+                }
             }
 
 

@@ -17,3 +17,5 @@ cache/
 nw-dev/app/node-onlykey 
 
 GIT_HEAD
+cert-server.cert
+cert-server.key
