@@ -1,7 +1,7 @@
 {
   "name": "peersocial.io",
   "version": "0.0.1",
-  "description": "peersocial dapp",
+  "description": "peersocial dapp", 
   "scripts": {
     "prepare": "npm run build-pro",
     "build-pro": "cross-env APP_ENV=production ./run-build.sh",
