@@ -59,6 +59,9 @@
 </template>
 <script>
 export default {
+    dispose() {
+        return this;
+    },
     props: {
         num1: Number,
         num2: Number

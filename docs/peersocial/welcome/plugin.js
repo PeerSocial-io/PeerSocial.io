@@ -11,7 +11,6 @@ define(function(require, exports, module) {
     function appPlugin(options, imports, register) {
 
         var React = imports.react;
-        var ReactDOM = React.ReactDOM;
         var Vue = imports.vue;
 
         register(null, {
@@ -55,14 +54,14 @@ define(function(require, exports, module) {
                                         </div>
                                     );
                                 };
+                                
                             }
                             App.prototype = React.Component.prototype;
 
                             var root = React.dom.createRoot(document.getElementById('main-container'));
-
+                            
                             root.render(<App />);
-
-
+                            
                             // var u = $(require("./welcome-user.html"));
 
                             // $("#main-container").html(u)

@@ -17,42 +17,31 @@ define(function(require, exports, module) {
 
         function VueWrapper(MyVueComponent) {
             MyVueComponent.default ? MyVueComponent = MyVueComponent.default : null;
-            return function( componentProps ) {
+            return function(componentProps) {
                 componentProps = componentProps || {};
                 const vueRef = React.useRef(null);
-                const [vueInstance, setVueInstance] = React.useState(undefined)
+                var vueInstance;
+
 
                 React.useEffect(() => {
-                    // async function createVueInstance() {}
+                    if (!vueInstance)
+                        Vue.createApp({
+                            data() {
+                                return { props: componentProps };
 
-                    var v;
-                    // createVueInstance()
-                    setVueInstance(v = Vue.createApp({
-                        data() {
-                            return { props: componentProps }
-                            
-                        },
-                        render: function(h) {
-                            return Vue.h(MyVueComponent, this.props);
+                            },
+                            render: function(h) {
+                                return vueInstance = Vue.h(MyVueComponent, this.props);
 
-                        }
-                    }));
-                    v.mount(vueRef.current);
+                            }
+                        }).mount(vueRef.current);
 
                     return () => {
-                        vueInstance ? vueInstance.$destroy() : null
+                      (vueInstance.type.$destroy||function(){}).bind(vueInstance)();
                     };
                 }, []);
 
-                React.useEffect(() => {
-                    if (vueInstance) {
-                        vueInstance.props = vueInstance.props || {};
-                        const keys = Object.keys(componentProps)
-                        keys.forEach(key => vueInstance.props[key] = componentProps[key])
-                    }
-                }, [Object.values(componentProps)]);
-
-                return <div id="vue-component" ref={vueRef}></div>;
+                return <div ref={vueRef}/>;
             };
         }
 
