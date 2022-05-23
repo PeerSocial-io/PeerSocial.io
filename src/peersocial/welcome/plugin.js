@@ -11,7 +11,6 @@ define(function(require, exports, module) {
     function appPlugin(options, imports, register) {
 
         var React = imports.react;
-        var ReactDOM = React.ReactDOM;
         var Vue = imports.vue;
 
         register(null, {
