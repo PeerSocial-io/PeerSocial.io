@@ -19,9 +19,6 @@
     // IT IS IMPLEMENTED IN A POLYFILL/SHIM APPROACH.
     // THIS IS AN EARLY ALPHA!
 
-    // if(globalThis && globalThis instanceof ServiceWorkerGlobalScope && typeof window == "undefined")
-    //   globalThis.window = module.window = globalThis;
-      
     if(typeof window !== "undefined"){ module.window = window }
 
     var tmp = module.window || module, u;

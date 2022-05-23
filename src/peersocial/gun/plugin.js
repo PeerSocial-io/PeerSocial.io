@@ -12,19 +12,40 @@ define(function(require, exports, module) {
 
         /* global $ GUN */
         Gun = require("gun");
+
+        // Gun = require('gun/src/root');
+        // require('gun/src/shim');
+        // require('gun/src/onto');
+        // require('gun/src/valid');
+        // require('gun/src/state');
+        // require('gun/src/dup');
+        // require('gun/src/ask');
+        // require('gun/src/chain');
+        // require('gun/src/back');
+        // require('gun/src/put');
+        // require('gun/src/get');
+        // require('gun/src/on');
+        // require('gun/src/map');
+        // require('gun/src/set');
+        // require('gun/src/mesh');
+        // require('gun/src/websocket');
+        // require('gun/src/localStorage');
+
+
         require("gun/sea");
         require("gun/nts");
         require("gun/lib/unset");
         require("gun/lib/not");
         require("gun/lib/open");
         require("gun/lib/load");
-        
-        GUN.chain.cert = function(){ 
-            var gun = this; 
-            
-            gun.on('out',console.log)
-            /* do stuff */; 
-            return gun; 
+
+        GUN.chain.cert = function() {
+            var gun = this;
+
+            gun.on('out', console.log)
+            /* do stuff */
+            ;
+            return gun;
         }
 
         // require("gun/lib/webrtc");
@@ -46,18 +67,18 @@ define(function(require, exports, module) {
         addPeer("https://www.peersocial.io/gun");
         addPeer("https://peersocial-notify.herokuapp.com/gun");
         addPeer("https://gun-manhattan.herokuapp.com/gun");
-        
+
         function addPeer(peer) {
             if (!(peers.indexOf(peers) > -1)) {
-                peers.push(peer);//bradleyab
+                peers.push(peer); //bradleyab
             }
-        } 
-  
-        var gunOptions = { 
+        }
+
+        var gunOptions = {
             peers: peers,
             // super: true
         };
-          
+
         gun = Gun(gunOptions); //"https://"+window.location.host+"/gun");
 
         // var thisHost = window.location.host;

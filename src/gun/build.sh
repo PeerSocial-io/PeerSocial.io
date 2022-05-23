@@ -1,0 +1,1 @@
+browserify ./main.js -d -s GUN > ./gun.js

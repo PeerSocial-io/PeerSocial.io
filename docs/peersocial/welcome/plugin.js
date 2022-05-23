@@ -1,6 +1,7 @@
 define(function(require, exports, module) {
 
-    appPlugin.consumes = ["app", "user", "gun", "state"];
+    /* globals $ */
+    appPlugin.consumes = ["app", "user", "gun", "state", "react", "vue"];
     appPlugin.provides = ["welcome"];
 
     var fabric = require("fabric").fabric;
@@ -9,10 +10,13 @@ define(function(require, exports, module) {
 
     function appPlugin(options, imports, register) {
 
+        var React = imports.react;
+        var ReactDOM = React.ReactDOM;
+        var Vue = imports.vue;
+
         register(null, {
             welcome: {
                 init: function() {
-
 
                     imports.state.$hash.on("/", function() {
                         // if(!imports.app.nw_app){
@@ -20,10 +24,50 @@ define(function(require, exports, module) {
                             $("#main-container").html(require("./welcome.html"))
                         }
                         else {
-                            var u = $(require("./welcome-user.html"));
-                            $("#main-container").html(u)
 
-                            if (imports.app.debug) {
+                            function App() {
+
+                                this.state = {
+                                    num1: 0,
+                                    num2: 1
+                                };
+
+                                this.handleNum1Change = ({ target }) => {
+                                    this.setState({
+                                        num1: target.value
+                                    });
+                                };
+
+                                this.handleNum2Change = ({ target }) => {
+                                    this.setState({
+                                        num2: target.value
+                                    });
+                                };
+
+                                this.render = () => {
+                                    let { num1, num2 } = this.state;
+                                    var MyVue = Vue.VueWrapper(require("./welcome-user.vue"));
+                                    return (
+                                        <div className="App">
+                                            <input type="text" value={num1} onChange={this.handleNum1Change} />
+                                            <input type="text" value={num2} onChange={this.handleNum2Change} />
+                                            <MyVue num1={num1} num2={num2} />
+                                        </div>
+                                    );
+                                };
+                            }
+                            App.prototype = React.Component.prototype;
+
+                            var root = React.dom.createRoot(document.getElementById('main-container'));
+
+                            root.render(<App />);
+
+
+                            // var u = $(require("./welcome-user.html"));
+
+                            // $("#main-container").html(u)
+
+                            /*if (imports.app.debug) {
                                 var c = u.find('canvas');
                                 if (c.length) {
                                     c = $(c[0]); //select one
@@ -40,7 +84,7 @@ define(function(require, exports, module) {
                                         })
                                     })
                                 }
-                            }
+                            }*/
                         }
                         // }else{
                         //     imports.app.emit("nw-home");

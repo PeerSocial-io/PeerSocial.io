@@ -8,6 +8,8 @@ module.exports = (config, server) => {
     else {
 
         //core
+        
+        config.push(require("./react_vue/plugin"));
         config.push(require("./layout/plugin"));
         config.push(require("./state/plugin"));
         config.push(require("./gun/plugin"));

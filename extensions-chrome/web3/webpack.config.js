@@ -96,4 +96,21 @@ module.exports = [{
     plugins: plugins,
     resolve: resolve_rules,
     module: module_rules
+},{
+    entry: [path.resolve(__dirname, './src/document_load.js')],
+    output: {
+        path: path.resolve(__dirname, './app'),
+        filename: './document_load.js'
+    },
+    devtool: false,
+
+    context: __dirname,
+
+    mode: process.env.NODE_ENV,
+    // stats: 'minimal',
+    stats: 'normal',
+    externals: externals_rules,
+    plugins: plugins,
+    resolve: resolve_rules,
+    module: module_rules
 }];

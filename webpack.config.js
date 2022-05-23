@@ -3,6 +3,8 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
+const { VueLoaderPlugin } = require('vue-loader')
+
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // const pathsToClean = ['./docs'];
 // const cleanOptions = { root: __dirname, verbose: true, dry: false, exclude: [], };
@@ -24,15 +26,15 @@ plugins.push(new CleanWebpackPlugin());
 plugins.push(new CopyWebpackPlugin({
     patterns: [{
         //Note:- No wildcard is specified hence will copy all files and folders
-        from: path.resolve(__dirname,'./src'), //Will resolve to RepoDir/src/assets 
+        from: path.resolve(__dirname, './src'), //Will resolve to RepoDir/src/assets 
         to: './' //Copies all files from above dest to dist/assets
     }, {
         //Note:- No wildcard is specified hence will copy all files and folders
-        from: path.resolve(__dirname,'./node_modules/gun'), //Will resolve to RepoDir/src/assets 
+        from: path.resolve(__dirname, './node_modules/gun'), //Will resolve to RepoDir/src/assets 
         to: './gun' //Copies all files from above dest to dist/assets
     }, {
         //Note:- No wildcard is specified hence will copy all files and folders
-        from: path.resolve(__dirname,'./node_modules/@fortawesome/fontawesome-free'), //Will resolve to RepoDir/src/assets 
+        from: path.resolve(__dirname, './node_modules/@fortawesome/fontawesome-free'), //Will resolve to RepoDir/src/assets 
         to: './fontawesome' //Copies all files from above dest to dist/assets
     }, ]
 }));
@@ -54,6 +56,9 @@ plugins.push(new HtmlWebpackPlugin({
     cache: false,
     showErrors: false
 }));
+
+
+plugins.push(new VueLoaderPlugin());
 
 
 module.exports = {
@@ -83,6 +88,18 @@ module.exports = {
     },
     module: {
         rules: [{
+            test: /\.vue$/,
+            loader: 'vue-loader'
+        }, {
+            test: /\.(js|jsx)$/,
+            exclude: /node_modules/,
+            use: {
+                loader: "babel-loader",
+                options: {
+                    presets: ["@babel/preset-env", "@babel/preset-react"],
+                },
+            },
+        }, {
             test: /\.html$/i,
             use: [{
                 loader: 'raw-loader',

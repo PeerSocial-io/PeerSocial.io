@@ -14,14 +14,18 @@
   "permissions": [
     "activeTab",
     "storage",
-    "unlimitedStorage",
-    "declarativeContent",
+    "scripting",
     "tabs"
   ],
+  "host_permissions": ["https://*/", "http://*/"],
   "offline_enabled": true,
   "background": {
     "service_worker": "app/background.js"
   },
+  "web_accessible_resources": [{
+    "resources": ["app/document_load.js"],
+    "matches": ["<all_urls>", "*://*/*"]
+  }],
   "content_scripts": [{
     "matches": ["<all_urls>", "*://*/*"],
     "all_frames": true,
