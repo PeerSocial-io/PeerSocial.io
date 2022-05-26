@@ -11,21 +11,45 @@ define(function(require, exports, module) {
 
         $(document).on('DOMNodeInserted', function(e) {
             var $ta = $(e.target).find("time");
-            if($ta.length) 
+            if ($ta.length)
                 $ta.timeago();
-            
+
             var ddi = $(e.target).find(".dropdown-item");
-            if(ddi.length)
+            if (ddi.length)
                 $(e.target).find(".dropdown-item").each((i, e) => {
                     var self = $(e);
                     self.click(() => {
                         var dropdown_id = self.closest(".dropdown-menu").attr("aria-labelledby");
                         self.closest('.navbar-collapse').collapse('hide');
-                        $("#"+dropdown_id).dropdown('hide');
+                        $("#" + dropdown_id).dropdown('hide');
                     });
                 });
-            
+
         });
+        var modal = require("./modal")(imports);
+        
+        var pi_model = `<div class="modal fade" role="dialog">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">About</h5>
+                <button type="button" class="close close-modal" aria-label="Close">
+                  <span>&times;</span>
+                </button>
+              </div>
+              <div class="modal-body" >
+                <h3>
+                    <a href="/">© PeerSocial.io</a>
+                </h3>
+                <hr/>
+                <a href="/gun/examples/stats.html">GUN-STATS</a>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close-modal" id="cancel">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
 
         register(null, {
             ejs: ejs,
@@ -39,6 +63,20 @@ define(function(require, exports, module) {
                     //     });
                     // }());
 
+                    var pi = $("<div>&#8508;</div>");
+                    pi.css('position', "fixed");
+                    pi.css('right', "0");
+                    pi.css('bottom', "-6px");
+                    pi.css('user-select', "none");
+                    pi.css('cursor', "none");
+                    pi.click((e) => {
+                        if (e.ctrlKey && e.shiftKey) {
+                            imports.app.layout.modal(pi_model);
+                            // $("#app-footer").toggleClass("d-none");
+                        }
+                    });
+                    $(document.body).append(pi);
+
                     imports.state.$hash.on("404", function(currentHash, lastHash) {
                         ejs.render(require("./404-page_not_found.html"), {
                             /* options */
@@ -51,21 +89,21 @@ define(function(require, exports, module) {
                     });
 
                 },
-                modal:require("./modal")(imports),
+                modal: modal,
                 get: function($selector) {
                     return $($selector);
                 },
                 addNavBar: function(e, clear) {
                     e = $(e);
                     e.find("a").on('click', function(e) {
-                        if(!$(e.target).hasClass("dropdown-toggle"))
+                        if (!$(e.target).hasClass("dropdown-toggle"))
                             $('.navbar-collapse').collapse('hide');
                     });
                     if (clear)
                         $("#navbar-nav-right").html(e);
                     else
                         $("#navbar-nav-right").prepend(e);
-                        
+
                     return e;
                 }
             }

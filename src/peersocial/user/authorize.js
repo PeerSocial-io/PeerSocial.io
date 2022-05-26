@@ -118,7 +118,7 @@ module.exports = function(imports, login, keychain) {
                                 gun.user().leave();
                                 clearInterval(interval);
                                 imports.app.state.history.back();
-                                imports.app.state.history.reload();
+                                // imports.app.state.history.reload();
                                 return;
                             }
 
