@@ -34,7 +34,7 @@
                             </div>
                             <div class="pb-5">
                                 <div class="d-flex flex-column">
-                                    <div class="align-self-center"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
+                                    <div class="align-self-center"><img style="max-width: 4em;width:100%" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
                                 </div>
                             </div>
                         </div>
