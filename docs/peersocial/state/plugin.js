@@ -33,7 +33,7 @@ define(function(require, exports, module) {
         // window.addEventListener('unload', function(event) {
         //     console.log('GOOD BYE!');
         // });
-
+/*
         const events = [
             "pagehide", "pageshow",
             "unload", "load"
@@ -55,7 +55,7 @@ define(function(require, exports, module) {
         events.forEach(eventName =>
             window.addEventListener(eventName, eventLogger)
         );
-
+*/
 
         // if (this.currentState.hash.split("?")[0] == '/') {
         //     _self.pushState("/home", "Home");
@@ -172,6 +172,9 @@ define(function(require, exports, module) {
     AppState.prototype.emitCurrentState = function() {
 
         var _self = this;
+        
+        appState.$hash.emit('unload', appState.currentState, appState.lastState);
+        
         appState.$hash.once("render", function() {
 
             appState.$hash.emit('200', appState.currentState, appState.lastState);
@@ -179,8 +182,9 @@ define(function(require, exports, module) {
             while (_self.currentState_destructors.length) {
                 _self.currentState_destructors.pop()();
             }
-
-            setTimeout(function() {
+            
+            
+            // setTimeout(function() {
                 appState.$hash.once("render", function() {
 
                     var $url = url.parse(_self.currentState.url, true);
@@ -201,7 +205,7 @@ define(function(require, exports, module) {
                     }
 
                 });
-            }, 300)
+            // }, 300)
         });
     };
 
@@ -256,13 +260,14 @@ define(function(require, exports, module) {
                 // if(!appState.currentState.data.urlPath)
                 appState.replaceState();
 
-            }, 100)
+            }, 100);
         });
-
-        register(null, {
-            state: appState
+        
+        appState.$hash.once("render",()=>{
+            register(null, {
+                state: appState
+            });
         });
-
     }
 
 });

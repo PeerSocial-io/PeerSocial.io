@@ -1,0 +1,5 @@
+*.ts
+/temp/
+!*.d.ts
+*data*
+isolate-*
