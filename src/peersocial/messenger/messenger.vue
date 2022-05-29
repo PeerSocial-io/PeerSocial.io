@@ -11,9 +11,9 @@
         <template v-else>
             <div class="messenger_main">
                 <div class="row" style="height:-webkit-fill-available;">
-                    <div class="col-1 d-flex p-0">
+                    <div class="d-none col-sm-1 d-sm-flex   p-0">
                         <div class="d-flex flex-column col-12 bg-dark text-light pr-0 pt-2 pb-2">
-                            <div>
+                            <div class="pt-5">
                                 <div class="d-flex flex-column">
                                     <div class="align-self-center"><i class="fa-solid fa-2xl fa-house"></i></div>
                                 </div>
@@ -32,31 +32,56 @@
                                     <div class="align-self-center"><i class="pt-3 pb-3 fa-solid fa-2xl fa-gears"></i></div>
                                 </div>
                             </div>
-                            <div>
+                            <div class="pb-5">
                                 <div class="d-flex flex-column">
                                     <div class="align-self-center"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-3  text-light" style="background-color:#59626a;">
+                    <div class="d-none d-lg-block col-lg-3 col-xl-2  text-light" style="background-color:#59626a;">
                         <div class="pt-2">
                             <input type="text" class="form-control" placeholder="Search">
                         </div>
-                        <div>
-                            <div class="row pt-2 pr-2 pl-2">
-                                <div><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
-                                <div class="d-flex flex-column p-2">
+                        
+                        <div class="pt-2">
+                            <div class="d-inline-block m-0 w-100" style="white-space: nowrap;">
+                                <div class="d-inline-block"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
+                                <div class="d-inline-block align-middle p-2">
                                     <div>DISPLAY_NAME</div>
                                     <div>Last Message: ...</div>
                                 </div>
                             </div>    
                         </div>
+                        
+                        <div class="pt-2">
+                            <div class="d-inline-block m-0 w-100" style="white-space: nowrap;">
+                                <div class="d-inline-block"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
+                                <div class="d-inline-block align-middle p-2">
+                                    <div>DISPLAY_NAME</div>
+                                    <div>Last Message: ...</div>
+                                </div>
+                            </div>    
+                        </div>
+
                     </div>
-                    <div class="col-8 d-flex flex-column h-100 text-light pl-0" style="background-color:#8b939b;">
-                        <div class="container" style="background-color:#6a6f74;">
-                            <div class="d-flex justify-content-center p-2">
-                                <span>DISPLAY_NAME</span>
+                    <div class="d-flex col-12 col-sm-11 col-lg-8 col-xl-9  flex-column h-100 text-light pl-0" style="background-color:#8b939b;">
+                        <div class="container-fluid" style="background-color:#6a6f74;">
+                            <div class="d-flex p-2">
+                                <div>
+                                    <button class="btn btn-outline align-middle">
+                                        <i class="fa-solid fa-bars"></i>
+                                    </button>
+                                </div>
+                                <div class="ml-auto mr-auto">
+                                    <button class="btn btn-outline align-middle">
+                                        <span class="text-light">DISPLAY_NAME</span>
+                                    </button>
+                                </div>
+                                <div>
+                                    
+                                </div>
+                                
                             </div>
                         </div>
                         
@@ -383,6 +408,7 @@
 
     //https://gun.eco/docs/Content-Addressing
     //https://gun.eco/docs/SEA.certify
+    //https://gun.eco/docs/RAD
 
     export default {
         data() {
