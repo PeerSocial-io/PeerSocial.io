@@ -100,6 +100,18 @@ module.exports = {
                 },
             },
         }, {
+            test: /\.css$/i,
+            loader: "style-loader",
+            options: {
+                injectType: "lazyStyleTag"
+            },
+        }, {
+            test: /\.css$/i,
+            loader: "css-loader",
+            options: {
+                esModule: false,
+            },
+        }, {
             test: /\.html$/i,
             use: [{
                 loader: 'raw-loader',

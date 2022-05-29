@@ -37,7 +37,7 @@ module.exports = function(imports) {
 
         model.close = function(canceled) {
             if (!(typeof canceled == "undefined"))
-                $canceled = canceled ? true : false;
+                $canceled = canceled == true ? true : false;
             model.modal('hide');
         };
 

@@ -16,7 +16,9 @@ define(function(require, exports, module) {
                 init: function() {
 
                     imports.state.$hash.on("/messenger", function(args, currentState, lastState, onDestroy) {
-
+                        
+                        $(".navSaver").addClass("d-none");
+                        
                         var Messenger = (function() {
                             
                             var MyVue = Vue.VueWrapper(require("./messenger.vue"));

@@ -1,12 +1,12 @@
 define(function(require, exports, module) {
-
+    /* global $ */
     appPlugin.consumes = ["app", "state"];
-    appPlugin.provides = ["layout", "ejs"];
+    appPlugin.provides = ["layout", "ejs", "$"];
 
     var ejs = require("../lib/ejs");
 
     return appPlugin;
-    /* global $ */
+    
     function appPlugin(options, imports, register) {
 
         $(document).on('DOMNodeInserted', function(e) {
@@ -27,7 +27,7 @@ define(function(require, exports, module) {
 
         });
         var modal = require("./modal")(imports);
-        
+        var year = new Date().getFullYear();
         var pi_model = `<div class="modal fade" role="dialog">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -39,8 +39,16 @@ define(function(require, exports, module) {
               </div>
               <div class="modal-body" >
                 <h3>
-                    <a href="/">© PeerSocial.io</a>
+                    <a href="/">PeerSocial.io</a> © ${year}
                 </h3>
+                <h5>Funding</h5>
+                <div class="funding"></div>
+                <hr/>
+                <h5>Contributors</h5>
+                <div class="contributors"></div>
+                <hr/>
+                <h5>Dependencies</h5>
+                <div class="dependencies"></div>
                 <hr/>
                 <a href="/gun/examples/stats.html">GUN-STATS</a>
               </div>
@@ -52,6 +60,7 @@ define(function(require, exports, module) {
         </div>`;
 
         register(null, {
+            $: $,
             ejs: ejs,
             layout: {
                 ejs: ejs,
@@ -71,11 +80,32 @@ define(function(require, exports, module) {
                     pi.css('cursor', "none");
                     pi.click((e) => {
                         if (e.ctrlKey && e.shiftKey) {
-                            imports.app.layout.modal(pi_model);
+                            var model = imports.app.layout.modal(pi_model);
+                            var $funding = model.find(".funding");
+                            var funding = imports.app.package.funding;
+                            for(var i in funding){
+                                $funding.append(`<div><a href="${funding[i].url}">${funding[i].type}</a></div>`)
+                            }
+                            
+                            var $contributors = model.find(".contributors");
+                            var contributors = imports.app.package.contributors;
+                            for(var i in contributors){
+                                $contributors.append(`<div><a href="${contributors[i].url}">${contributors[i].name}</a></div>`)
+                            }
+                            
+                            var $dependencies = model.find(".dependencies");
+                            var dependencies = imports.app.package.dependencies;
+                            for(var i in dependencies){
+                                $dependencies.append(`<div>${i} : ${dependencies[i]}</div>`)
+                            }
+                            
                             // $("#app-footer").toggleClass("d-none");
                         }
                     });
                     $(document.body).append(pi);
+                    imports.state.$hash.on("about", function(currentHash, lastHash) {
+                        pi.click();
+                    });
 
                     imports.state.$hash.on("404", function(currentHash, lastHash) {
                         ejs.render(require("./404-page_not_found.html"), {
@@ -86,6 +116,11 @@ define(function(require, exports, module) {
                     });
                     imports.state.$hash.on("200", function(currentHash, lastHash) {
                         $("#main-container").html(ejs.render(require("./loading.html")));
+                    });
+                    
+                    
+                    imports.state.$hash.on("unload", function(currentHash, lastHash) {
+                        $(".navSaver").removeClass("d-none");
                     });
 
                 },
