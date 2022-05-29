@@ -1,9 +1,0 @@
-<div class="card" style="width: 18rem;">
-    <img class="card-img-top" src="<%- (profileImage || 'https://ssl.gstatic.com/accounts/ui/avatar_1x.png') %>" alt="Card image cap">
-    <div class="card-body">
-        <h5 class="card-title"><%- alias %>#<%- uid32 %></h5>
-        <p class="card-text"><%- (profile ? profile.display_name : '').substr(0, 16) %><br/>
-                <%- (profile ? profile.tagline : '').substr(0, 16) %></p>
-        <a href="/peer/~<%- pub %>" class="btn btn-primary">View Peer</a> 
-    </div>
-</div>
