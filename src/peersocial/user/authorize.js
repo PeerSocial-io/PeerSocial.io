@@ -11,9 +11,11 @@ module.exports = function(imports, login, keychain) {
     var enable_useOCAuth = true;
     var useOCAuth_domain = "www.peersocial.io";
 
-    if (imports.app.debug)
-        if (window.location.hostname == "localhost") { useOCAuth_domain = "localhost";
-            enable_useOCAuth = false; }
+    if (imports.app.debug){
+        // if (window.location.hostname == "localhost") { useOCAuth_domain = "localhost";
+            enable_useOCAuth = false; 
+        // }
+    }
 
     var dapp_info = imports.app.dapp_info;
 
@@ -94,7 +96,7 @@ module.exports = function(imports, login, keychain) {
             keychain().then((temp_dapp_user) => {
 
                 gun.user().auth(temp_dapp_user, function(res) {
-                    gun.user().get("profile").get("seen").put(new Date().getTime(), function() {
+                    gun.user().get("profile").get("seen").put(new Date().getTime()).once(function() {
                         var domain = useOCAuth_domain;
 
                         if (domain == "localhost" && hostname == "localhost") domain = window.location.host;
@@ -138,7 +140,7 @@ module.exports = function(imports, login, keychain) {
                                         login.user_cert = query;
 
                                         if (login.user) {
-                                            gun.user().get("profile").get("seen").put(new Date().getTime(), function() {
+                                            gun.user().get("profile").get("seen").put(new Date().getTime()).once(function() {
 
                                                 login.prepLogout();
                                                 imports.app.emit("login", login.user);
