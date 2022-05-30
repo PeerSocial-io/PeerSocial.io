@@ -40,11 +40,12 @@
                         </div>
                     </div>
                     <div class="d-none d-lg-block col-lg-3 col-xl-2  text-light" style="background-color:#59626a;">
+                        
                         <div class="pt-2">
                             <input type="text" class="form-control" placeholder="Search">
                         </div>
                         
-                        <div class="pt-2">
+                        <div class="pt-2 btn btn-outline text-light">
                             <div class="d-inline-block m-0 w-100" style="white-space: nowrap;">
                                 <div class="d-inline-block"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
                                 <div class="d-inline-block align-middle p-2">
@@ -54,7 +55,7 @@
                             </div>    
                         </div>
                         
-                        <div class="pt-2">
+                        <div class="pt-2 btn btn-outline text-light">
                             <div class="d-inline-block m-0 w-100" style="white-space: nowrap;">
                                 <div class="d-inline-block"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
                                 <div class="d-inline-block align-middle p-2">
@@ -69,7 +70,7 @@
                         <div class="container-fluid" style="background-color:#6a6f74;">
                             <div class="d-flex p-2">
                                 <div>
-                                    <button class="btn btn-outline align-middle">
+                                    <button class="btn btn-outline align-middle d-block d-sm-none">
                                         <i class="fa-solid fa-bars"></i>
                                     </button>
                                 </div>
@@ -89,295 +90,23 @@
                         
                         <div style="overflow-y: auto;" id="messages_data">
                             <div class="col-12">
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
+                                <div v-for="message in messages" :key="message.id">
+                                    <div class="row p-2" v-if="message.from">
+                                        <div class="container-fluid">
+                                            <div>
+                                                <span class="badge badge-pill badge-success">From Message</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row p-2" v-if="message.to">
+                                        <div class="container-fluid">
+                                            <div class="d-flex justify-content-end">
+                                                <span class="badge badge-pill badge-primary">To Message</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div>
-                                            <span class="badge badge-pill badge-success">From Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row p-2">
-                                    <div class="container-fluid">
-                                        <div class="d-flex justify-content-end">
-                                            <span class="badge badge-pill badge-primary">To Message</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
                                 
                             </div>
                         </div>
@@ -418,7 +147,22 @@
             }
         },
         created() {
-            this.loadInbox();
+            for (let i = 0; i < 50; i++) {
+                this.messages.push({
+                    from:"person", 
+                    id: i,
+                    message: "From Message"
+                })  
+                this.messages.push({
+                    to:"person", 
+                    id: ++i,
+                    message: "To Message"
+                })                
+            }
+            
+            this.loading = false;
+
+            // this.loadInbox();
         },
         methods: {
             loadInbox() {
