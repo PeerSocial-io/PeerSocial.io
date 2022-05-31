@@ -193,6 +193,7 @@ function appPlugin(options, imports, register) {
     io.on('connection', function(socket) {
         console.log("socket.io connection");
     });
+
     if (process.env.ISMASTERPEER) {}
     else {
         // var mesh = gun.back('opt.mesh'); // DAM;
@@ -214,7 +215,7 @@ function appPlugin(options, imports, register) {
             console.log('Server started on port ' + port + ' with /gun');
 
             express_app.use(function(req, res, next) {
-
+                /*
                 console.log('Cookies: ', req.cookies)
 
                 // Cookies that have been signed
@@ -224,7 +225,7 @@ function appPlugin(options, imports, register) {
                     signed: true,
                     maxAge: 60 * 60 * 24 * 7 // 1 week
                 });
-
+                */
                 res.sendFile(require("path").join(__dirname, '../../../docs', 'index.html'));
             });
         });
