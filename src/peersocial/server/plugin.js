@@ -123,14 +123,14 @@ function appPlugin(options, imports, register) {
     // Gun.log.once = console.log;
 
 
-    var casheControl = process.env.HTTP_MAXAGE || 0; //1000 * 60 * 60;
+    var casheControl = { maxAge: process.env.HTTP_MAXAGE || 0 , immutable: true } ;
     //var https = require('https');
 
     var express_app = express();
     express_app.use(cookieParser("secret"));
 
-    express_app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), { maxAge: casheControl }));
-    express_app.use(express.static(require("path").join(__dirname, '../../../docs'), { maxAge: casheControl }));
+    express_app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), casheControl));
+    express_app.use(express.static(require("path").join(__dirname, '../../../docs'), casheControl));
     express_app.use(Gun.serve);
 
     var http_options = {};
@@ -204,9 +204,9 @@ function appPlugin(options, imports, register) {
 
     server.express_app = express_app;
 
-    var bodyParser = require('body-parser');
-    express_app.use(bodyParser.json());
-    express_app.use(bodyParser.urlencoded({ extended: true }));
+    // var bodyParser = require('body-parser');
+    // express_app.use(bodyParser.json());
+    // express_app.use(bodyParser.urlencoded({ extended: true }));
 
     // console.log('Server started on port ' + port + ' with /gun');
     server.init = function() {
