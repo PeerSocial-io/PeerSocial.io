@@ -4,8 +4,8 @@
   "description": "peersocial dapp",
   "scripts": {
     "build": "npm run build-pro",
-    "build-pro": "cross-env APP_ENV=production ./run-build.sh",
-    "build-dev": "cross-env APP_ENV=development ./run-build.sh",
+    "build-pro": "APP_ENV=production ./run-build.sh",
+    "build-dev": "APP_ENV=development ./run-build.sh",
     "build-app": "cross-env NODE_ENV=development OUT_DIR=./build webpack --devtool source-map --config webpack.config.js",
     "start": "node ./server.js",
     "bash": "bash",
