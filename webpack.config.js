@@ -71,7 +71,7 @@ module.exports = {
     entry: [path.resolve(__dirname, './src/peersocial/app.js')],
     externals: {
         fs: "commonjs fs",
-        path: "commonjs path",
+    //     path: "commonjs path",
     },
     output: {
         path: path.resolve(__dirname, './docs'),
@@ -83,7 +83,8 @@ module.exports = {
         fallback: {
             crypto: require.resolve("crypto-browserify"),
             stream: require.resolve("stream-browserify"),
-            buffer: require.resolve("buffer")
+            buffer: require.resolve("buffer"),
+            path: require.resolve("path-browserify")
         }
     },
     module: {

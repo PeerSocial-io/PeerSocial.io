@@ -1,6 +1,9 @@
 var architect = require("./lib/architect");
 var events = require("events");
 
+window.architect = architect;
+
+
 require("./lib/native.history.js");
 
 var provable = require("./lib/provable.min");
@@ -11,7 +14,10 @@ var config = [];
 
 require("./config.js")(config);
 
-setTimeout(function() {
+architect.loadConfig("./package.json",function(err, package_config){
+    config = config.concat(package_config);
+
+// setTimeout(function() {
 
     if (window.nw_app || window.nw) {
         config.push(require("./nw_app/nw_app"));
@@ -54,5 +60,7 @@ setTimeout(function() {
 
 
     });
-}, 500)
+// }, 500)
 
+
+})

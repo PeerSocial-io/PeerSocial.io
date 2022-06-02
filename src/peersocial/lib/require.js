@@ -2058,7 +2058,7 @@ var requirejs, require, define;
      * return a value to define the module corresponding to the first argument's
      * name.
      */
-    define = function (name, deps, callback) {
+    req.define = define = function (name, deps, callback) {
         var node, context;
 
         //Allow for anonymous modules
@@ -2142,4 +2142,5 @@ var requirejs, require, define;
 
     //Set up with config info.
     req(cfg);
+    if(typeof module == "object" && module.exports ) module.exports = req;
 }(this, (typeof setTimeout === 'undefined' ? undefined : setTimeout)));

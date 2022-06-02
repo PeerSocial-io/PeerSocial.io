@@ -15,26 +15,26 @@
                         <div class="d-flex flex-column col-12 bg-dark text-light pr-0 pt-2 pb-2">
                             <div class="pt-5">
                                 <div class="d-flex flex-column">
-                                    <div class="align-self-center"><i class="fa-solid fa-2xl fa-house"></i></div>
+                                    <div class="align-self-center"><button class="btn text-light"><i class="fa-solid fa-2xl fa-house"></i></button></div>
                                 </div>
                             </div>
                             <div class="mt-auto mb-auto">
                                 <div class="d-flex flex-column">
-                                    <div class="align-self-center"><i class="pt-3 pb-3 fa-solid fa-2xl fa-pen"></i></div>
+                                    <div class="align-self-center"><button class="btn text-light"><i class="pt-3 pb-3 fa-solid fa-2xl fa-pen"></i></button></div>
                                 </div>
                                 
                                 <div class="d-flex flex-column">
-                                    <div class="align-self-center"><i class="pt-3 pb-3 fa-solid fa-2xl fa-inbox"></i></div>
+                                    <div class="align-self-center"><button class="btn text-light"><i class="pt-3 pb-3 fa-solid fa-2xl fa-inbox"></i></button></div>
                                 </div>
                                 
                                 
                                 <div class="d-flex flex-column">
-                                    <div class="align-self-center"><i class="pt-3 pb-3 fa-solid fa-2xl fa-gears"></i></div>
+                                    <div class="align-self-center"><button class="btn text-light"><i class="pt-3 pb-3 fa-solid fa-2xl fa-gears"></i></button></div>
                                 </div>
                             </div>
                             <div class="pb-5">
                                 <div class="d-flex flex-column">
-                                    <div class="align-self-center"><img style="max-width: 4em;width:100%" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
+                                    <div class="align-self-center"><button class="btn"><img style="max-width: 4em;width:100%" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></button></div>
                                 </div>
                             </div>
                         </div>
@@ -44,27 +44,27 @@
                         <div class="pt-2">
                             <input type="text" class="form-control" placeholder="Search">
                         </div>
-                        
-                        <div class="pt-2 btn btn-outline text-light">
-                            <div class="d-inline-block m-0 w-100" style="white-space: nowrap;">
-                                <div class="d-inline-block"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
-                                <div class="d-inline-block align-middle p-2">
-                                    <div>DISPLAY_NAME</div>
-                                    <div>Last Message: ...</div>
-                                </div>
-                            </div>    
+                        <div class="" id="inbox_list">
+                            <div class="pt-2 d-block">
+                                <button class="btn d-inline-block m-0 w-100 text-left text-light" style="white-space: nowrap;">
+                                    <div class="d-inline-block"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
+                                    <div class="d-inline-block align-middle p-2">
+                                        <div>DISPLAY_NAME</div>
+                                        <div>Last Message: ...</div>
+                                    </div>
+                                </button>    
+                            </div>
+                            
+                            <div class="pt-2 d-block">
+                                <button class=" btn d-inline-block m-0 w-100 text-left text-light" style="white-space: nowrap;">
+                                    <div class="d-inline-block"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
+                                    <div class="d-inline-block align-middle p-2">
+                                        <div>DISPLAY_NAME</div>
+                                        <div>Last Message: ...</div>
+                                    </div>
+                                </button>    
+                            </div>
                         </div>
-                        
-                        <div class="pt-2 btn btn-outline text-light">
-                            <div class="d-inline-block m-0 w-100" style="white-space: nowrap;">
-                                <div class="d-inline-block"><img style="width: 4em;" class="user-avatar rounded-circle" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png"></div>
-                                <div class="d-inline-block align-middle p-2">
-                                    <div>DISPLAY_NAME</div>
-                                    <div>Last Message: ...</div>
-                                </div>
-                            </div>    
-                        </div>
-
                     </div>
                     <div class="d-flex col-12 col-sm-11 col-lg-8 col-xl-9  flex-column h-100 text-light pl-0" style="background-color:#8b939b;">
                         <div class="container-fluid" style="background-color:#6a6f74;">
