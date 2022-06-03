@@ -1,16 +1,22 @@
 "use strict";
-
 define(function ($require, exports, module) {
+
     var requirejs = $require("./r.js");
-    requirejs.nodeRequire = $require;
-
-    requirejs.config({
-        //Pass the top-level main.js/index.js require
-        //function to requirejs so that node modules
-        //are loaded relative to the top-level JS file.
-        nodeRequire: $require
-    });
-
+    
+    if(!(typeof window == "undefined")){
+        if(!window.require) window.require = requirejs;
+    }else{
+        requirejs.nodeRequire = $require;
+        requirejs.config({
+            nodeRequire: $require
+        });
+        if(!(typeof global == "undefined")){
+            global.requirejs = requirejs;
+        }
+        if(!(typeof globalThis == "undefined")){
+            globalThis.requirejs = requirejs;
+        }
+    }
 
     /**
      * 
@@ -183,11 +189,7 @@ define(function ($require, exports, module) {
 
         var isAdditionalMode;
         var services = app.services = {
-            hub: {
-                on: function (name, callback) {
-                    app.on(name, callback);
-                }
-            }
+            hub: app
         };
 
         // Check the config

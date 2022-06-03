@@ -127,6 +127,10 @@ function appPlugin(options, imports, register) {
     //var https = require('https');
 
     var express_app = express();
+    express_app.use(function(req, res, next){
+        res.set('Access-Control-Allow-Origin', '*');
+        next();
+    });
     express_app.use(cookieParser("secret"));
 
     express_app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), casheControl));

@@ -72,7 +72,7 @@ define(function(require, exports, module) {
             _self.emitCurrentState();
         });
 
-        $(document).on('DOMNodeInserted', function(e) {
+        $(document).on('DOMNodeInserted',async function(e) {
             $(e.target).find("a").click(function() {
                 var urlPath = $(this).attr('href');
                 var $url = url.parse(urlPath, true);

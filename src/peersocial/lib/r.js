@@ -1871,12 +1871,22 @@ var requirejs, require, define, xpcUtil;
              * it is assumed to have already been normalized. This is an
              * internal API, not a public one. Use toUrl for the public API.
              */
-            nameToUrl: function (moduleName, ext) {
+            nameToUrl: function (moduleName, ext, skipExt) {
                 var paths, syms, i, parentModule, url,
                     parentPath, bundleId,
                     pkgMain = getOwn(config.pkgs, moduleName);
 				
-				var skipExt = false;
+				var checkExt = ("./"+moduleName).split("/").pop().split(".").pop();
+
+				if(!skipExt){
+
+					if(checkExt == "json"){
+						skipExt = true;
+					}
+
+					// if(checkExt == "js")
+					// 	skipExt = true;
+				}
 
                 if (pkgMain) {
                     moduleName = pkgMain;
@@ -1896,7 +1906,7 @@ var requirejs, require, define, xpcUtil;
                     //Just a plain path, not module name lookup, so just return it.
                     //Add extension if it is included. This is a bit wonky, only non-.js things pass
                     //an extension, this method probably needs to be reworked.
-                    url = moduleName + (ext || '');
+                    url = moduleName + (ext ? ext : moduleName.substr(-2) == 'js' ? '' : skipExt ? '' : '.js');
                 } else {
                     //A module that needs to be converted to a path.
                     paths = config.paths;
@@ -1922,7 +1932,7 @@ var requirejs, require, define, xpcUtil;
 
                     //Join the path parts together, then figure out if baseUrl is needed.
                     url = syms.join('/');
-                    // url += (ext || (/^data\:|^blob\:|\?/.test(url) || skipExt ? '' : '.js'));
+                    url += (ext || (/^data\:|^blob\:|\?/.test(url) || skipExt ? '' : '.js'));
                     url = (url.charAt(0) === '/' || url.match(/^[\w\+\.\-]+:/) ? '' : config.baseUrl) + url;
                 }
 
@@ -2415,15 +2425,18 @@ var requirejs, require, define, xpcUtil;
         eval(arguments[0]);
     }
 
-	require.makeDebuggerWrapper = function (contents) {
-        return '(()=>{var exports,require = require, module;'+contents+"})();";
+	require.makeDebuggerWrapper = function (contents, url) {
+return `(()=>{var exports,require = requirejs, module;
+${contents}
+})();
+//# sourceURL=${url}`;
     };
 	
-	require.makeDefineWrapper = function (contents) {
-        return `define(function(require, exports, module) {
-                	${contents};
-				});`;
-    };
+	// require.makeDefineWrapper = function (contents) {
+    //     return `define(function(require, exports, module) {
+    //             	${contents};
+	// 			});`;
+    // };
 
 	require.makeJSONWrapper = function (contents) {
         return `define(function(require, exports, module) {
@@ -2445,7 +2458,7 @@ var requirejs, require, define, xpcUtil;
 					if(url.substr(-4) == "json")
 						response = require.makeJSONWrapper(response);
 					else{
-						response = require.makeDebuggerWrapper(response);
+						response = require.makeDebuggerWrapper(response, xhr.responseURL);
 					}
 				if(xhr.status == 404 || xhr.status == 204) response = "";
 				
