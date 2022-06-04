@@ -1,6 +1,5 @@
-;(function(sr) {
+;(function(sr, the, u) {
   sr = {};
-  var u;
   sr.up = function(msg) { window.parent.postMessage(msg, '*'); } // TODO: AUDIT! THIS LOOKS SCARY, BUT '/' NOT WORK FOR SANDBOX 'null' ORIGIN. IS THERE ANYTHING BETTER?
 
   function fail() { fail.yes = 1;
@@ -30,15 +29,17 @@
   sr.workers = new Map;
   sr.run = function(msg, eve) {
     if (sr.workers.get(msg.get)) { return }
+    if(typeof theApp != typeof u && !the){
+      the = theApp(sr);
+    }
     console.log("spawn untrusted script in worker:", msg);
 
-    var url = window.URL.createObjectURL(new Blob(["(" + the + ")()||(breath = async function(){" + msg.put + "})"]));
-    var worker = new Worker(url),
-      u;
+    var url = window.URL.createObjectURL(new Blob([`(${the})()||(breath = async function(){${msg.put}});`]));
+    var worker = new Worker(url);
     sr.workers.set(worker.id = msg.get, worker);
     worker.last = worker.rate = msg.rate || 16; // 1000/60
 
-    worker.addEventListener('message', window.onmessage);
+    worker.addEventListener('message', window.onmessage);    
   }
 
   var view;
@@ -56,11 +57,25 @@
         s.className = 'secured';
         if (!s.id) { s.id = 's' + Math.random().toString(32).slice(2) }
         if (!s.rate) { s.rate = (parseFloat(s.getAttribute('rate')) || 0.016) * 1000 }
-        if (t = s.innerText) {
-          sr.run({ how: 'script', put: t, get: s.id, rate: s.rate });
+        if (t = s.innerText) {        
+          var n = (s)=>{ return ()=>{ sr.run({ how: 'script', put: t, get: s.id, rate: s.rate }); } };
+          if(s.getAttribute("src").length)
+            sr.how.content_script(s.getAttribute("src"),n(s));
+          else n(s)();          
         }
       }
     }
+  }
+
+  sr.content_scripts = new Map;
+  sr.how.content_script = function(src,next){
+    if (sr.content_scripts.get(src)) { return next() }
+    var r=document.createElement('script');
+        r.setAttribute("type","text/javascript");
+        r.setAttribute("src", src);
+        r.onload = ()=>next();
+    sr.content_scripts.set(src, r);
+    document.getElementsByTagName("head")[0].appendChild(r);
   }
 
   sr.how.localStore = function(msg, eve) {
@@ -80,6 +95,5 @@
     beep.rate = msg.rate || 1, beep.pitch = msg.pitch || 1, speechSynthesis.speak(beep);
   }
 
-  var the = theApp(sr);
 
 }());
