@@ -1,0 +1,11 @@
+<script class="SecureRender" src="./SecureRender.js" content-js="./app/test.js">
+    
+    var exposed = {
+        start: function () {
+            worker.postMessage("test2");
+            console.log("embeded script");
+        }
+    }
+
+    return exposed;
+</script>

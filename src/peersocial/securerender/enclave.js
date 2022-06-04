@@ -1,4 +1,4 @@
-;(function(sr) {
+  ;(function(sr) {
   /* WITHOUT SECURE RENDER, BROWSERS SAVE USER DATA TO THE APPLICATION'S DOMAIN.
   THIS MEANS THE DOMAIN'S OWNER CAN ACCESS YOUR DATA. SECURE RENDER FIXES THIS.
   SECURE RENDER CREATES A SECURITY CONTEXT UNDER THE USER INSTEAD, NOT THE APP.
@@ -14,7 +14,7 @@
   AN APP ONLY EVER FEEDS IN VIEW LOGIC. DATA IS NEVER SENT BACK UP! */
   /* global location MutationObserver */
   sr = { browser: (window.browser || window.chrome) };
-
+  
   (function start(i) {
     // TODO: talk to cloudflare about enforcing integrity meanwhile?
     i = sr.i = document.createElement('iframe');
@@ -27,7 +27,44 @@
     document.body.appendChild(i);
   }());
 
+  
+  window.onmessage = function(eve) { // hear from app, enclave, and workers.
+    
+    var msg = eve.data;
+    if (!msg) { return }//always have data
+
+    
+    if(eve.source === eve.currentTarget === window){ // from myself
+      eve.preventDefault();
+      eve.stopImmediatePropagation();
+      var tmp = sr.how[msg.how];
+      if (tmp) {
+        tmp(msg, eve);// or do task
+      }
+      return;
+    }
+    
+    if(eve.source === sr.i.contentWindow){//from child
+      eve.preventDefault();
+      eve.stopImmediatePropagation();
+      if(window.parent !== window)
+        window.parent.postMessage(msg, "*");
+
+      return;
+    }
+    
+    if(eve.source === window.parent){//from parent
+      eve.preventDefault();
+      eve.stopImmediatePropagation();
+      sr.send(msg);
+      return;
+    }
+    
+  };
+
+  /*
   window.onmessage = function(eve) {
+    console.log(eve.data)
     eve.preventDefault();
     eve.stopImmediatePropagation();
     var msg = eve.data,
@@ -35,12 +72,14 @@
     //console.log("ENCLAVE ONMESSAGE", msg);
     if (!msg) { return }
     //if(eve.origin !== location.origin){ console.log('meow?',eve); return }
-    if (eve.source !== sr.i.contentWindow) { return sr.send(msg) }
+    if (eve.source !== sr.i.contentWindow) { 
+      return sr.send(msg) 
+    }
     tmp = sr.how[msg.how];
     if (!tmp) { return }
     tmp(msg, eve);
   };
-
+*/
   sr.how = {
     // localStorage is not async, so here is a quick async version for testing.
     localStore: function(msg, eve) {

@@ -1,10 +1,8 @@
 console.log("the")
 
-function theApp(sr) {
-
-    var u;
-
-    function the() { // THIS CODE RUNS INSIDE THE WEBWORKER!
+function SecureRender(sr, u) {
+    
+    function the(breath) { // THIS CODE RUNS INSIDE THE WEBWORKER!
         if (this.the) {
             return the
         }
@@ -46,7 +44,7 @@ function theApp(sr) {
                 if (!up.s.length) {
                     return
                 }
-                up(up.s);
+                up({how:"msg",data:up.s});
                 up.s = [];
                 return;
             }
@@ -299,7 +297,7 @@ function theApp(sr) {
     ;
     (function () {
         // this is the CSS3 matrix transform rendering engine fallback. WebGL would be preferred.
-        sr.how.view = function (list) {
+        sr.worker.msg = function (list) {
             //console.log("render:", list);
             //view.innerHTML = "";
             // fill

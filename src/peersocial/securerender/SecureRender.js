@@ -39,24 +39,30 @@
     i.onload = function() { sr.send({ put: sr.html, how: 'html' }) }
     sr.send = function(msg) { i.contentWindow.postMessage(msg, '*') }
     sr.tag = sr.tag[0]; // only support 1 for now.
-    
+    var path = window.location.pathname.toString().split("/");
+    path.pop();path = path.join("/")+"/";
+
     js = sr.tag.getAttribute("content-js");
-    sr.tag.removeAttribute("content-js");
-    if(js.indexOf("./") == 0)
-    js = (window.location.pathname + js.substr(0-js.length+2));
-    if(!(js.indexOf("://") > -1)){
-      js = (window.location.protocol + "//"+ window.location.host + js);
+    if(js){
+      sr.tag.removeAttribute("content-js");
+      if(js.indexOf("./") == 0)
+      js = (path + js.substr(0-js.length+2));
+      if(!(js.indexOf("://") > -1)){
+        js = (window.location.protocol + "//"+ window.location.host + js);
+      }
+      sr.tag.setAttribute("src-js",js)
     }
-    sr.tag.setAttribute("src-js",js)
 
     css = sr.tag.getAttribute("content-css");
-    sr.tag.removeAttribute("content-css");
-    if(css.indexOf("./") == 0)
-    css = (window.location.pathname + css.substr(0-css.length+2));
-    if(!(css.indexOf("://") > -1)){
-      css = (window.location.protocol + "//"+ window.location.host + css);
+    if(css){
+      sr.tag.removeAttribute("content-css");
+      if(css.indexOf("./") == 0)
+      css = (path + css.substr(0-css.length+2));
+      if(!(css.indexOf("://") > -1)){
+        css = (window.location.protocol + "//"+ window.location.host + css);
+      }
+      sr.tag.setAttribute("src-css",css)
     }
-    sr.tag.setAttribute("src-css",css)
 
     if (sr.tag.matches('script')) { sr.tag = sr.tag.parentElement }
     sr.html = sr.tag.innerHTML; // get HTML text to send to a sandbox. // @qxip has a hot tip to make this faster!
@@ -71,6 +77,43 @@
     }
     document.body.appendChild(i);
   }
+
+  
+  window.addEventListener("message",function(eve) { // hear from app, enclave, and workers.
+    
+    var msg = eve.data;
+    if (!msg) { return }//always have data
+    
+    if(eve.source === eve.currentTarget === window){ // from myself
+      eve.preventDefault();
+      eve.stopImmediatePropagation();
+      var tmp = sr.how[msg.how];
+      if (tmp) {
+        tmp(msg, eve);// or do task
+      }
+      return;
+    }
+    
+    if(eve.source === sr.i.contentWindow){//from child
+      eve.preventDefault();
+      eve.stopImmediatePropagation();
+      if(window.parent !== window)//i am NOT top window
+        window.parent.postMessage(msg, "*");//so passthe message to the top
+      else{
+        //I GOT A MESSAGE
+        console.log(msg);
+      }
+      return;
+    }
+    
+    if(eve.source === window.parent){//from parent
+      eve.preventDefault();
+      eve.stopImmediatePropagation();
+      sr.send(msg);
+      return;
+    }
+    
+  });
 
   console.log("THIS IS AN ALPHA FOR DEVELOPERS, NO POLYFILL HAS BEEN PUBLISHED YET, YOU MUST PROTOTYPE IT AS AN UNPACKED EXTENSION!");
   sr.polyfill = { runtime: { getURL: function() { return '/peersocial/securerender/' } } };
