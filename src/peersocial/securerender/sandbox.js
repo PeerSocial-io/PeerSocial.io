@@ -59,23 +59,37 @@
         if (!s.rate) { s.rate = (parseFloat(s.getAttribute('rate')) || 0.016) * 1000 }
         if (t = s.innerText) {        
           var n = (s)=>{ return ()=>{ sr.run({ how: 'script', put: t, get: s.id, rate: s.rate }); } };
-          if(s.getAttribute("src").length)
-            sr.how.content_script(s.getAttribute("src"),n(s));
-          else n(s)();          
+          var n2 = (s)=>{ if(s.getAttribute("src-js").length) sr.how.content_script("js",s.getAttribute("src-js"),n(s)); else n(s)();  };
+
+          if(s.getAttribute("src-css").length)
+            sr.how.content_script("css",s.getAttribute("src-css"),n2(s));
+          else n2(s)();
+                   
         }
       }
     }
   }
 
   sr.content_scripts = new Map;
-  sr.how.content_script = function(src,next){
+  sr.how.content_script = function(type, src,next){
     if (sr.content_scripts.get(src)) { return next() }
-    var r=document.createElement('script');
-        r.setAttribute("type","text/javascript");
-        r.setAttribute("src", src);
-        r.onload = ()=>next();
-    sr.content_scripts.set(src, r);
-    document.getElementsByTagName("head")[0].appendChild(r);
+    var r;
+    if(type == "js"){
+      r = document.createElement('script');
+      r.setAttribute("type","text/javascript");
+      r.setAttribute("src", src);
+      r.onload = ()=>next();
+    }
+    if(type == "css"){
+      r=document.createElement("link")
+      r.setAttribute("rel", "stylesheet")
+      r.setAttribute("type", "text/css")
+      r.setAttribute("href", src)
+    }
+    if(r){
+      sr.content_scripts.set(src, r);
+      document.getElementsByTagName("head")[0].appendChild(r);
+    }else next()
   }
 
   sr.how.localStore = function(msg, eve) {

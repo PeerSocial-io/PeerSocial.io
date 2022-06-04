@@ -33,20 +33,31 @@
     })).observe(document, sr.scan = { subtree: true, childList: true, attributes: true, characterData: true });
   });
 
-  function frame(c, i) {
+  function frame(js, css, i) {
     i = sr.i = document.createElement('iframe');
     i.className = 'SecureRender';
     i.onload = function() { sr.send({ put: sr.html, how: 'html' }) }
     sr.send = function(msg) { i.contentWindow.postMessage(msg, '*') }
     sr.tag = sr.tag[0]; // only support 1 for now.
-    c = sr.tag.getAttribute("content");
-    sr.tag.removeAttribute("content");
-    if(c.indexOf("./") == 0)
-    c = (window.location.pathname + c.substr(0-c.length+2));
-    if(!(c.indexOf("://") > -1)){
-      c = (window.location.protocol + "//"+ window.location.host + c);
+    
+    js = sr.tag.getAttribute("content-js");
+    sr.tag.removeAttribute("content-js");
+    if(js.indexOf("./") == 0)
+    js = (window.location.pathname + js.substr(0-js.length+2));
+    if(!(js.indexOf("://") > -1)){
+      js = (window.location.protocol + "//"+ window.location.host + js);
     }
-    sr.tag.setAttribute("src",c)
+    sr.tag.setAttribute("src-js",js)
+
+    css = sr.tag.getAttribute("content-css");
+    sr.tag.removeAttribute("content-css");
+    if(css.indexOf("./") == 0)
+    css = (window.location.pathname + css.substr(0-css.length+2));
+    if(!(css.indexOf("://") > -1)){
+      css = (window.location.protocol + "//"+ window.location.host + css);
+    }
+    sr.tag.setAttribute("src-css",css)
+
     if (sr.tag.matches('script')) { sr.tag = sr.tag.parentElement }
     sr.html = sr.tag.innerHTML; // get HTML text to send to a sandbox. // @qxip has a hot tip to make this faster!
     document.body.innerHTML = document.head.innerHTML = ""; // clear screen for app to run inside the sandbox instead.
