@@ -101,7 +101,7 @@
         window.parent.postMessage(msg, "*");//so passthe message to the top
       else{
         //I GOT A MESSAGE
-        console.log(msg);
+        console.log("top window, data from secure context",msg);
       }
       return;
     }

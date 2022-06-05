@@ -245,6 +245,8 @@ function SecureRender(sr, u) {
                     w.last = time;
                 }
             }
+            
+            window.requestAnimationFrame(breathe);
         },
         push = Array.prototype.push,
         share = new Map;
@@ -254,7 +256,10 @@ function SecureRender(sr, u) {
             return +new Date
         }
     };
-    setInterval(breathe, 0);
+    
+    window.requestAnimationFrame(breathe)
+
+    // setInterval(breathe, 0);
 
     ;
     (function () {
@@ -297,7 +302,7 @@ function SecureRender(sr, u) {
     ;
     (function () {
         // this is the CSS3 matrix transform rendering engine fallback. WebGL would be preferred.
-        sr.worker.msg = function (list) {
+        sr.events.msg = function (list) {
             //console.log("render:", list);
             //view.innerHTML = "";
             // fill

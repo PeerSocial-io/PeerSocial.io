@@ -39,7 +39,7 @@ window.SecureRender = "()=>{}"
       eve.preventDefault();
       eve.stopImmediatePropagation();
       if(window.parent !== window){//i am NOT top window
-        var tmp = sr.worker[msg.how];
+        var tmp = eve.currentTarget.sr.events[msg.how];
         if (tmp) {
           tmp(msg.data);
         }else
@@ -55,6 +55,33 @@ window.SecureRender = "()=>{}"
       return;
     }
     
+  };
+
+  var worker_sr = function(eve) { // hear from app, enclave, and workers.
+    var msg = eve.data;
+    if (!msg) { return }//always have data
+
+    
+    if(eve.currentTarget === worker){ // from myself
+      eve.preventDefault();
+      eve.stopImmediatePropagation();
+      var tmp = sr.events[msg.how];
+      if (tmp) {
+        tmp(msg.data, eve);// or do task
+      }
+      return;
+    }
+    if(eve.source === eve.currentTarget === worker){//from parent
+      eve.preventDefault();
+      eve.stopImmediatePropagation();
+      sr.send(msg);
+      return;
+    }
+    
+  };
+
+  var worker_emit = function(how, data) { // hear from app, enclave, and workers.
+    worker.postMessage({how:how, data:data});    
   };
 
   /*
@@ -85,16 +112,22 @@ window.SecureRender = "()=>{}"
   };
 */
   sr.workers = new Map;
+  var workeridc = 0;
   sr.run = function(msg, eve) {
     if (sr.workers.get(msg.get)) { return }
     // if(typeof theApp != typeof u && !the){
     //   the = theApp(sr);
     // }
-    var $r = window.SecureRender || SecureRender || "()=>{}";
+    var worker, $sr = { events: {}, workers: sr.workers },emit=function(how, data){ worker.postMessage({how:how, data:data}); };
+    var $r = window.SecureRender || SecureRender || "()=>{}"; $r = $r($sr,emit);
     console.log("spawn untrusted script in worker:", msg);
 
-    var url = window.URL.createObjectURL(new Blob([`var worker = globalThis;(${$r(sr)})(async function(){${msg.put}})`]));
-    var worker = new Worker(url);
+    var url = window.URL.createObjectURL(new Blob([`var worker = globalThis;
+var sr = {events: worker.onmessage = ${worker_sr} }, emit = ${worker_emit};
+(${$r})(async function(){${msg.put}})`]));
+    worker = new Worker(url, {name : ++workeridc});
+    $sr.worker = worker;
+    worker.sr = $sr
     sr.workers.set(worker.id = msg.get, worker);
     worker.last = worker.rate = msg.rate || 16; // 1000/60
     worker.addEventListener('message', window.onmessage);    
