@@ -1,5 +1,3 @@
-console.log("the")
-
 function SecureRender(sr, u) {
     
     function the(breath) { // THIS CODE RUNS INSIDE THE WEBWORKER!
@@ -545,5 +543,9 @@ function SecureRender(sr, u) {
         });
     }());
 
-    return the;
+    return async function () {
+        return new Promise((resolve, reject) => {
+            resolve(the);
+        })
+    };
 }

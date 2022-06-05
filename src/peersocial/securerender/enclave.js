@@ -33,9 +33,9 @@
     i = sr.i = document.createElement('iframe');
     i.className = 'SecureRender';
     i.id = 'SecureRender';
-    i.style = "position: absolute;top: 0;width: 100%;height: 100%;inset: 0px;padding: 0;margin: 0;";
+    i.style = "position: fixed;top: 0;width: 100%;height: 100%;inset: 0px;padding: 0;margin: 0;";
     i.sandbox = 'allow-scripts allow-popups allow-downloads allow-pointer-lock';
-    i.csp = "script-src 'self' blob:; connect-src 'self'; default-src data: blob: mediastream: filesystem:; style-src 'self' 'unsafe-inline' blob:; child-src 'self' blob:; worker-src blob: 'self';";
+    i.csp = "script-src 'unsafe-eval' 'self' blob:; connect-src 'self'; default-src data: blob: mediastream: filesystem:; style-src 'self' 'unsafe-inline' blob:; child-src 'self' blob:; worker-src blob: 'self';";
     sr.send = function(msg) { if(i.contentWindow) i.contentWindow.postMessage(msg, '*') } // TODO: AUDIT! THIS LOOKS SCARY, BUT '/' NOT WORK FOR SANDBOX 'null' ORIGIN. IS THERE ANYTHING BETTER?
     i.src = "./sandbox.html";
     document.body.appendChild(i);

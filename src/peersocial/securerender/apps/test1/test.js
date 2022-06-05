@@ -6,22 +6,29 @@ function SecureRender(sr,emit){
         
         emit("message", "test3");    
     }
-
+  
     
+    return async function () {
+        return new Promise((resolve, reject) => {
+
+            resolve(renderer);
+
+            function renderer(exposed){//exposed to worker  *must use emit to send events
+                //this area has NO! html access
+                sr.events["message"] = function(msg){
+                    console.log("context message",msg)
+                }
+
+                emit("message", "test1");
+
+                exposed().then((exposed)=>{
+                    console.log(exposed);
+                    exposed.start();
+                        
+                })
+            }
     
-    return function renderer(exposed){//exposed to worker  *must use emit to send events
-        //this area has NO! html access
-        sr.events["message"] = function(msg){
-            console.log("context message",msg)
-        }
-
-        emit("message", "test1");
-
-        exposed().then((exposed)=>{
-            console.log(exposed);
-            exposed.start();
-                
         })
     }
-    
+
 }

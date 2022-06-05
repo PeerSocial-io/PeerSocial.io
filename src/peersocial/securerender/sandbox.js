@@ -151,7 +151,7 @@ window.SecureRender = function SecureRender(){};
 
   sr.workers = new Map;
   var workeridc = 0;
-  sr.run = function(msg, eve) {
+  sr.run = async function(msg, eve) {
     if (sr.workers.get(msg.get)) { return }
     // if(typeof theApp != typeof u && !the){
     //   the = theApp(sr);
@@ -160,7 +160,8 @@ window.SecureRender = function SecureRender(){};
     var _sr = window.SecureRender? window.SecureRender : SecureRender ? SecureRender : function SecureRender(){};
     var $r = _sr;
      $r = $r($sr,emit);
-     if(!$r) $r =_sr; 
+     if(!$r) $r = _sr; 
+     $r = await $r();
     console.log("spawn untrusted script in worker:", msg);
 
     var url = window.URL.createObjectURL(new Blob([`if(${DEBUG}){debugger;}
