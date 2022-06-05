@@ -125,7 +125,7 @@ window.SecureRender = "()=>{}"
     var url = window.URL.createObjectURL(new Blob([`var worker = globalThis;
 var sr = {events: worker.onmessage = ${worker_sr} }, emit = ${worker_emit};
 (${$r})(async function(){${msg.put}})`]));
-    worker = new Worker(url, {name : ++workeridc});
+    worker = new Worker(url, {name : "SecureRender"/*+ ++workeridc*/});
     $sr.worker = worker;
     worker.sr = $sr
     sr.workers.set(worker.id = msg.get, worker);
