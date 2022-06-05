@@ -113,7 +113,7 @@ window.SecureRender = function SecureRender(){};
   };
 */
 
-  var loadJS = function ($url,done) {
+  var load_hashed_content = function (type, $url,done) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', $url, true);
     xhr.send();
@@ -129,14 +129,14 @@ window.SecureRender = function SecureRender(){};
           crypto.subtle.digest('SHA-256', response).then((hash)=>{
             hash = btoa(String.fromCharCode.apply(null, new Uint8Array(hash)));
             if(hash == $hash)
-              sr.worker.content_script("js", url, done)
+              sr.worker.content_script(type, url, done)
             else {
               console.log("policy fail for url", $url.split("#")[0], "sha256-"+hash)
               fail();
             }
           });
         else
-        sr.worker.content_script("js", url, done)
+        sr.worker.content_script(type, url, done)
       }
     }
     
@@ -187,12 +187,10 @@ var sr = {events: worker.onmessage = ${worker_sr} }, emit = ${worker_emit};
         if (t = s.innerText) {     
           ((s)=>{
             var n = ()=>{ sr.run({ how: 'script', put: t, get: s.id, rate: s.rate }); };
-            var n2 = ()=>{ if(n2 = s.getAttribute("src-js")){
-               
-              loadJS(n2,n); 
-
+            var n2 = ()=>{ if(n2 = s.getAttribute("src-js")){               
+              load_hashed_content("js",n2,n); 
             } else n();  };
-            if(s.getAttribute("src-css")) sr.worker.content_script("css",s.getAttribute("src-css"),n2); else n2();
+            if(s.getAttribute("src-css"))  load_hashed_content("css",s.getAttribute("src-css"),n2); else n2();
           })(s)   
         }
       }

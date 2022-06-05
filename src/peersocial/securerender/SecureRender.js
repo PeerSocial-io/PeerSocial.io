@@ -25,18 +25,21 @@
     if (!sr.tag.length) { sr.tag = document.getElementsByClassName('SecureRender') }
     if (!sr.tag.length) { return } // No Secure Render found.
     if (sr.tag[0].matches('iframe')) { return } // Secure Render already running.
-    frame(); // Secure Render found, start the window frame to render inside of.
-    (sr.watch = new MutationObserver(function(list, o) { // detect tampered changes, prevent clickjacking, etc.
-      sr.watch.disconnect();
-      fail(); // immediately stop Secure Render!
-      sr.watch.observe(document, sr.scan);
-    })).observe(document, sr.scan = { subtree: true, childList: true, attributes: true, characterData: true });
+    frame(()=>{
+      (sr.watch = new MutationObserver(function(list, o) { // detect tampered changes, prevent clickjacking, etc.
+        sr.watch.disconnect();
+        fail(); // immediately stop Secure Render!
+        sr.watch.observe(document, sr.scan);
+      })).observe(document, sr.scan = { subtree: true, childList: true, attributes: true, characterData: true });
+    }); // Secure Render found, start the window frame to render inside of.
   });
 
-  function frame(js, css, i) {
+  function frame(next, context, hash, js, css, i) {
     i = sr.i = document.createElement('iframe');
     i.className = 'SecureRender';
-    i.onload = function() { sr.send({ put: sr.html, how: 'html' }) }
+    i.onload = function() { 
+      sr.send({ put: sr.html, how: 'html' })
+    }
     sr.send = function(msg) { i.contentWindow.postMessage(msg, '*') }
     sr.tag = sr.tag[0]; // only support 1 for now.
     var path = window.location.pathname.toString().split("/");
@@ -64,18 +67,41 @@
       sr.tag.setAttribute("src-css",css)
     }
 
-    if (sr.tag.matches('script')) { sr.tag = sr.tag.parentElement }
-    sr.html = sr.tag.innerHTML; // get HTML text to send to a sandbox. // @qxip has a hot tip to make this faster!
-    document.body.innerHTML = document.head.innerHTML = ""; // clear screen for app to run inside the sandbox instead.
-    i.style = "position: fixed; border: 0; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0;";
-    //i.integrity = "browsers please support this!"; // https://github.com/w3c/webappsec-subresource-integrity/issues/21
-    try {
-      i.src = sr.browser.runtime.getURL('') + 'enclave.html'; // try browser
+    var n = ()=>{
+      if (sr.tag.matches('script')) { sr.tag = sr.tag.parentElement }
+      sr.html = sr.tag.innerHTML; // get HTML text to send to a sandbox. // @qxip has a hot tip to make this faster!
+      document.body.innerHTML = document.head.innerHTML = ""; // clear screen for app to run inside the sandbox instead.
+      i.style = "position: fixed; border: 0; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0;";
+      //i.integrity = "browsers please support this!"; // https://github.com/w3c/webappsec-subresource-integrity/issues/21
+      try {
+        i.src = sr.browser.runtime.getURL('') + 'enclave.html'; // try browser
+      }
+      catch (err) {
+        i.src = sr.polyfill.runtime.getURL('') + 'enclave.html'; // else emulate
+      }
+      document.body.appendChild(i);
+      if(next)
+        next(i);
     }
-    catch (err) {
-      i.src = sr.polyfill.runtime.getURL('') + 'enclave.html'; // else emulate
-    }
-    document.body.appendChild(i);
+
+    hash = sr.tag.getAttribute("content-hash");
+    if(hash && hash.length){
+      sr.tag.removeAttribute("hash");
+      var code = sr.tag.innerHTML;
+      var enc = new TextEncoder(); // always utf-8
+      crypto.subtle.digest('SHA-256',  enc.encode(code)).then(($hash)=>{
+        $hash = btoa(String.fromCharCode.apply(null, new Uint8Array($hash)));
+        if(hash == $hash){
+          sr.tag.innerHTML = code;
+          n()
+        }else {
+          console.log("SecureRender content-hash invalid", $hash)
+          fail();
+        }
+      })
+    }else n(sr.tag.innerHTML);
+
+    return i;
   }
 
   
