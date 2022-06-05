@@ -2,7 +2,7 @@
     
     var exposed = {
         start: function () {
-            worker.postMessage("test2");
+            worker.postMessage("test2");//strings are sent to top layer
             console.log("embeded script");
         }
     }
