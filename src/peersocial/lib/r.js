@@ -2460,7 +2460,7 @@ ${contents}
 					else{
 						response = require.makeDebuggerWrapper(response, xhr.responseURL);
 					}
-				if(xhr.status == 404 || xhr.status == 204) response = "";
+				if(xhr.status == 404 || xhr.status == 302) response = "";
 				
                 exec(response);
 

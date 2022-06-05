@@ -132,6 +132,14 @@ function appPlugin(options, imports, register) {
         next();
     });
     express_app.use(cookieParser("secret"));
+    express_app.use(function(req,res,next){
+        res.cookie('dapp', imports.app.dapp_info.pub, {
+            sameSite: "lax",
+            signed: true,
+            maxAge: 60 * 60 * 24 * 7 // 1 week
+        });
+        next();
+    })
 
     express_app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), casheControl));
     express_app.use(express.static(require("path").join(__dirname, '../../../docs'), casheControl));
@@ -224,11 +232,6 @@ function appPlugin(options, imports, register) {
 
                 // Cookies that have been signed
                 console.log('Signed Cookies: ', req.signedCookies)
-
-                res.cookie('dapp', imports.app.dapp_info.pub, {
-                    signed: true,
-                    maxAge: 60 * 60 * 24 * 7 // 1 week
-                });
                 */
                 res.statusCode = 302;
                 res.sendFile(require("path").join(__dirname, '../../../docs', 'index.html'));
