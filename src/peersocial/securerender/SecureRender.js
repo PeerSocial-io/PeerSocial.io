@@ -26,6 +26,7 @@
     if (!sr.tag.length) { return } // No Secure Render found.
     if (sr.tag[0].matches('iframe')) { return } // Secure Render already running.
     frame(()=>{
+      return;
       (sr.watch = new MutationObserver(function(list, o) { // detect tampered changes, prevent clickjacking, etc.
         sr.watch.disconnect();
         fail(); // immediately stop Secure Render!
@@ -37,6 +38,7 @@
   function frame(next, context, hash, js, css, i) {
     i = sr.i = document.createElement('iframe');
     i.className = 'SecureRender';
+    i.name = "SecureRender";
     i.onload = function() { 
       sr.send({ put: sr.html, how: 'html' })
     }
@@ -143,5 +145,10 @@
 
   console.log("THIS IS AN ALPHA FOR DEVELOPERS, NO POLYFILL HAS BEEN PUBLISHED YET, YOU MUST PROTOTYPE IT AS AN UNPACKED EXTENSION!");
   sr.polyfill = { runtime: { getURL: function() { return '/peersocial/securerender/' } } };
+  
+  (function($export, root) { "object" == typeof exports && "undefined" != typeof module ? root(exports) : "function" == typeof define && define.amd ? define(["exports"], root) : root(($export = "undefined" != typeof globalThis ? globalThis : $export || self)) })(this,function(exports){
+    exports.SecureRender = function SecureRender(){};
+  })
+
 
 }());

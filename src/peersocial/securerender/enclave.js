@@ -15,16 +15,37 @@
   /* global location MutationObserver */
   sr = { browser: (window.browser || window.chrome) };
   
+  var fail_who = "Enclave";
+  function fail() { 
+    var text = (newLine)=> {return (`SecureRender ${fail_who} has detected an external threat trying to tamper with the security of your application.\nPlease reload to restore security. If you still have problems, search for a more trusted source to load the application from.`).replaceAll("\n", newLine) }; 
+    if(sr.watch) sr.watch.disconnect();
+    document.body.innerHTML = `<center>${text("<br/>")}</center>`; 
+    if(sr.i){
+      sr.i.remove();//kill the context
+      sr.i = false;
+      console.log(text("\n"));
+    }
+    if(sr.watch) sr.watch.observe(document, sr.scan);
+  }
+  
   (function start(i) {
     // TODO: talk to cloudflare about enforcing integrity meanwhile?
     i = sr.i = document.createElement('iframe');
     i.className = 'SecureRender';
-    i.style = "position: fixed; border: 0; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0;";
+    i.id = 'SecureRender';
+    i.style = "position: absolute;top: 0;width: 100%;height: 100%;inset: 0px;padding: 0;margin: 0;";
     i.sandbox = 'allow-scripts allow-popups allow-downloads allow-pointer-lock';
     i.csp = "script-src 'self' blob:; connect-src 'self'; default-src data: blob: mediastream: filesystem:; style-src 'self' 'unsafe-inline' blob:; child-src 'self' blob:; worker-src blob: 'self';";
-    sr.send = function(msg) { i.contentWindow.postMessage(msg, '*') } // TODO: AUDIT! THIS LOOKS SCARY, BUT '/' NOT WORK FOR SANDBOX 'null' ORIGIN. IS THERE ANYTHING BETTER?
+    sr.send = function(msg) { if(i.contentWindow) i.contentWindow.postMessage(msg, '*') } // TODO: AUDIT! THIS LOOKS SCARY, BUT '/' NOT WORK FOR SANDBOX 'null' ORIGIN. IS THERE ANYTHING BETTER?
     i.src = "./sandbox.html";
     document.body.appendChild(i);
+    (sr.watch = new MutationObserver(function(list, o) { // detect tampered changes, prevent clickjacking, etc.
+      // sr.watch.disconnect();
+      // i.src = "about:blank";
+      // i.remove();//kill the context
+      fail(); // immediately stop Secure Render!
+      // sr.watch.observe(document, sr.scan);
+    })).observe(document, sr.scan = { subtree: true, childList: true, attributes: true, characterData: true });
   }());
 
   
@@ -47,6 +68,11 @@
     if(eve.source === sr.i.contentWindow){//from child
       eve.preventDefault();
       eve.stopImmediatePropagation();
+      if(msg.how == 'fail'){ 
+        if(msg.who)
+          fail_who = msg.who
+        return fail();
+      }
       if(window.parent !== window)
         window.parent.postMessage(msg, "*");
 

@@ -5,8 +5,15 @@ window.SecureRender = function SecureRender(){};
   SecureRender = window.SecureRender;
   sr.up = function(msg) { window.parent.postMessage(msg, '*'); } // TODO: AUDIT! THIS LOOKS SCARY, BUT '/' NOT WORK FOR SANDBOX 'null' ORIGIN. IS THERE ANYTHING BETTER?
 
-  function fail() { fail.yes = 1;
-    document.body.innerHTML = "<center>SecureRender has detected an external threat trying to tamper with the security of your application.<br/>Please reload to restore security. If you still have problems, search for a more trusted source to load the application from.</center>" }
+  function fail() { 
+    fail.yes = 1;
+    var text = (newLine)=> {return `SecureRender has detected an external threat trying to tamper with the security of your application.${newLine}Please reload to restore security. If you still have problems, search for a more trusted source to load the application from.` }; 
+    document.body.innerHTML = `<center>${text("<br/>")}</center>`;       
+    // console.log(text("\n"));
+    sr.up({how:"fail",who:"Sandbox"});
+  }
+
+  // setTimeout(fail,3000)//test sandbox fail
 
   ;
   (function() {
@@ -131,7 +138,7 @@ window.SecureRender = function SecureRender(){};
             if(hash == $hash)
               sr.worker.content_script(type, url, done)
             else {
-              console.log("policy fail for url", $url.split("#")[0], "sha256-"+hash)
+              console.log("SecureRender hash Policy invalid for url", $url.split("#")[0], "sha256-"+hash)
               fail();
             }
           });
