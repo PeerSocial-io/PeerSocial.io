@@ -21,7 +21,7 @@
     i.className = 'SecureRender';
     i.style = "position: fixed; border: 0; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0;";
     i.sandbox = 'allow-scripts allow-popups allow-downloads allow-pointer-lock';
-    i.csp = "script-src 'self'; default-src data: blob: mediastream: filesystem:; style-src 'self' 'unsafe-inline'; child-src 'self' blob:; worker-src blob: 'self';";
+    i.csp = "script-src 'self' blob:; connect-src 'self'; default-src data: blob: mediastream: filesystem:; style-src 'self' 'unsafe-inline'; child-src 'self' blob:; worker-src blob: 'self';";
     sr.send = function(msg) { i.contentWindow.postMessage(msg, '*') } // TODO: AUDIT! THIS LOOKS SCARY, BUT '/' NOT WORK FOR SANDBOX 'null' ORIGIN. IS THERE ANYTHING BETTER?
     i.src = "./sandbox.html";
     document.body.appendChild(i);

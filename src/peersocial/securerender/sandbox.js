@@ -1,5 +1,6 @@
-window.SecureRender = "()=>{}"
+window.SecureRender = function SecureRender(){};
 ;(function(sr, SecureRender, u) {
+  var DEBUG = false;
   sr = {};
   SecureRender = window.SecureRender;
   sr.up = function(msg) { window.parent.postMessage(msg, '*'); } // TODO: AUDIT! THIS LOOKS SCARY, BUT '/' NOT WORK FOR SANDBOX 'null' ORIGIN. IS THERE ANYTHING BETTER?
@@ -111,6 +112,36 @@ window.SecureRender = "()=>{}"
     }
   };
 */
+
+  var loadJS = function ($url,done) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', $url, true);
+    xhr.send();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        var response = xhr.responseText;
+        var $hash = $url.split("#")[1]
+        var enc = new TextEncoder(); // always utf-8
+        response = enc.encode(response);
+        url = window.URL.createObjectURL(new Blob([response]));
+        if($hash)
+
+          crypto.subtle.digest('SHA-256', response).then((hash)=>{
+            hash = btoa(String.fromCharCode.apply(null, new Uint8Array(hash)));
+            if(hash == $hash)
+              sr.worker.content_script("js", url, done)
+            else {
+              console.log("policy fail for url", $url.split("#")[0], "sha256-"+hash)
+              fail();
+            }
+          });
+        else
+        sr.worker.content_script("js", url, done)
+      }
+    }
+    
+  }
+
   sr.workers = new Map;
   var workeridc = 0;
   sr.run = function(msg, eve) {
@@ -119,10 +150,14 @@ window.SecureRender = "()=>{}"
     //   the = theApp(sr);
     // }
     var worker, $sr = { events: {}, workers: sr.workers },emit=function(how, data){ worker.postMessage({how:how, data:data}); };
-    var $r = window.SecureRender || SecureRender || "()=>{}"; $r = $r($sr,emit);
+    var _sr = window.SecureRender? window.SecureRender : SecureRender ? SecureRender : function SecureRender(){};
+    var $r = _sr;
+     $r = $r($sr,emit);
+     if(!$r) $r =_sr; 
     console.log("spawn untrusted script in worker:", msg);
 
-    var url = window.URL.createObjectURL(new Blob([`var worker = globalThis;
+    var url = window.URL.createObjectURL(new Blob([`if(${DEBUG}){debugger;}
+    var worker = globalThis;
 var sr = {events: worker.onmessage = ${worker_sr} }, emit = ${worker_emit};
 (${$r})(async function(){${msg.put}})`]));
     worker = new Worker(url, {name : "SecureRender"/*+ ++workeridc*/});
@@ -152,7 +187,11 @@ var sr = {events: worker.onmessage = ${worker_sr} }, emit = ${worker_emit};
         if (t = s.innerText) {     
           ((s)=>{
             var n = ()=>{ sr.run({ how: 'script', put: t, get: s.id, rate: s.rate }); };
-            var n2 = ()=>{ if(s.getAttribute("src-js")) sr.worker.content_script("js",s.getAttribute("src-js"),n); else n();  };
+            var n2 = ()=>{ if(n2 = s.getAttribute("src-js")){
+               
+              loadJS(n2,n); 
+
+            } else n();  };
             if(s.getAttribute("src-css")) sr.worker.content_script("css",s.getAttribute("src-css"),n2); else n2();
           })(s)   
         }
