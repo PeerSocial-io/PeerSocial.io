@@ -230,7 +230,7 @@ function appPlugin(options, imports, register) {
                     maxAge: 60 * 60 * 24 * 7 // 1 week
                 });
                 */
-                res.statusCode = 204;
+                res.statusCode = 302;
                 res.sendFile(require("path").join(__dirname, '../../../docs', 'index.html'));
             });
         });
