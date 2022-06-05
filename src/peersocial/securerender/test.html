@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<script class="SecureRender" src="./SecureRender.js" content-js="./app/test.js#pZ1VFBn1crN+r5hk7h37LrM9XBBJIeZ1aN9gOlkDxmA=">
-    
+<script class="SecureRender" src="./SecureRender.js" content-js="./app/test.js">
+    //no access to html.. only access to exposed returned function in js context script
     var exposed = {
         start: function () {
-            worker.postMessage("test2");//strings are sent to top layer
+            emit("test2","test4");//strings are sent to top layer
             console.log("embeded script");
         }
     }

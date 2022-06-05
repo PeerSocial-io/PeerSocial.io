@@ -89,7 +89,7 @@ window.SecureRender = function SecureRender(){};
   };
 
   var worker_emit = function(how, data) { // hear from app, enclave, and workers.
-    worker.postMessage({how:how, data:data});    
+    worker.postMessage(data ? {how:how, data:data} : how);    
   };
 
   /*
@@ -138,7 +138,7 @@ window.SecureRender = function SecureRender(){};
             if(hash == $hash)
               sr.worker.content_script(type, url, done)
             else {
-              console.log("SecureRender hash Policy invalid for url", $url.split("#")[0], "sha256-"+hash)
+              console.log("SecureRender hash Policy invalid for url", $url.split("#")[0], hash)
               fail();
             }
           });
