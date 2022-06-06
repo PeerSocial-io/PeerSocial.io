@@ -5,15 +5,21 @@
     var code = `
         //no access to html.. only access to exposed returned function in js context script
         var exposed = {
-            start: function () {
-                emit("test2","test4");//strings are sent to top layer
-                // console.log("embeded script");
+            velocity: {x: 2000, y : 1000},
+            gravity: {x:-100},
+            particle:{
+                speed: 25,
+                scale: { start: 1, end: 0 },
+                blendMode: 'ADD'
             }
         }
 
         return exposed;`
 
-    SecureRender(code, "5WVMa6q6SXA+LXV6oTgFi5CBCQzoPv0xasqhaMkPz6Y=", "./test.js#Er3WwHyON6BxBKTzzzC0DN9zWVD5bl8D9DfFViiVEuI=").then(function(pubSub){
+    SecureRender(  
+        code, "hBr3rzkZmyqyJenAt8T9BPe8//KXUzVSKn8ZCr63yyg=", 
+        "./renderer.js#DhTJ/QXEpeK2joHotro/S2k7GO049Egs4Yp/v3KkOug=", 
+        "./phaser.css#WgZswPx81sZj3M9wrjGW43N4epaQosPlGjHpCICitPg=").then(function(pubSub){
         pubSub.on("test2",(data)=>{
             console.log("test2", data)
         })

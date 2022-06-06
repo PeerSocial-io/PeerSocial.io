@@ -2,12 +2,6 @@ function SecureRender(sr, emit) {
     //this area has html access
     // console.log(sr);
     
-    sr.events["message"] = function (msg) {
-        // console.log("given context message", msg)
-
-        emit("message", "test3");
-    }
-
     function loadjsfile(filename, done) {
         var r = document.createElement('script')
         r.setAttribute("type", "text/javascript")
@@ -17,35 +11,52 @@ function SecureRender(sr, emit) {
     }
 
     var ready = false;
-
     loadjsfile("/peersocial/securerender/apps/phaser/phaser.js", function () {
-        loadjsfile("/peersocial/lib/r.js", function () {
-            var require = window.requirejs;
-            require([
-                "/peersocial/securerender/apps/phaser/phaser.js"
-            ], function (phaser) {
+        loadjsfile("/peersocial/lib/jquery.js", function () {
+            sr.events["state"] = ({velocity, gravity, particle, ...state})=>{
+                console.log("given context message", state)
+                // debugger;
                 var Phaser = window.Phaser;
 
                 console.log(Phaser)
 
                 var config = {
                     type: Phaser.AUTO,
-                    width: 800,
-                    height: 600,
+                    width: window.innerWidth,
+                    height: window.outerWidth,
                     physics: {
                         default: 'arcade',
                         arcade: {
-                            gravity: { y: 200 }
+                            gravity: gravity || { y: 200 }
                         }
                     },
                     scene: {
                         preload: preload,
                         create: create
-                    }
+                    },
+                    callbacks: {
+                        postBoot: function (game) {
+                          // In v3.15, you have to override Phaser's default styles
+                          game.canvas.style.width = '100%';
+                          game.canvas.style.height = '100%';
+                          update()
+                        }
+                      }
                 };
+                
+                $( window ).resize(function() {
+                    update()
+                  });
+
+                function update(){
+                    (function() {
+                        var c = document.getElementsByTagName("canvas")[0];
+                        c.style.width = '100%'; // set width to 100%
+                        c.style.height = '100%'; // set height to 100%
+                    })(); // run function
+                }
             
                 var game = new Phaser.Game(config);
-            
                 function preload ()
                 {
                     this.load.setBaseURL('https://'+window.location.hostname);
@@ -57,27 +68,28 @@ function SecureRender(sr, emit) {
             
                 function create ()
                 {
-                    this.add.image(400, 300, 'sky');
-            
+                    
+                    var background = this.add.image(window.innerWidth/2, window.outerHeight/2, 'sky');
+                    background.setDisplaySize(window.innerWidth,window.outerWidth)
+                    
                     var particles = this.add.particles('red');
             
-                    var emitter = particles.createEmitter({
-                        speed: 100,
-                        scale: { start: 1, end: 0 },
-                        blendMode: 'ADD'
-                    });
+                    var emitter = particles.createEmitter(particle);
             
                     var logo = this.physics.add.image(400, 100, 'logo');
             
-                    logo.setVelocity(100, 200);
+                    logo.setVelocity(velocity.x, velocity.y);
+                    
                     logo.setBounce(1, 1);
                     logo.setCollideWorldBounds(true);
             
                     emitter.startFollow(logo);
+                        
+                    
                 }
-
-                ready = true;
-            })
+            }
+            
+            ready = true;
         })
     })
 
@@ -96,15 +108,15 @@ function SecureRender(sr, emit) {
 
             function renderer(exposed) { //exposed to worker  *must use emit to send events
                 //this area has NO! html access
-                sr.events["message"] = function (msg) {
-                    // console.log("context message", msg)
+                sr.events["state"] = function (msg) {
+                    console.log("context state message", msg)
                 }
 
-                emit("message", "test1");
 
                 exposed().then((exposed) => {
                     // console.log(exposed);
-                    exposed.start();
+                    
+                    emit("state", exposed);
 
                 })
             }

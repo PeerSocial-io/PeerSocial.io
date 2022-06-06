@@ -439,15 +439,16 @@
   (function($export, root) { "object" == typeof exports && "undefined" != typeof module ? root(exports) : "function" == typeof define && define.amd ? define(["exports"], root) : root(($export = "undefined" != typeof globalThis ? globalThis : $export || self)) })(this,function(exports){
     
 
-    exports.SecureRender = async function SecureRender(code, codeHash, contextJS ){
+    exports.SecureRender = async function SecureRender(code, codeHash, contextJS ,contextCSS){
       return new Promise(async (resolve,reject)=>{
         if(document.readyState == "loading"){
           window.addEventListener('load',complete)
         }else complete()
 
-        function complete(){
+        async function complete(){
           var tag = document.createElement('script');
           tag.innerHTML = code;
+          tag.setAttribute("content-css",contextCSS)
           tag.setAttribute("content-js",contextJS)
           if(codeHash)
             tag.setAttribute("content-hash",codeHash)
