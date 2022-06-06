@@ -142,8 +142,12 @@ window.SecureRender = function SecureRender(){};
               fail();
             }
           });
-        else
-        sr.worker.content_script(type, url, done)
+        else{
+          crypto.subtle.digest('SHA-256', response).then((hash)=>{
+            console.error("LOW SECURITY, PLEASE ADD HASH TO RESOUCE", $url, btoa(String.fromCharCode.apply(null, new Uint8Array(hash))))
+            sr.worker.content_script(type, url, done)
+          });
+        }
       }
     }
     

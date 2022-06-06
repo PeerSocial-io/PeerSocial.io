@@ -1,6 +1,7 @@
 function SecureRender(sr, emit) {
     //this area has html access
     console.log(sr);
+    
     sr.events["message"] = function (msg) {
         console.log("given context message", msg)
 
@@ -15,6 +16,8 @@ function SecureRender(sr, emit) {
         if (typeof r != "undefined") document.getElementsByTagName("head")[0].appendChild(r)
     }
 
+    var ready = false;
+
     loadjscssfile("/peersocial/lib/r.js", function () {
         var require = window.requirejs;
         require([
@@ -22,6 +25,7 @@ function SecureRender(sr, emit) {
             "/peersocial/lib/jquery.js"
         ], function (test) {
             console.log(test)
+            ready = true;
         })
     })
 
@@ -29,7 +33,14 @@ function SecureRender(sr, emit) {
     return async function () {
         return new Promise((resolve, reject) => {
 
-            resolve(renderer);
+            // while(!ready){}
+            var interval = setInterval(()=>{
+                if(ready){
+                    clearInterval(interval)
+                    resolve(renderer)
+                }
+            },1)
+            
 
             function renderer(exposed) { //exposed to worker  *must use emit to send events
                 //this area has NO! html access

@@ -32,7 +32,7 @@
     // TODO: talk to cloudflare about enforcing integrity meanwhile?
     i = sr.i = document.createElement('iframe');
     i.className = 'SecureRender';
-    i.id = 'SecureRender';
+    i.name = 'SecureRender';
     i.style = "position: fixed;top: 0;width: 100%;height: 100%;inset: 0px;padding: 0;margin: 0;";
     i.sandbox = 'allow-scripts allow-popups allow-downloads allow-pointer-lock';
     i.csp = "script-src 'unsafe-eval' 'self' blob:; connect-src 'self'; default-src data: blob: mediastream: filesystem:; style-src 'self' 'unsafe-inline' blob:; child-src 'self' blob:; worker-src blob: 'self';";
@@ -119,5 +119,19 @@
       }
     }
   }
+  function makeid(length) {
+    let result = '';
+    let characters = 'abcdefghijklmnopqrstuvwxyz';
+    let charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+     result += characters.charAt(Math.floor(Math.random() *
+       charactersLength));
+    }
+    return result;
+  }
+
+  var enclave_id = makeid(64);
+  Object.defineProperty(Window.prototype, 'id', { get: function() { return enclave_id; } });
+  // Window.prototype.sr_id = "enclave"
 
 }());
