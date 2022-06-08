@@ -6,17 +6,20 @@
         //no access to html.. only access to exposed returned function in js context script
         var exposed = {
             start: function () {
-                emit("test2","test4");//strings are sent to top layer
                 console.log("embeded script");
+                return "computed data";
             }
         }
 
         return exposed;`
 
-    SecureRender(code, "2wR8m1A344w4GUZf8eWdLikUC3EBlPA1lfm2OZQWK70=", "./test.js#CfDtSPH28tPTih/Ga4Lo8JQw49tXA0D/uuUsLsWu6U0=").then(function(pubSub){
-        pubSub.on("test2",(data)=>{
-            console.log("test2", data)
-        })
-    });
+        SecureRender(  
+            code, "EWLdTLj0kIu+ado9lQcytMuwPYKUAEnOPp1taF6wP6k=", 
+            "./test.js#"+   "GTImbVISVWP0Z76CXuZ11EUDHA5Yy8g7aOO2xjtXGpw=").then(function(pubSub){
+            pubSub.on("ready",(data)=>{
+                console.log("test2", data)
+                pubSub.emit("ready32", data)
+            })
+        });
 
 })();

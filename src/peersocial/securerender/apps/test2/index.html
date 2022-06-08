@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<script class="SecureRender" src="../../SecureRender.js" content-hash="I/pRSFsC7xdV0jlKbuu9l4wJup5BYrxBfUvu8TxtbOU=" content-js="./test.js#VfO413YXpJwqUI6VTT31dCbO7Yju3eoIgO7dfVl5ekc=">
+<script class="SecureRender" src="../../SecureRender.js" 
+    content-hash="2z+pNXb4F/QkzsWrpMlbGShQEQzy17oZCZzl4e8sTsw=" 
+    content-js="./test.js#DAauSQCY+FMCPTH0EmsGNyiukaVKZ2ly75fDUzJZ0U8=">
     //no access to html.. only access to exposed returned function in js context script
     var exposed = {
-        start: function () {
-            emit("test2","test4");//strings are sent to top layer
-            console.log("embeded script");
+        start: function (done) {
+            if(typeof done == "function")
+                done();
+            else console.log(done)
         }
     }
 

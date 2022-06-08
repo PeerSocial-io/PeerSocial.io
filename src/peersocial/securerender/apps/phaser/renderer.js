@@ -13,7 +13,8 @@ function SecureRender(sr, emit) {
     var ready = false;
     loadjsfile("/peersocial/securerender/apps/phaser/phaser.js", function () {
         loadjsfile("/peersocial/lib/jquery.js", function () {
-            sr.events["state"] = ({velocity, gravity, particle, ...state})=>{
+            sr.events.on("state", (state)=>{
+                var {physics, velocity, particle} = state;
                 console.log("given context message", state)
                 // debugger;
                 var Phaser = window.Phaser;
@@ -24,12 +25,7 @@ function SecureRender(sr, emit) {
                     type: Phaser.AUTO,
                     width: window.innerWidth,
                     height: window.outerWidth,
-                    physics: {
-                        default: 'arcade',
-                        arcade: {
-                            gravity: gravity || { y: 200 }
-                        }
-                    },
+                    physics: physics,
                     scene: {
                         preload: preload,
                         create: create
@@ -87,7 +83,7 @@ function SecureRender(sr, emit) {
                         
                     
                 }
-            }
+            })
             
             ready = true;
         })
@@ -106,17 +102,11 @@ function SecureRender(sr, emit) {
             },1)
             
 
-            function renderer(exposed) { //exposed to worker  *must use emit to send events
-                //this area has NO! html access
-                sr.events["state"] = function (msg) {
-                    console.log("context state message", msg)
-                }
-
-
+            function renderer(exposed) { //exposed to worker, and it must use worker.emit to send events to above
+                
                 exposed().then((exposed) => {
-                    // console.log(exposed);
                     
-                    emit("state", exposed);
+                    worker.emit("state", exposed);
 
                 })
             }
