@@ -28,11 +28,22 @@
     if(sr.watch) sr.watch.observe(document, sr.scan);
   }
   
+  
+  // var db;
+  // var request = indexedDB.open("SecureRender");
+  // request.onerror = event => {
+  //     console.log("Why didn't you allow my web app to use IndexedDB?!");
+  // };
+  // request.onsuccess = event => {
+  //     db = event.target.result;
+  //     console.log("indexedDB",db);
+  // };
+  
   (function start(i) {
     // TODO: talk to cloudflare about enforcing integrity meanwhile?
     i = sr.i = document.createElement('iframe');
     i.className = 'SecureRender';
-    i.name = 'SecureRender';
+    i.name = 'SecureRender-Sandbox';
     i.style = "position: fixed;top: 0;width: 100%;height: 100%;inset: 0px;padding: 0;margin: 0;";
     i.sandbox = 'allow-scripts allow-popups allow-downloads allow-pointer-lock';
     i.csp = "script-src 'unsafe-eval' 'self' blob:; connect-src 'self'; default-src data: blob: mediastream: filesystem:; style-src 'self' 'unsafe-inline' blob:; child-src 'self' blob:; worker-src blob: 'self';";
@@ -41,15 +52,13 @@
     document.body.appendChild(i);
     (sr.watch = new MutationObserver(function(list, o) { // detect tampered changes, prevent clickjacking, etc.
       // sr.watch.disconnect();
-      // i.src = "about:blank";
-      // i.remove();//kill the context
       fail(); // immediately stop Secure Render!
       // sr.watch.observe(document, sr.scan);
     })).observe(document, sr.scan = { subtree: true, childList: true, attributes: true, characterData: true });
   }());
 
   
-  window.onmessage = function(eve) { // hear from app, enclave, and workers.
+  window.onmessage = function(eve) { // hear from app, and sandbox.
     
     var msg = eve.data;
     if (!msg) { return }//always have data
@@ -58,16 +67,13 @@
     if(eve.source === eve.currentTarget === window){ // from myself
       eve.preventDefault();
       eve.stopImmediatePropagation();
-      var tmp = sr.how[msg.how];
-      if (tmp) {
-        tmp(msg, eve);// or do task
-      }
       return;
     }
     
-    if(eve.source === sr.i.contentWindow){//from child
+    if(eve.source === sr.i.contentWindow){//from sandox
       eve.preventDefault();
       eve.stopImmediatePropagation();
+      
       if(msg.how == 'fail'){ 
         if(msg.who)
           fail_who = msg.who
@@ -79,7 +85,7 @@
       return;
     }
     
-    if(eve.source === window.parent){//from parent
+    if(eve.source === window.parent){//from app
       eve.preventDefault();
       eve.stopImmediatePropagation();
       sr.send(msg);
@@ -130,8 +136,8 @@
     return result;
   }
 
-  var enclave_id = makeid(64);
-  Object.defineProperty(Window.prototype, 'id', { get: function() { return enclave_id; } });
+  var enclave_id = makeid(32);
+  Object.defineProperty(Window.prototype, 'id', { get: function() { return enclave_id; } });// a random non-changeable ID
   // Window.prototype.sr_id = "enclave"
 
 }());

@@ -15,35 +15,51 @@
   /* global location MutationObserver */
   sr = { browser: (window.browser || window.chrome) };
   
-  function fail() { document.body.innerHTML = "<center>SecureRender has detected an external threat trying to tamper with the security of your application.<br/>Please reload to restore security. If you still have problems, search for a more trusted source to load the application from.</center>" }
+  function fail() { document.body.innerHTML = "<center>SecureRender Loader has detected an external threat trying to tamper with the security of your application.<br/>Please reload to restore security. If you still have problems, search for a more trusted source to load the application from.</center>" }
   try { if (window.self !== window.top) { return fail() } }
   catch (e) {}; // App inside iframe could get clickjacked!
-  if ("securerender.org" === location.hostname) { return location = '//example.org' } // Browser MUST not allow polyfill to serve apps.
 
   window.addEventListener("load", function() {
-    sr.tag = document.getElementsByTagName('SecureRender');
-    if (!sr.tag.length) { sr.tag = document.getElementsByClassName('SecureRender') }
-    if (!sr.tag.length) { return } // No Secure Render found.
-    if (sr.tag[0].matches('iframe')) { return } // Secure Render already running.
-    frame(sr.tag[0], ()=>{
-      return;
-      (sr.watch = new MutationObserver(function(list, o) { // detect tampered changes, prevent clickjacking, etc.
-        sr.watch.disconnect();
-        fail(); // immediately stop Secure Render!
-        sr.watch.observe(document, sr.scan);
-      })).observe(document, sr.scan = { subtree: true, childList: true, attributes: true, characterData: true });
-    }); // Secure Render found, start the window frame to render inside of.
+    var tag = document.getElementsByTagName('SecureRender');
+    if (!tag.length) { tag = document.getElementsByClassName('SecureRender') }
+    if (!tag.length) { return } // No Secure Render found.
+    if (tag[0].matches('iframe')) { return } // Secure Render already running.
+    frame(tag[0]); // Secure Render found, start the window frame to render inside of.
   });
 
-  function frame(tag, next, context, hash, js, css, i) {
-    i = sr.i = document.createElement('iframe');
-    i.className = 'SecureRender';
-    i.name = "SecureRender";
-    i.onload = function() { 
-      sr.send({ put: sr.html, how: 'html' })
+  
+  function frame(tag, next) {
+    var hash, js, css;
+    
+    var events = new EventEmitter();
+    events._emit = events.emit;
+    events.emit = function(...data){
+      i.contentWindow.postMessage(['event',data],"*")
     }
-    sr.send = function(msg) { i.contentWindow.postMessage(msg, '*') }
-    // sr.tag = sr.tag[0]; // only support 1 for now.
+    i = document.createElement('iframe');
+    i.className = 'SecureRender';
+    // i.sandbox = 'allow-scripts allow-popups allow-downloads allow-pointer-lock';
+    // i.csp = "script-src 'unsafe-eval' 'self' blob:; "+
+    //         "connect-src 'self'; default-src data: blob: mediastream: filesystem:; "+
+    //         "style-src 'self' 'unsafe-inline' blob:; "+
+    //         "child-src 'self' blob:; "+
+    //         "worker-src blob: 'self';"
+    
+    i.name = "SecureRender-Enclave";
+    i.onload = function() { 
+      window.addEventListener("message",function(eve) {
+        var msg = eve.data;
+        if (!msg) { return }//always have data
+        if(eve.source === i.contentWindow){//from child
+          eve.preventDefault();
+          eve.stopImmediatePropagation();
+          events._emit(...msg)
+        }
+      });
+      i.onload = null;
+      i.contentWindow.postMessage(['html', tag.outerHTML],"*")
+      if(next) next(i, events)
+    }
     var path = window.location.pathname.toString().split("/");
     path.pop();path = path.join("/")+"/";
 
@@ -69,95 +85,30 @@
       tag.setAttribute("src-css",css)
     }
 
-    var n = (hash)=>{
-      sr.html = tag.outerHTML;// get HTML text to send to a sandbox. // @qxip has a hot tip to make this faster!
-      // document.body.innerHTML = document.head.innerHTML = ""; // clear screen for app to run inside the sandbox instead.
+    var done = (hash)=>{
       i.style = "position: fixed; border: 0; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0;";
-      //i.integrity = "browsers please support this!"; // https://github.com/w3c/webappsec-subresource-integrity/issues/21
-      try {
-        i.src = sr.browser.runtime.getURL('') + 'enclave.html'; // try browser
-      }
-      catch (err) {
-        i.src = sr.polyfill.runtime.getURL('') + 'enclave.html'; // else emulate
-      }
+      i.src = '/peersocial/securerender/enclave.html'; // else emulate
       document.body.appendChild(i);
-      if(next)
-        next(i, hash);
-
-      i.onmessage = console.log
     }
 
-    hash = tag.getAttribute("content-hash");
-    
+    hash = tag.getAttribute("content-hash");    
     var code = tag.innerHTML;
     var enc = new TextEncoder(); // always utf-8
-    if(hash && hash.length){
       tag.removeAttribute("hash");
       crypto.subtle.digest('SHA-256',  enc.encode(code)).then(($hash)=>{
         $hash = btoa(String.fromCharCode.apply(null, new Uint8Array($hash)));
         if(hash == $hash){
-          tag.innerHTML = code;
-          n($hash);
+          done($hash);
         }else {
-          console.log("SecureRender content-hash invalid", $hash)
-          fail();
+          console.error("LOW SECURITY, PLEASE ADD HASH TO RESOUCE", 'context',$hash)
+          done($hash);
         }
       })
-    }else {
-      crypto.subtle.digest('SHA-256',  enc.encode(code)).then(($hash)=>{
-        $hash = btoa(String.fromCharCode.apply(null, new Uint8Array($hash)));
-        console.error("ADD MORE SECURITY to content", 'set content-hash="'+$hash+'"')
-        n($hash);
-      });
-    }
 
     return i;
   }
 
-  var pubSubs = new Map();
-  window.addEventListener("message",function(eve) { // hear from app, enclave, and workers.
-    
-    var msg = eve.data;
-    if (!msg) { return }//always have data
-    
-    if(eve.source === eve.currentTarget === window){ // from myself
-      eve.preventDefault();
-      eve.stopImmediatePropagation();
-      var tmp = sr.how[msg.how];
-      if (tmp) {
-        tmp(msg, eve);// or do task
-      }
-      return;
-    }
-    
-    if(eve.source === sr.i.contentWindow){//from child
-      eve.preventDefault();
-      eve.stopImmediatePropagation();
-      if(window.parent !== window)//i am NOT top window
-        window.parent.postMessage(msg, "*");//so passthe message to the top
-      else{
-        //I GOT A MESSAGE
-        var ps;
-        if(ps = pubSubs.get(sr.i.contentWindow.id)){
-          // console.log("top window, data from secure context",sr.i.contentWindow.id,msg);
-          if(msg.how) ps.emit(msg.how, msg.data);
-        }
-          
-      }
-      return;
-    }
-    
-    if(eve.source === window.parent){//from parent
-      eve.preventDefault();
-      eve.stopImmediatePropagation();
-      sr.send(msg);
-      return;
-    }
-    
-  });
-
   console.log("SecureRender: THIS IS AN ALPHA FOR DEVELOPERS, NO POLYFILL HAS BEEN PUBLISHED YET, YOU MUST PROTOTYPE IT AS AN UNPACKED EXTENSION!");
-  sr.polyfill = { runtime: { getURL: function() { return '/peersocial/securerender/' } } };
   
   var EventEmitter = (function(){
     // Copyright Joyent, Inc. and other Node contributors.
@@ -440,6 +391,7 @@
     
 
     exports.SecureRender = async function SecureRender(code, codeHash, contextJS ,contextCSS){
+        if(!code) return;
       return new Promise(async (resolve,reject)=>{
         if(document.readyState == "loading"){
           window.addEventListener('load',complete)
@@ -448,16 +400,20 @@
         async function complete(){
           var tag = document.createElement('script');
           tag.innerHTML = code;
-          tag.setAttribute("content-css",contextCSS)
-          tag.setAttribute("content-js",contextJS)
+          if(contextCSS)
+            tag.setAttribute("content-css",contextCSS)
+          if(contextJS)
+            tag.setAttribute("content-js",contextJS)
           if(codeHash)
             tag.setAttribute("content-hash",codeHash)
-          frame(tag, (iframe)=>{
-            iframe.addEventListener("load",()=>{
+          frame(tag, (iframe, events)=>{
               var pubsub = new EventEmitter();
-              pubSubs.set(iframe.contentWindow.id, pubsub)
-              resolve(pubsub);
-            })
+              // pubsub._emit = pubsub.emit;
+              // pubsub.emit = function(eve,data){
+              //   iframe.contentWindow.postMessage({how:eve,data:data},"*")
+              // }
+              // pubSubs.set(iframe.contentWindow.id, pubsub)
+              resolve(events);
           })
         }
     });
