@@ -13,25 +13,57 @@ function SecureRender(sr) {
 
     loadjsfile("/peersocial/lib/jquery.js", function () {
         loadjsfile("/peersocial/lib/r.js", function () {
-            requirejs(["/peersocial/ace/ace", "/peersocial/ace/mode/javascript", "/gun/gun", "/gun/sea" ], (ace, jsMode) => {
-                
-                var Gun = window.Gun;
-                var gun = Gun(['https://'+window.location.hostname+'/gun']);
+            requirejs(["/peersocial/ace/ace", "/peersocial/ace/mode/javascript", "/gun/gun"], (ace, jsMode) => {
+                (function (Gun, u) {
+                    if(!Gun) throw "no Gun?";
+                                        
+                    Gun.chain.mesh = function(g) {
+                        var gun = this._;
+                        var root = gun.root,
+                            opt = root.opt;
+                        return opt.mesh || Gun.Mesh(root);
+                    };
 
-                sr.on("ready32", (data) => {
-                    console.log("ready32", data)
+                })((typeof window !== "undefined") ? window.Gun : false);
+
+                var Gun = window.Gun;
+                var gun = Gun();
+                
+                // peer = { wire: l };
+                var peer = {
+                    wire:{
+                        connected:false,
+                        send: (msg) => {
+                            // debugger;
+                            if (!peer.wire.connected)
+                                throw 'not attached';
+                            peer.wire.connected(msg);
+                        }
+                    }
+                }
+
+                var mesh = gun.mesh();
+
+                mesh.hi(peer);
+
+                sr.on("gun-data",(msg)=>{
+                    if(!peer.wire.connected) peer.wire.connected = function(msg){ sr.emit("gun-data", msg)};
+                    mesh.hear(msg.data || msg, peer);
                 });
+
+                sr.emit("gun-attach");
+
                 sr.events.once("state", (state) => {
                     $(function () {
-                        
-                        var chain = gun.get(state.key || "pastedsd").get("peersocial-sr");
+                        var key = state.key || "pastedsd";
                         var timeout = setTimeout(function(){
                                 if(!$data)
-                                    chain.put(state.data);
+                                gun.get(key).get("peersocial-sr").put(state.data);
                             },3000)       
                         var $data;
-                        chain.on(function(data,key){
+                        gun.get(key).get("peersocial-sr").on(function(data,key){
                                 
+                            // debugger;
                             if(data && !$data){
                                 $data = true;
 
@@ -54,8 +86,10 @@ function SecureRender(sr) {
                                 editor.session.setValue(data);
                                 
                                 editor.session.on('change', (delta)=>{
-                                    chain.put(editor.session.getValue())
+                                    gun.get(key).get("peersocial-sr").put(editor.session.getValue())
                                 });
+                            }else if(data){
+                                if(editor.session.getValue() != data) editor.session.setValue(data);
                             }
 
                         });

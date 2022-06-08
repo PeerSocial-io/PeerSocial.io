@@ -11,7 +11,7 @@ define(function(require, exports, module) {
         var Gun, gun;
 
         /* global $ GUN */
-        Gun = require("gun");
+        Gun = require("../../gun/gun.js");
 
         // Gun = require('gun/src/root');
         // require('gun/src/shim');
@@ -30,14 +30,13 @@ define(function(require, exports, module) {
         // require('gun/src/mesh');
         // require('gun/src/websocket');
         // require('gun/src/localStorage');
+        // require("gun/sea");
 
-
-        require("gun/sea");
-        require("gun/nts");
-        require("gun/lib/unset");
-        require("gun/lib/not");
-        require("gun/lib/open");
-        require("gun/lib/load");
+        // require("gun/nts");
+        // require("gun/lib/unset");
+        // require("gun/lib/not");
+        // require("gun/lib/open");
+        // require("gun/lib/load");
 
         GUN.chain.cert = function() {
             var gun = this;

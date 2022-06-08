@@ -141,9 +141,9 @@ function appPlugin(options, imports, register) {
         next();
     })
 
-    express_app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), casheControl));
     express_app.use(express.static(require("path").join(__dirname, '../../../docs'), casheControl));
-    express_app.use(Gun.serve);
+    express_app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), casheControl));
+    // express_app.use(Gun.serve);
 
     var http_options = {};
     http_options.key = path.resolve('./', './cert-server.key');
