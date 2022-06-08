@@ -32,6 +32,11 @@ plugins.push(new CopyWebpackPlugin({
         //Note:- No wildcard is specified hence will copy all files and folders
         from: path.resolve(__dirname, './node_modules/gun'), //Will resolve to RepoDir/src/assets 
         to: './gun' //Copies all files from above dest to dist/assets
+    },
+    {
+        //Note:- No wildcard is specified hence will copy all files and folders
+        from: path.resolve(__dirname, './node_modules/ace/lib/ace'), //Will resolve to RepoDir/src/assets 
+        to: './peersocial/ace' //Copies all files from above dest to dist/assets
     }, {
         //Note:- No wildcard is specified hence will copy all files and folders
         from: path.resolve(__dirname, './node_modules/@fortawesome/fontawesome-free'), //Will resolve to RepoDir/src/assets 

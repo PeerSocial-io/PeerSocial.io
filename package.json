@@ -27,6 +27,7 @@
     "@fortawesome/fontawesome-free": "^6.1.1",
     "@trustcrypto/node-onlykey": "github:bmatusiak/node-onlykey",
     "@vue/cli": "^5.0.4",
+    "ace": "github:ajaxorg/ace#57ded0911fc5d001636bdd0edf387c629a5f55f4",
     "amd-loader": "^0.0.8",
     "amdefine": "^1.0.1",
     "aws-sdk": "^2.1123.0",
