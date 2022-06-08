@@ -9,7 +9,7 @@
         return opt.mesh || Gun.Mesh(root);
     };
 
-    var gun = new Gun( ['https://'+window.location.hostname+'/gun']);
+    var gun = new Gun({peers: ['https://'+window.location.hostname+'/gun'] } );
 
     var mesh = gun.mesh();
     
@@ -44,6 +44,7 @@
             }
 
             sr.on("gun-data",(msg)=>{
+                // console.log("main: gun data in", msg)
                 mesh.hear(msg, peer);
             });
             if(!peer.wire.connected) 

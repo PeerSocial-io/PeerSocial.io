@@ -13,7 +13,7 @@ function SecureRender(sr) {
 
     loadjsfile("/peersocial/lib/jquery.js", function () {
         loadjsfile("/peersocial/lib/r.js", function () {
-            requirejs(["/peersocial/ace/ace", "/peersocial/ace/mode/javascript", "/gun/gun"], (ace, jsMode) => {
+            requirejs(["/peersocial/ace/ace", "/peersocial/ace/mode/javascript", "/gun/gun"], (ace, jsMode, Gun) => {
                 (function (Gun, u) {
                     if(!Gun) throw "no Gun?";
                                         
@@ -24,9 +24,8 @@ function SecureRender(sr) {
                         return opt.mesh || Gun.Mesh(root);
                     };
 
-                })((typeof window !== "undefined") ? window.Gun : false);
-
-                var Gun = window.Gun;
+                })(Gun);
+                
                 var gun = Gun();
                 
                 // peer = { wire: l };
@@ -48,24 +47,32 @@ function SecureRender(sr) {
 
                 sr.on("gun-data",(msg)=>{
                     if(!peer.wire.connected) peer.wire.connected = function(msg){ sr.emit("gun-data", msg)};
+                    // console.log("renderer: gun data in", msg)
                     mesh.hear(msg.data || msg, peer);
                 });
 
                 sr.emit("gun-attach");
 
+
                 sr.events.once("state", (state) => {
+                    // debugger;
                     $(function () {
+                        
+                        function chain(){
+                            return gun.get("peersocial-sr").get(key);
+                        }
+                        
                         var key = state.key || "pastedsd";
                         var timeout = setTimeout(function(){
                                 if(!$data)
-                                gun.get(key).get("peersocial-sr").put(state.data);
+                                chain().put(state.data);
                             },3000)       
-                        var $data;
-                        gun.get(key).get("peersocial-sr").on(function(data,key){
+                        var $data, editor, updating = false;
+                        chain().on(function(data,key){
                                 
                             // debugger;
                             if(data && !$data){
-                                $data = true;
+                                $data = data;
 
                                 var container = $('<div id="editor-container"></div>');
                                 $(document.body).append(container);
@@ -73,7 +80,7 @@ function SecureRender(sr) {
                                 $(document.body).append(output);
 
                                 //editor setup
-                                var editor = ace.edit(container[0]);
+                                editor = ace.edit(container[0]);
                                 editor.session.setUseWorker(false); //cant importScripts in worker like ace wants
                                 var JavaScriptMode = jsMode.Mode;
                                 editor.session.setMode(new JavaScriptMode());
@@ -84,12 +91,24 @@ function SecureRender(sr) {
                                 
                                 
                                 editor.session.setValue(data);
-                                
+                                var timeout;
                                 editor.session.on('change', (delta)=>{
-                                    gun.get(key).get("peersocial-sr").put(editor.session.getValue())
+                                    // if(timeout) clearTimeout(timeout);
+                                    // timeout = setTimeout(()=>{
+                                        $data = editor.session.getValue();
+                                        if(!updating)
+                                            chain().put($data)
+                                    // }, 1000)
                                 });
-                            }else if(data){
-                                if(editor.session.getValue() != data) editor.session.setValue(data);
+                            }else if(data && editor){
+                                if(data != $data) {
+                                    // debugger;
+                                    $data = data;
+                                    updating = editor.selection.getCursor();
+                                    editor.session.setValue(data);
+                                    editor.moveCursorTo(updating.row , updating.column)
+                                    updating = false;
+                                }
                             }
 
                         });
