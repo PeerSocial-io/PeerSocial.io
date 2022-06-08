@@ -7,6 +7,8 @@ radata/
 radata*
 *radata
 
+/gun/*
+
 package-lock.json
 
 public/fido2-onlykey/

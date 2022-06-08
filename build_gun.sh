@@ -1,10 +1,10 @@
 # rm -rf ./node_modules/gun
 # npm install gun
-cd ./node_modules/gun
+ln -sf ./node_modules/gun ./gun
+cd ./gun
 node lib/unbuild
 node lib/unbuild sea
-
-cd ../..
+cd ..
 
 ./src/gun/build.sh
 

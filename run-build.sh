@@ -3,6 +3,7 @@ echo Build $APP_ENV
 # npm install
 # env
 sh ./build_gun.sh
+npm exec -c "minify ./src/peersocial/lib/r.js >  ./src/peersocial/lib/r.min.js"
 npm run build-app
 rm -rf docs/peersocial/additional_plugins
 ln -s ../../src/peersocial/additional_plugins docs/peersocial/additional_plugins

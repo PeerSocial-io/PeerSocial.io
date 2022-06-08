@@ -1,7 +1,7 @@
 "use strict";
 define(function ($require, exports, module) {
 
-    var requirejs = $require("./r.js");
+    var requirejs = $require("./r.min.js");
     
     if(!(typeof window == "undefined")){
         if(!window.require) window.require = requirejs;
