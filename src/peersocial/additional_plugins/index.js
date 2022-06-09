@@ -1,11 +1,10 @@
 define(function (require, exports, module) {
     /* globals $ */
     appPlugin.consumes = ["hub"];
-    appPlugin.provides = ["babel"];
+    appPlugin.provides = ["plugins"]; 
 
     function appPlugin(options, imports, register) {
-        var babel = require("@babel/standalone");
-
+        
         var definedPlugins = {};
         var aditionalPlugins = {
             get define() {
@@ -39,8 +38,8 @@ define(function (require, exports, module) {
                 }
             }
         };
-
-        window.aditionalPlugins = aditionalPlugins;
+        
+        // window.aditionalPlugins = aditionalPlugins;
 
         // (async ()=>{
         //     await aditionalPlugins.define("marked", "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js");
@@ -69,7 +68,7 @@ define(function (require, exports, module) {
                 })
         */
         register(null, {
-            babel: babel
+            plugins: aditionalPlugins
         });
 
     }

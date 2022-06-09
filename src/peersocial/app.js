@@ -25,7 +25,9 @@ setTimeout(function () {
     (function () {
 
         appPlugin.consumes = ["hub"];
-        appPlugin.provides = ["app", "provable"];
+        appPlugin.provides = ["app", "provable", "babel"];
+
+        var babel = require("@babel/standalone/babel.js");
 
         function appPlugin(options, imports, register) {
             var app = new events.EventEmitter();
@@ -38,7 +40,8 @@ setTimeout(function () {
             app.window = window;
             register(null, {
                 app: app,
-                provable: provable
+                provable: provable,
+                babel:babel
             });
         }
 
