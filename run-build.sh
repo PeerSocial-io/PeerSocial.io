@@ -6,6 +6,10 @@ echo Build $APP_ENV $SOURCE_VERSION
 # npm install
 # env
 
+cd ./src
+npm version patch
+cd ..
+
 sh ./build_gun.sh
 npm exec -c "minify ./src/peersocial/lib/r.js >  ./src/peersocial/lib/r.min.js"
 SOURCE_VERSION=$SOURCE_VERSION npm run build-app
