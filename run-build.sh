@@ -1,7 +1,7 @@
 # git rev-parse --verify HEAD >> GIT_HEAD
-echo Build $APP_ENV
+echo Build $APP_ENV $SOURCE_VERSION
 # npm install
-# env
+env
 
 cd src
 npm version patch
