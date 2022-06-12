@@ -1,6 +1,6 @@
 {
   "name": "peersocial.io",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "peersocial dapp",
   "scripts": {
     "build": "npm run build-pro",
