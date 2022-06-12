@@ -26,6 +26,7 @@ var cacheListSuffix = [
 ];
 
 var cacheList = [
+  new Request("/favicon.ico").url,
   new Request("/app/app.js").url
 ];
 
@@ -72,6 +73,11 @@ async function openCacheVersion() {
       versionMemory = false;
     }, 5000);
 
+    var dbs = await caches.keys();
+    for(var i in dbs){
+      if(dbs[i] != versionMemory)
+        await caches.delete(dbs[i])
+    }
     resolve(await caches.open(versionMemory))
 
   })

@@ -60,10 +60,11 @@ setTimeout(function () {
             app.services.app[i] = app.services[i];
         }
 
+        app.services.app.emit("start");
+        
         architect.loadConfig("/package.json", function (err, package_config) {
             app.loadAdditionalPlugins(package_config,function(){
 
-                app.services.app.emit("start");
             })
 
         })
