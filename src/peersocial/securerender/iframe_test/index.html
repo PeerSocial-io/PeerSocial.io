@@ -1,0 +1,37 @@
+<script>
+
+function getIFrameContent(){
+    var content = `<script src="./hello.js"><\/script> <h1>Hello World</h1>`;
+
+    return content;
+}
+
+window.onload = function(){
+    loadBlob();
+    loadHTMLdoc();
+}
+
+var frameID = 0 ;
+
+function loadBlob(){
+    const blobContent = URL.createObjectURL(new Blob([getIFrameContent()], {type: "text/html"}));
+    var i = document.createElement("iframe");
+    i.name = "Sandboxed Iframe"+ ++frameID;
+    i.sandbox = 'allow-scripts allow-popups allow-downloads allow-pointer-lock';
+    i.csp = "script-src 'self'; default-src data: blob: mediastream: filesystem:; style-src 'self' 'unsafe-inline'; child-src 'self' blob:; worker-src blob: 'self';";
+    i.src = URL.createObjectURL(blobContent);
+    document.body.appendChild(i);
+}
+
+
+function loadHTMLdoc(){
+    var i = document.createElement("iframe");
+    i.name = "Sandboxed Iframe"+ ++frameID;
+    i.sandbox = 'allow-scripts allow-popups allow-downloads allow-pointer-lock';
+    i.csp = "script-src 'self'; default-src data: blob: mediastream: filesystem:; style-src 'self' 'unsafe-inline'; child-src 'self' blob:; worker-src blob: 'self';";
+    i.src = "./framed.html";
+    document.body.appendChild(i);
+}
+
+
+</script>
