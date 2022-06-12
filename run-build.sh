@@ -2,6 +2,12 @@
 echo Build $APP_ENV
 # npm install
 # env
+
+cd src
+npm version patch
+cd ..
+
+
 sh ./build_gun.sh
 npm exec -c "minify ./src/peersocial/lib/r.js >  ./src/peersocial/lib/r.min.js"
 npm run build-app

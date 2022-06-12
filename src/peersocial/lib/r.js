@@ -2444,30 +2444,51 @@ ${contents}
 				});`;
     };
 
+		var useHXR = false;
 
     require.load = function (context, moduleName, url) {
+			if(useHXR){
         var xhr = new XMLHttpRequest();
-
         xhr.open('GET', url, true);
         xhr.send();
-
         xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-				var response = xhr.responseText;				
-				if(xhr.status == 200)
-					if(url.substr(-4) == "json")
-						response = require.makeJSONWrapper(response);
-					else{
-						response = require.makeDebuggerWrapper(response, xhr.responseURL);
-					}
-				if(xhr.status == 404 || xhr.status == 302) response = "";
-				
-                exec(response);
+					if (xhr.readyState === 4) {
+						var response = xhr.responseText;				
+						if(xhr.status == 200){
+							if(url.substr(-4) == "json")
+								response = require.makeJSONWrapper(response);
+							else{
+								response = require.makeDebuggerWrapper(response, xhr.responseURL);
+							}
+						}else if(xhr.status == 404 || xhr.status == 302) response = "";
+		
+						exec(response);
 
-                //Support anonymous modules.
-                context.completeLoad(moduleName);
-            }
+						//Support anonymous modules.
+						context.completeLoad(moduleName);
+					}
         };
+			}else{
+				fetch(url).then(async (response)=>{
+					var responseURL = response.url;
+					var status = response.status;
+					response = await response.text();	
+
+					if(status == 200){
+						if(url.substr(-4) == "json")
+							response = require.makeJSONWrapper(response);
+						else{
+							response = require.makeDebuggerWrapper(response, responseURL);
+						}
+					}else if(status == 404 || status == 302) response = "";
+	
+					exec(response);
+
+					//Support anonymous modules.
+					context.completeLoad(moduleName);
+				})
+			}
+
     };
 }());
     } else if (env === 'rhino') {
