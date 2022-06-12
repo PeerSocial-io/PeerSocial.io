@@ -103,67 +103,89 @@ module.exports = function(imports, login, keychain) {
                         else if (domain == "localhost" && hostname != "localhost") domain = "www.peersocial.com";
 
                         domain = 'https://' + domain;
+                        var popup;
+                        function triggerPopup(){
+                            popup = openPopup({
+                                auth: window.location.host,
+                                dapp: dapp_pub_hash,
+                                pub: temp_dapp_user.pub,
+                                epub: temp_dapp_user.epub,
+                            }, domain + '/login');
+                        }
 
-                        var popupOptions = "popup,location=1,toolbar=1,menubar=1,resizable=1,height=800,width=600";
-                        var query = {
-                            auth: window.location.host,
-                            dapp: dapp_pub_hash,
-                            pub: temp_dapp_user.pub,
-                            epub: temp_dapp_user.epub,
-                        };
-                        query = querystring.stringify(query);
-                        var _url = domain + '/login?' + query;
-                        var popup = window.open(_url, 'auth', popupOptions);
-
-                        var interval = setInterval(function() {
-                            if (popup.closed !== false) {
-                                gun.user().leave();
-                                clearInterval(interval);
-                                imports.app.state.history.back();
-                                // imports.app.state.history.reload();
-                                return;
+                        triggerPopup();
+                        
+                        function getConfirmation() {
+                            var retVal = confirm("Do you want to continue ?");
+                            if( retVal == true ) {
+                                triggerPopup();
+                               return true;
+                            } else {
+                               return false;
                             }
+                         }
 
-                            try {
-                                (popup.location.pathname == "/blank.html");
-                            }
-                            catch (e) { return; }
-
-                            // var message = (new Date().getTime());
-                            // proxy.postMessage(message, domain); //send the message and target URI
-                            if (popup.location.pathname == "/blank.html" && popup.location.host == window.location.host) {
-                                var query = url.parse(popup.location.href, true).query;
-                                if (query.cert) {
-                                    (async() => {
-                                        query.cert = Buffer.from(query.cert, "base64").toString("utf8");
-                                        query.cert = await imports.app.sea.decrypt(query.cert, await imports.app.sea.secret(query.epub, temp_dapp_user));
-                                        login.user_cert = query;
-
-                                        if (login.user) {
-                                            gun.user().get("profile").get("seen").put(new Date().getTime()).once(function() {
-
-                                                login.prepLogout();
-                                                imports.app.emit("login", login.user);
-                                                imports.app.state.history.back();
-                                            });
-                                        }
-
-                                    })();
-                                }
-                                else {
+                        if(!popup || popup.closed || typeof popup.closed=='undefined') 
+                        { 
+                            // getConfirmation()
+                        }else{
+                            var interval = setInterval(function() {
+                                if (popup.closed !== false) {
                                     gun.user().leave();
+                                    clearInterval(interval);
                                     imports.app.state.history.back();
+                                    // imports.app.state.history.reload();
+                                    return;
                                 }
-                                clearInterval(interval);
-                                popup.close();
-                            }
-                        }, 500);
+
+                                try {
+                                    (popup.location.pathname == "/blank.html");
+                                }
+                                catch (e) { return; }
+
+                                // var message = (new Date().getTime());
+                                // proxy.postMessage(message, domain); //send the message and target URI
+                                if (popup.location.pathname == "/blank.html" && popup.location.host == window.location.host) {
+                                    var query = url.parse(popup.location.href, true).query;
+                                    if (query.cert) {
+                                        (async() => {
+                                            query.cert = Buffer.from(query.cert, "base64").toString("utf8");
+                                            query.cert = await imports.app.sea.decrypt(query.cert, await imports.app.sea.secret(query.epub, temp_dapp_user));
+                                            login.user_cert = query;
+
+                                            if (login.user) {
+                                                gun.user().get("profile").get("seen").put(new Date().getTime()).once(function() {
+
+                                                    login.prepLogout();
+                                                    imports.app.emit("login", login.user);
+                                                    imports.app.state.history.back();
+                                                });
+                                            }
+
+                                        })();
+                                    }
+                                    else {
+                                        gun.user().leave();
+                                        imports.app.state.history.back();
+                                    }
+                                    clearInterval(interval);
+                                    popup.close();
+                                }
+                            }, 500);                            
+                        }
                     });
                 });
             });
             return true;
         }
         return false;
+    }
+
+    function openPopup(url ,query, opions){        
+        var popupOptions = opions || "popup,location=1,toolbar=1,menubar=1,resizable=1,height=800,width=600";
+        var _url = url + (query ? "?" + querystring.stringify(query) : "");
+        var popup = window.open(_url, false, popupOptions);
+        return popup;
     }
 
     Object.defineProperty(login, 'will_authorize', {

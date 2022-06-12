@@ -25,7 +25,7 @@ setTimeout(function () {
     (function () {
 
         appPlugin.consumes = ["hub"];
-        appPlugin.provides = ["app", "provable", "babel"];
+        appPlugin.provides = ["app", "provable", "babel", "architect"];
 
         var babel = require("@babel/standalone/babel.js");
 
@@ -41,7 +41,8 @@ setTimeout(function () {
             register(null, {
                 app: app,
                 provable: provable,
-                babel:babel
+                babel:babel,
+                architect:architect
             });
         }
 
