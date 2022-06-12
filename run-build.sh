@@ -1,22 +1,14 @@
-if [ -z ${SOURCE_VERSION+x} ]; 
-  then export SOURCE_VERSION=$(git rev-parse HEAD); 
+if [ -z ${HEROKU_SLUG_COMMIT+x} ]; 
+  then SOURCE_VERSION=$(git rev-parse --verify HEAD); 
 fi
 
-if [ "$SOURCE_VERSION" = "$(git rev-parse HEAD)" ]; then
-    echo "Strings are equal."
-else
-    echo "Strings are not equal."
-fi
-
-# git rev-parse --verify HEAD >> GIT_HEAD
 echo Build $APP_ENV $SOURCE_VERSION
 # npm install
 # env
 
-
 sh ./build_gun.sh
 npm exec -c "minify ./src/peersocial/lib/r.js >  ./src/peersocial/lib/r.min.js"
-npm run build-app
+SOURCE_VERSION=$SOURCE_VERSION npm run build-app
 rm -rf docs/peersocial/additional_plugins
 ln -s ../../src/peersocial/additional_plugins docs/peersocial/additional_plugins
 

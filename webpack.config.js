@@ -1,7 +1,12 @@
 const path = require('path');
+const fs = require('fs');
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+const editPackageJson = require("edit-package-json");
+
+fs.writeFileSync("./src/package.json", editPackageJson.set(fs.readFileSync("./src/package.json", "utf8"), "source_version", process.env.SOURCE_VERSION || "?"))
 
 const { VueLoaderPlugin } = require('vue-loader')
 
@@ -14,6 +19,7 @@ const webpack_env = {};
 // webpack_env['process.env.NODE_ENV'] = JSON.stringify(process.env.APP_ENV);
 webpack_env['process.env.APP_ENV'] = JSON.stringify(process.env.APP_ENV);
 webpack_env['process.env.DEBUG'] = JSON.stringify(process.env.APP_ENV == "production" ? false : true);
+webpack_env['process.env.SOURCE_VERSION'] = JSON.stringify(process.env.SOURCE_VERSION);
 // webpack_env['process.env.DAPP_KEY'] = JSON.stringify(false);
 
 console.log("webpack_env", webpack_env);

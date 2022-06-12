@@ -42,6 +42,7 @@
     "cross-env": "^7.0.2",
     "crypto-browserify": "^3.12.0",
     "css-loader": "^6.7.1",
+    "edit-package-json": "^0.4.0",
     "elliptic": "^6.5.4",
     "express": "*",
     "fabric": "github:fabricjs/fabric.js#v521",
