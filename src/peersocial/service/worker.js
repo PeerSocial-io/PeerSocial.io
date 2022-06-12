@@ -65,7 +65,8 @@ var versionMemory, versionMemoryClear;
 async function openCacheVersion() {
   return new Promise(async (resolve) => {
     if (!versionMemory) {
-      versionMemory = (JSON.parse(await (await fetch("/package.json")).text()).version)
+      var $package = JSON.parse(await (await fetch("/package.json")).text())
+      versionMemory = $package.version+"-"+$package.source_version;
     }
 
     if (versionMemoryClear) clearTimeout(versionMemoryClear)
