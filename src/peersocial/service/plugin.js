@@ -59,11 +59,11 @@ define(function (require, exports, module) {
     }
 
     
-    imports.app.on("start",async ()=> {
+    // imports.app.on("start",async ()=> {
       var workerExist = (await fetch(worker)).status == 200;
       if(workerExist)
         registerServiceWorker()
-    });
+    // });
     
 
     register(null, {
