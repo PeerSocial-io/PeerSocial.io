@@ -60,9 +60,11 @@ define(function (require, exports, module) {
 
     
     // imports.app.on("start",async ()=> {
+    (async function(){
       var workerExist = (await fetch(worker)).status == 200;
       if(workerExist)
         registerServiceWorker()
+    })()
     // });
     
 
