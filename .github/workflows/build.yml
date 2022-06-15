@@ -25,13 +25,15 @@ jobs:
 #         npm run build
         
   sync-branch:
-    name: Update heroku branch
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@master
-      - uses: connor-baer/action-sync-branch@main
+      - uses: actions/checkout@master
+
+      - name: Merge development -> staging
+        uses: devmasx/merge-branch@master
         with:
-          branch: heroku
-          token: ${{ secrets.GITHUB_TOKEN }}
-          force: false
+          type: now
+          from_branch: master
+          target_branch: heroku
+          github_token: ${{ github.token }}
+
