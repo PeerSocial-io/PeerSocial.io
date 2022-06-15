@@ -16,7 +16,14 @@ require("./config.js")(config);
 
 // config = config.concat(package_config);
 
-setTimeout(function () {
+function RUN(fn,timeout){
+    if(!timeout)
+        fn();
+    else
+        setTimeout(fn,timeout);
+}
+
+RUN(function () {
 
     if (window.nw_app || window.nw) {
         config.push(require("./nw_app/nw_app"));
@@ -33,6 +40,7 @@ setTimeout(function () {
             var app = new events.EventEmitter();
             app.hub = imports.hub;
             app.debug = process.env.DEBUG;
+            app.source_version = process.env.SOURCE_VERSION;
             app.dapp_info = require("./dapp_info");
             app.package = require("../../package.json");
             app.events = events;
@@ -70,4 +78,4 @@ setTimeout(function () {
         })
 
     });
-}, 500)
+}, 0)

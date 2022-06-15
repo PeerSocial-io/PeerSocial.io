@@ -182,6 +182,7 @@ define(function ($require, exports, module) {
     }
 
     function Architect(config) {
+        EventEmitter.apply(this);
         var app = this;
         app.config = config;
         app.packages = {};

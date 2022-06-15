@@ -1,77 +1,81 @@
 define(function (require, exports, module) {
-    /* globals $ */
-    appPlugin.consumes = ["hub"];
-    appPlugin.provides = ["plugins"]; 
+  /* globals $ */
+  appPlugin.consumes = ["hub", "architect", "app"];
+  appPlugin.provides = ["plugins"];
 
-    function appPlugin(options, imports, register) {
-        
-        var definedPlugins = {};
-        var aditionalPlugins = {
-            get define() {
-                return function (shortname, url) {
-                    definedPlugins[shortname] = url;
-                    return new Promise((resolve, reject) => {
-                        require([definedPlugins[shortname]], (plugin) => {
-                            console.log("aditionalPlugin", shortname, "loaded @", url);
-                            aditionalPlugins[shortname] = plugin;
-                            resolve(plugin)
-                        })
-                    })
-                }
-            },
-            get require() {
-                return function (shortname, callback) {
-                    if (aditionalPlugins[shortname]) {
-                        if (callback)
-                            callback(aditionalPlugins[shortname]);
-                        else return aditionalPlugins[shortname];
-                    } else if (definedPlugins[shortname] && callback) {
-                        var url = definedPlugins[shortname]
-                        require([definedPlugins[shortname]], (plugin) => {
-                            console.log("aditionalPlugin", shortname, "loaded @", url);
-                            aditionalPlugins[shortname] = plugin;
-                            callback(plugin)
-                        })
-                    } else {
-                        throw "i dont know how to handle the request!!"
-                    }
-                }
-            }
-        };
-        
-        // window.aditionalPlugins = aditionalPlugins;
+  function appPlugin(options, imports, register) {
+    var architect = imports.architect;
 
-        // (async ()=>{
-        //     await aditionalPlugins.define("marked", "https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js");
 
-        //     var marked = aditionalPlugins.require("marked")
+    function Plugin() {}
 
-        //     console.log(marked)
-        // })()
-        /*
-        $(document).on('DOMNodeInserted', function(e) {
-            var markeds = $(e.target).find("div.marked");
-            
-            markeds.each((index,value) => {
-                $(value).removeClass("marked")
-                var data = $(value).text();
-                $(value).text("");
-                $(value).removeClass("d-none");
-                require(["https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js"],(marked)=>{
-                    $(value).html(marked.parse(data));
-                })
-            });
-        });
+    var objectKeys = [
+      "is",
+      "preventExtensions",
+      "isExtensible",
+      "freeze",
+      "isFrozen",
+      "seal",
+      "isSealed"
+    ]
 
-        require(["https://cdn.jsdelivr.net/gh/ajaxorg/ace@master/lib/ace/ace.js"],(ace)=>{
-                    console.log("ace loaded",ace)
-                })
-        */
-        register(null, {
-            plugins: aditionalPlugins
-        });
-
+    for (var i of objectKeys) {
+      ((i) => {
+        if (Object[i])
+          Plugin.prototype[i] = function (...args) {
+            return Object[i].apply(null, [this].concat(args));
+          }
+      })(i)
     }
 
-    return appPlugin;
+    Object.freeze(Plugin.prototype)
+    Object.freeze(Plugin)
+
+    var loadAppPlugin = function (config) {
+
+      appPlugin.consumes = ["hub"];
+      appPlugin.provides = ["plugin"];
+
+      function appPlugin(options, imports, register) {
+        var app = new imports.app.events.EventEmitter();
+        app.hub = imports.hub;
+        app.debug = imports.app.debug;
+        app.source_version = imports.app.source_version;
+        Object.freeze(app)
+        register(null, {
+          app: app
+        });
+
+      }
+
+      config.push(appPlugin);
+      return config;
+    }
+    var additional_plugins;
+    register(null, {
+      plugins: additional_plugins = {
+        load: function (packagePath) {
+          var config = loadAppPlugin([]);
+          architect(config, function (err, app) {
+            if (err) return console.error(err.message);
+
+            if (app.services.app.debug)
+                window.$app[packagePath] = app.services.app; //so we can access it in devConsole
+
+            for (var i in app.services) {
+                if (app.services[i].init) app.services[i].init(app);
+                app.services.app[i] = app.services[i];
+            }
+            
+            additional_plugins[packagePath] = app;
+            
+            app.services.app.emit("start");
+          })
+        }
+      }
+    });
+
+  }
+
+  return appPlugin;
 });

@@ -11,6 +11,7 @@ define(function(require, exports, module) {
         var Gun, gun;
 
         /* global $ GUN */
+        // Gun = require("../../gun/gun.sw.js");
         Gun = require("../../gun/gun.js");
 
         // Gun = require('gun/src/root');

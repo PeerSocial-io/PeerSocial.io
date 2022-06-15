@@ -9,6 +9,7 @@ module.exports = (config, server) => {
 
         //core
         
+        config.push(require("./service/plugin"));
         config.push(require("./react_vue/plugin"));
         config.push(require("./layout/plugin"));
         config.push(require("./state/plugin"));
