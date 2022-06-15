@@ -3,22 +3,35 @@ name: Build
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+#   pull_request:
+#     branches: [ "master" ]
+  
 
 jobs:
-  build:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - uses: actions/checkout@v3
+
+#     - name: Node.js 16.x
+#       uses: actions/setup-node@v3
+#       with:
+#         node-version: 16.x
+
+#     - name: Build
+#       run: |
+#         npm install
+#         npm run build
+        
+  sync-branch:
+    name: Update heroku branch
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-
-    - name: Node.js 16.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.x
-
-    - name: Build
-      run: |
-        npm install
-        npm run build
+      - name: Checkout repository
+        uses: actions/checkout@master
+      - uses: connor-baer/action-sync-branch@main
+        with:
+          branch: heroku
+          token: ${{ secrets.GITHUB_TOKEN }}
+          force: false
