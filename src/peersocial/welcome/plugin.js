@@ -99,9 +99,8 @@ define(function(require, exports, module) {
                         var gun = imports.gun;
                         var source_version = imports.app.source_version;
                         var lastRelease;
-                        gun.get("~" + app_pub).get("deploy").get(source_version).on(function(deploy, a) {
+                        gun.get("~" + app_pub).get("deploy").get(source_version).once(function(deploy, a) {
                             if (deploy && deploy.release && deploy.domain) {
-                                this.off();
                                 if(deploy.domain == "www.peersocial.io"){
                                     var releaseID;                                    
                                     // console.log("!deploy", deploy);
