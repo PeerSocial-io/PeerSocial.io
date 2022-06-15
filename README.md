@@ -2,6 +2,7 @@
 
 [![Version](https://img.shields.io/github/package-json/v/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io)
 [![Github last commit](https://img.shields.io/github/last-commit/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/commits)
+[![Github build](https://img.shields.io/github/workflow/status/PeerSocial-io/PeerSocial.io/Build)](https://github.com/PeerSocial-io/PeerSocial.io/actions/workflows/build.yml)
 [![Github](https://img.shields.io/github/commit-activity/m/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/commits)
 [![Github contributors](https://img.shields.io/github/contributors/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/people)
 
@@ -17,9 +18,9 @@ Support me by giving the project stars on github!
 Chat with us!
 
 [![Gitter](https://img.shields.io/gitter/room/PeerSocial-io/community?label=Gitter)](https://gitter.im/PeerSocial-io/community)
-[![Discord](https://img.shields.io/discord/699620283748843610?label=Discord)](https://discord.gg/rHM4GmR)
+<!-- [![Discord](https://img.shields.io/discord/699620283748843610?label=Discord)](https://discord.gg/rHM4GmR) -->
 
------
+
 
 
 
