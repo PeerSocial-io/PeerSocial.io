@@ -71,23 +71,25 @@ function appPlugin(options, imports, register) {
                         var source_version = require("../../../docs/package.json").source_version;
                         var lastRelease;
                         console.log("imports.app.source_version", source_version)
-                        gun.get("~" + app_pub).get("deploy").get(source_version).on(function(deploy, a) {
+                        gun.get("~" + app_pub).get("deploy").get(source_version).once(function(deploy, a) {
                             if (deploy && deploy.release && deploy.domain) {
                                 if(deploy.domain == "www.peersocial.io"){
-                                    var releaseID;
-                                    if (!deploy.next && !lastRelease) {
+                                    var releaseID;                                    
+                                    // console.log("!deploy", deploy);
+                                    if (!deploy.next_head && !lastRelease) {
                                         releaseID = lastRelease = parseInt(deploy.release.toString().replace("v", ""));
-                                        console.log("Current Release", releaseID);
-                                    }else if(deploy.next){
-                                        gun.get("~" + app_pub).get("deploy").get(source_version).get("next").once(function(next_head){                                            
-                                            gun.get("~" + app_pub).get("deploy").get(next_head).once(function(deploy){
-                                                releaseID = parseInt(deploy.release.toString().replace("v", ""));
-                                                console.log("New Release", releaseID);
-                                            });
-                                        })
+                                        console.log("Your On Current Release", source_version);
+                                    }else if(deploy.next_head){     
+                                        lastRelease = deploy.next_head                          
+                                        gun.get("~" + app_pub).get("deploy").get(deploy.next_head).once(function(deploy){
+                                            // releaseID =  parseInt(deploy.release.toString().replace("v", ""));
+                                            console.log("Not in sync with git upstream. or on custom build. `git pull && npm run build` may fix this issue !");
+                                        });
                                     }
                                 }
 
+                            }else{
+                                console.log("Deployment not found.. Not in sync with git upstream. or on custom build")
                             }
                         })
 
