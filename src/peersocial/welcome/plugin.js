@@ -97,30 +97,56 @@ define(function(require, exports, module) {
 
                         var app_pub = imports.app.dapp_info.DAPP_PUB;
                         var gun = imports.gun;
-
-                        gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
+                        var source_version = imports.app.source_version;
+                        var lastRelease;
+                        gun.get("~" + app_pub).get("deploy").get(source_version).on(function(deploy, a) {
                             if (deploy && deploy.release && deploy.domain) {
-                                if (deploy.domain == "www.peersocial.io") {
-                                    var releaseID = parseInt(deploy.release.toString().replace("v", ""));
-                                    console.log("current replease", releaseID);
-
-                                    gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
-                                        var check_releaseID = parseInt(deploy.release.toString().replace("v", ""));
-                                        if (releaseID < check_releaseID) {
-                                            releaseID = check_releaseID
-                                            if (window.location.host == deploy.domain) {
-                                                console.log("release!", deploy);
-                                                // window.location.reload()
-                                            }
-                                            else {
-                                                console.log("release on", deploy.domain, deploy);
-                                            }
-                                        }
-                                    })
-
+                                this.off();
+                                if(deploy.domain == "www.peersocial.io"){
+                                    var releaseID;                                    
+                                    // console.log("!deploy", deploy);
+                                    if (!deploy.next_head && !lastRelease) {
+                                        releaseID = lastRelease = parseInt(deploy.release.toString().replace("v", ""));
+                                        console.log("Your On Current Release", source_version);
+                                    }else if(deploy.next_head){     
+                                        lastRelease = deploy.next_head                          
+                                        gun.get("~" + app_pub).get("deploy").get(deploy.next_head).once(function(deploy){
+                                            // releaseID =  parseInt(deploy.release.toString().replace("v", ""));
+                                            console.log("Not in sync with git upstream. or on custom build. `git pull && npm run build` may fix this issue !");
+                                        });
+                                    }
                                 }
+
+                            }else{
+                                console.log("Deployment not found.. Not in sync with git upstream. or on custom build")
                             }
                         })
+
+                        if(false){
+                            gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
+                                if (deploy && deploy.release && deploy.domain) {
+                                    if (deploy.domain == "www.peersocial.io") {
+                                        var releaseID = parseInt(deploy.release.toString().replace("v", ""));
+                                        console.log("current replease", releaseID);
+
+                                        gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
+                                            var check_releaseID = parseInt(deploy.release.toString().replace("v", ""));
+                                            if (releaseID < check_releaseID) {
+                                                releaseID = check_releaseID
+                                                if (window.location.host == deploy.domain) {
+                                                    console.log("release!", deploy);
+                                                    // window.location.reload()
+                                                }
+                                                else {
+                                                    console.log("release on", deploy.domain, deploy);
+                                                }
+                                            }
+                                        })
+
+                                    }
+                                }
+                            })
+                        }
 
                     });
 
