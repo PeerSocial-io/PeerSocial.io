@@ -122,7 +122,7 @@ define(function(require, exports, module) {
                                     }
 
                                 }else{
-                                    // console.log("Deployment not found.. Not in sync with git upstream. or on custom build")
+                                    // console.log("Deployment not found.. Not in sync with git upstream. or on custom build") 
                                 }
                             })
                         },5000);
