@@ -69,15 +69,25 @@ function appPlugin(options, imports, register) {
                 init: function() {
                     imports.app.on("start", function() {
                         var source_version = require("../../../docs/package.json").source_version;
-
+                        var lastRelease;
                         console.log("imports.app.source_version", source_version)
                         gun.get("~" + app_pub).get("deploy").get(source_version).on(function(deploy, a) {
                             if (deploy && deploy.release && deploy.domain) {
-                                if (deploy.domain == "www.peersocial.io") {
-                                    var releaseID = parseInt(deploy.release.toString().replace("v", ""));
-                                    console.log("current release", releaseID);
-
+                                if(deploy.domain == "www.peersocial.io"){
+                                    var releaseID;
+                                    if (!deploy.next && !lastRelease) {
+                                        releaseID = lastRelease = parseInt(deploy.release.toString().replace("v", ""));
+                                        console.log("Current Release", releaseID);
+                                    }else if(deploy.next){
+                                        gun.get("~" + app_pub).get("deploy").get(source_version).get("next").once(function(next_head){                                            
+                                            gun.get("~" + app_pub).get("deploy").get(next_head).once(function(deploy){
+                                                releaseID = parseInt(deploy.release.toString().replace("v", ""));
+                                                console.log("New Release", releaseID);
+                                            });
+                                        })
+                                    }
                                 }
+
                             }
                         })
 
