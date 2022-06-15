@@ -68,20 +68,14 @@ function appPlugin(options, imports, register) {
             dapp_login: {
                 init: function() {
                     imports.app.on("start", function() {
+                        var source_version = require("../../../docs/package.json").source_version;
 
-                        gun.get("~" + app_pub).get("release").get("peersocial").once(function(deploy, a) {
+                        console.log("imports.app.source_version", source_version)
+                        gun.get("~" + app_pub).get("deploy").get(source_version).on(function(deploy, a) {
                             if (deploy && deploy.release && deploy.domain) {
                                 if (deploy.domain == "www.peersocial.io") {
                                     var releaseID = parseInt(deploy.release.toString().replace("v", ""));
                                     console.log("current release", releaseID);
-
-                                    gun.get("~" + app_pub).get("release").get("peersocial").on((deploy) => {
-                                        var check_releaseID = parseInt(deploy.release.toString().replace("v", ""));
-                                        if (releaseID < check_releaseID) {
-                                            releaseID = check_releaseID
-                                            console.log("release!", releaseID, deploy);
-                                        }
-                                    })
 
                                 }
                             }
