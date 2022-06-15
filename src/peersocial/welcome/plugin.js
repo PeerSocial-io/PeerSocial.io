@@ -93,7 +93,7 @@ define(function(require, exports, module) {
                     })
 
 
-                    imports.app.on("start", function() {
+                    imports.app.on("start", function() { 
 
                         var app_pub = imports.app.dapp_info.DAPP_PUB;
                         var gun = imports.gun;
