@@ -1,13 +1,13 @@
 # [PeerSocial.io](https://www.peersocial.io/)
 
-[![Version](https://img.shields.io/github/package-json/v/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io)
+[![Version](https://img.shields.io/badge/dynamic/json?label=version&query=version&url=https://www.peersocial.io/package.json)](https://github.com/PeerSocial-io/PeerSocial.io)
 [![Github last commit](https://img.shields.io/github/last-commit/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/commits)
 [![Github build](https://img.shields.io/github/workflow/status/PeerSocial-io/PeerSocial.io/Build)](https://github.com/PeerSocial-io/PeerSocial.io/actions/workflows/build.yml)
 [![Github](https://img.shields.io/github/commit-activity/m/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/commits)
 [![Github contributors](https://img.shields.io/github/contributors/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/people)
 
 [![https://www.peersocial.io/](https://img.shields.io/website?label=peersocial.io&url=http://www.peersocial.io)](https://www.peersocial.io/)
-[![Stats - Gun Peers](https://img.shields.io/badge/dynamic/json?label=Gun%20Peers&query=peers.count&url=https://www.peersocial.io/gun/stats.radata)](https://www.peersocial.io/)
+[![Stats - Gun Peers](https://img.shields.io/badge/dynamic/json?label=gun%20Peers&query=peers.count&url=https://www.peersocial.io/gun/stats.radata)](https://www.peersocial.io/)
 
 Support me by giving the project stars on github! 
 
