@@ -99,28 +99,33 @@ define(function(require, exports, module) {
                         var gun = imports.gun;
                         var source_version = imports.app.source_version;
                         var lastRelease;
-                        gun.get("~" + app_pub).get("deploy").get(source_version).once(function(deploy, a) {
-                            if (deploy && deploy.release && deploy.domain) {
-                                if(deploy.domain == "www.peersocial.io"){
-                                    var releaseID;                                    
-                                    // console.log("!deploy", deploy);
-                                    if (!deploy.next_head && !lastRelease) {
-                                        releaseID = lastRelease = parseInt(deploy.release.toString().replace("v", ""));
-                                        console.log("Your On Current Release", source_version);
-                                    }else if(deploy.next_head){     
-                                        lastRelease = deploy.next_head                          
-                                        gun.get("~" + app_pub).get("deploy").get(deploy.next_head).once(function(deploy){
-                                            // releaseID =  parseInt(deploy.release.toString().replace("v", ""));
-                                            console.log("Not in sync with git upstream. or on custom build. `git pull && npm run build` may fix this issue !");
-                                        });
+
+                        var interval = setInterval(function(){
+                            gun.get("~" + app_pub).get("deploy").get(source_version).once(function(deploy, a) {
+                                if (deploy && deploy.release && deploy.domain) {
+                                    clearInterval(interval);
+                                    if(deploy.domain == "www.peersocial.io"){
+                                        var releaseID;                                    
+                                        // console.log("!deploy", deploy);
+                                        if (!deploy.next_head && !lastRelease) {
+                                            releaseID = lastRelease = parseInt(deploy.release.toString().replace("v", ""));
+                                            console.log("Your On Current Release", source_version);
+                                        }else if(deploy.next_head){     
+                                            lastRelease = deploy.next_head                          
+                                            gun.get("~" + app_pub).get("deploy").get(deploy.next_head).once(function(deploy){
+                                                // releaseID =  parseInt(deploy.release.toString().replace("v", ""));
+                                                // console.log("Not in sync with git upstream. or on custom build. `git pull && npm run build` may fix this issue !");
+                                                console.log("New Release Available!");
+                                                
+                                            });
+                                        }
                                     }
+
+                                }else{
+                                    // console.log("Deployment not found.. Not in sync with git upstream. or on custom build")
                                 }
-
-                            }else{
-                                console.log("Deployment not found.. Not in sync with git upstream. or on custom build")
-                            }
-                        })
-
+                            })
+                        },5000);
                         if(false){
                             gun.get("~" + app_pub).get("release").get("peersocial").once((deploy) => {
                                 if (deploy && deploy.release && deploy.domain) {
