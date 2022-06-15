@@ -70,7 +70,6 @@ function appPlugin(options, imports, register) {
                     imports.app.on("start", function() {
                         var source_version = require("../../../docs/package.json").source_version;
                         var lastRelease;
-                        console.log("imports.app.source_version", source_version)
                         gun.get("~" + app_pub).get("deploy").get(source_version).once(function(deploy, a) {
                             if (deploy && deploy.release && deploy.domain) {
                                 if(deploy.domain == "www.peersocial.io"){
