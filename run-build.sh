@@ -1,5 +1,8 @@
-if [ -z ${HEROKU_SLUG_COMMIT+x} ]; 
-  then SOURCE_VERSION=$(git rev-parse --verify HEAD); 
+if [ -z ${HEROKU_SLUG_COMMIT+x} ]; then 
+
+SOURCE_VERSION=$(git rev-parse --verify HEAD); 
+
+
 fi
 
 echo Build $APP_ENV $SOURCE_VERSION
@@ -7,8 +10,9 @@ echo Build $APP_ENV $SOURCE_VERSION
 # env
 
 cd ./src
-npm version patch
+npm version $(node ../version.js)
 cd ..
+
 
 sh ./build_gun.sh
 npm exec -c "minify ./src/peersocial/lib/r.js >  ./src/peersocial/lib/r.min.js"

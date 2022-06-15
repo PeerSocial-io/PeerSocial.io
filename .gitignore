@@ -7,7 +7,7 @@ radata/
 radata*
 *radata
 
-/gun/*
+src/gun/gun/
 
 package-lock.json
 
