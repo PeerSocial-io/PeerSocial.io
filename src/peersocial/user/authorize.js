@@ -105,12 +105,12 @@ module.exports = function(imports, login, keychain) {
                         domain = 'https://' + domain;
                         var popup;
                         function triggerPopup(){
-                            popup = openPopup({
+                            popup = openPopup(domain + '/login',{
                                 auth: window.location.host,
                                 dapp: dapp_pub_hash,
                                 pub: temp_dapp_user.pub,
                                 epub: temp_dapp_user.epub,
-                            }, domain + '/login');
+                            });
                         }
 
                         triggerPopup();
