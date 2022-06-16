@@ -17,10 +17,23 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 16.x
+    
+    # cache node_modules if we can
+    - name: Cache
+      id: cache-modules
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: ${{ matrix.node-version }}-${{ runner.OS }}-build-${{ hashFiles('package.json') }}
 
-    - name: Build
+    # ottherweise run install
+    - name: Install
+      if: steps.cache-modules.outputs.cache-hit != 'true'
       run: |
         npm install
+      
+    - name: Build
+      run: |
         npm run build
   
   sync-branch:
