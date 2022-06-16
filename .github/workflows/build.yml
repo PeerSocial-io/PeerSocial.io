@@ -8,29 +8,46 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 16.x ]
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Node.js 16.x
+    - name: Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
+        node-version: ${{ matrix.node-version }}
+    
+    # cache node_modules if we can
+    - name: Cache
+      id: cache-modules
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: ${{ matrix.node-version }}-${{ runner.OS }}-build-${{ hashFiles('package.json') }}
 
-    - name: Build
+    # ottherweise run install
+    - name: Install
+      if: steps.cache-modules.outputs.cache-hit != 'true'
       run: |
         npm install
+      
+    - name: Build
+      run: |
         npm run build
   
-  sync-branch:
+  sync-heroku-branch:
     if: github.event_name == 'push'
     needs: [ build ]    
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
 
-      - name: Push changes to heroku branch
+      - name: Sync master branch to heroku branch
         uses: PeerSocial-io/push@master
         with:
           github_token: ${{ github.token }}
