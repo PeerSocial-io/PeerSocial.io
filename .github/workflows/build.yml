@@ -3,9 +3,8 @@ name: Build
 on:
   push:
     branches: [ "master" ]
-#   pull_request:
-#     branches: [ "master" ]
-  
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -25,6 +24,7 @@ jobs:
         npm run build
   
   sync-branch:
+    if: github.event_name == 'push'
     needs: [ build ]    
     runs-on: ubuntu-latest
     steps:
@@ -36,19 +36,3 @@ jobs:
           github_token: ${{ github.token }}
           branch: heroku
           force: true
-          
-#   sync-branch:
-#     needs: [ build ]    
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@master
-
-#       - name: Merge development -> staging
-#         uses: devmasx/merge-branch@master
-#         with:
-#           type: now
-#           from_branch: master
-#           target_branch: heroku
-#           github_token: ${{ github.token }}
-
- 
