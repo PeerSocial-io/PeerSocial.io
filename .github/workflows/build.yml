@@ -40,14 +40,14 @@ jobs:
       run: |
         npm run build
   
-  sync-branch:
+  sync-heroku-branch:
     if: github.event_name == 'push'
     needs: [ build ]    
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
 
-      - name: Push changes to heroku branch
+      - name: Sync master branch to heroku branch
         uses: PeerSocial-io/push@master
         with:
           github_token: ${{ github.token }}
