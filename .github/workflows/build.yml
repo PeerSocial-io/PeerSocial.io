@@ -23,19 +23,32 @@ jobs:
       run: |
         npm install
         npm run build
-        
+  
   sync-branch:
     needs: [ build ]    
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
 
-      - name: Merge development -> staging
-        uses: devmasx/merge-branch@master
+      - name: Push changes to heroku branch
+        uses: PeerSocial-io/push@master
         with:
-          type: now
-          from_branch: master
-          target_branch: heroku
           github_token: ${{ github.token }}
+          branch: heroku
+          force: true
+          
+#   sync-branch:
+#     needs: [ build ]    
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@master
+
+#       - name: Merge development -> staging
+#         uses: devmasx/merge-branch@master
+#         with:
+#           type: now
+#           from_branch: master
+#           target_branch: heroku
+#           github_token: ${{ github.token }}
 
  
