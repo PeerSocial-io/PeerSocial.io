@@ -2,7 +2,7 @@
   "name": "peersocial-dapp",
   "website": "http://www.peersocial.io/",
   "repository": "https://github.com/PeerSocial-io/PeerSocial.io",
-  "logo": "https://avatars3.githubusercontent.com/u/8811914",
+  "logo": "http://www.peersocial.io/logo.png",
   "keywords": ["node", "gun", "gunDB", "database","graph","offline-first"],
   "description": "A Social Network We Control",
   "env": {
