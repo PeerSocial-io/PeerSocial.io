@@ -140,8 +140,9 @@ function appPlugin(options, imports, register) {
         });
         next();
     })
-
-    express_app.use(express.static(require("path").join(__dirname, '../../../docs'), casheControl));
+    express_app.__dirname = path.join(__dirname, '../../../build');
+    express_app.__dirname_join = path.join.bind(null, express_app.__dirname);
+    express_app.use(express.static(express_app.__dirname, casheControl));
     express_app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), casheControl));
     // express_app.use(Gun.serve);
 
@@ -234,7 +235,7 @@ function appPlugin(options, imports, register) {
                 console.log('Signed Cookies: ', req.signedCookies)
                 */
                 res.statusCode = 302;
-                res.sendFile(require("path").join(__dirname, '../../../docs', 'index.html'));
+                res.sendFile(express_app.__dirname_join('index.html'));
             });
         });
 

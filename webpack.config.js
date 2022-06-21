@@ -85,7 +85,7 @@ module.exports = {
     //     path: "commonjs path",
     },
     output: {
-        path: path.resolve(__dirname, './docs'),
+        path: path.resolve(__dirname, './build'),
         clean: true,
         filename: './app/app.js'
     },
