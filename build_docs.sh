@@ -1,2 +1,2 @@
 mkdir docs
-jsdoc2md >> docs/index.md
+jsdoc2md > docs/index.md
