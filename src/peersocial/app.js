@@ -35,20 +35,64 @@ RUN(function () {
         appPlugin.provides = ["app", "provable", "babel", "architect"];
 
         var babel = require("@babel/standalone/babel.js");
-
-        function appPlugin(options, imports, register) {
-            var app = new events.EventEmitter();
+        
+        function appPlugin(options, imports, register) {         
+            /**
+             * @module app
+             */   
+            imports.app = new events.EventEmitter();
+            var app = imports.app;
             app.hub = imports.hub;
+            /**
+             * @type {boolean}
+             * @static
+             * @alias module:app.debug
+             * @default false
+             */
             app.debug = process.env.DEBUG;
+            /**
+             * @type {string}
+             * @static
+             * @alias module:app.source_version
+             */
             app.source_version = process.env.SOURCE_VERSION;
+            /**
+             * @type {object}
+             * @static
+             * @alias module:app.dapp_info
+             */
             app.dapp_info = require("./dapp_info");
+            /**
+             * @type {object}
+             * @static
+             * @alias module:app.package
+             */
             app.package = require("../../package.json");
+            /**
+             * @type {module}
+             * @static
+             * @alias module:app.events
+             */
             app.events = events;
             app.nw = window.nw;
+            /**
+             * @type {object}
+             * @static
+             * @alias module:app.window
+             */
             app.window = window;
             register(null, {
                 app: app,
+                /**
+                 * @module imports.provable
+                 * [website](https://github.com/daywiss/provable)
+                 */   
                 provable: provable,
+                
+                /**
+                 * @module imports.babel
+                 * [website](https://babeljs.io/)
+                 */   
                 babel:babel,
                 architect:architect
             });
