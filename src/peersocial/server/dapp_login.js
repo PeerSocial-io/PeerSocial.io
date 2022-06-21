@@ -10,7 +10,7 @@ function appPlugin(options, imports, register) {
     var gun = imports.gun;
     var server = imports.server;
     var express = imports.express;
-    var app = server.express_app;
+    var express_app = server.express_app;
 
     var app_pub = imports.app.dapp_info.DAPP_PUB;
     var is_master = false;
@@ -68,7 +68,7 @@ function appPlugin(options, imports, register) {
             dapp_login: {
                 init: function() {
                     imports.app.on("start", function() {
-                        var source_version = require("../../../docs/package.json").source_version;
+                        var source_version = require(express_app.__dirname_join("/package.json")).source_version;
                         var lastRelease;
                         console.log("started")
                         gun.get("~" + app_pub).get("deploy").get(source_version).once(function(deploy, a) {
