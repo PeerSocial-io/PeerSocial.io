@@ -22,7 +22,5 @@ GIT_HEAD
 cert-server.cert
 cert-server.key
 
-docs/
-
 # a clean folder to have for texting
 clean/
