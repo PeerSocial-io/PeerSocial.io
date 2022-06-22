@@ -5,6 +5,8 @@
 tasks:
   - init: npm install && npm run build && git update-index --assume-unchanged src/package.json
     command: npm run start
+  - name: npm run bash
+    command: npm run bash
 
 # image:
 #   file: .gitpod.Dockerfile
