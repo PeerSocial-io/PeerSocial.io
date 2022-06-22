@@ -9,11 +9,14 @@
 [![https://www.peersocial.io/](https://img.shields.io/website?label=peersocial.io&url=http://www.peersocial.io)](https://www.peersocial.io/)
 [![Stats - Gun Peers](https://img.shields.io/badge/dynamic/json?label=gun%20Peers&query=peers.count&url=https://www.peersocial.io/gun/stats.radata)](https://www.peersocial.io/)
 
+[![Documentation Status](https://readthedocs.org/projects/peersocialio/badge/?version=latest)](https://peersocialio.readthedocs.io/en/latest/?badge=latest)
+
 ### Support me by giving the project stars on github! 
 
 [![Github Stars](https://img.shields.io/github/stars/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/stargazers)
 [![Github Watchers](https://img.shields.io/github/watchers/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/watchers)
 [![Github Forks](https://img.shields.io/github/forks/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/network/members)
+
 
 ### Chat with us!
 
