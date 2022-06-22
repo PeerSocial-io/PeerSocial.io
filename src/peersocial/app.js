@@ -39,6 +39,7 @@ RUN(function () {
         function appPlugin(options, imports, register) {         
             /**
              * @module app
+             * @description App Instance
              */   
             imports.app = new events.EventEmitter();
             var app = imports.app;
@@ -60,6 +61,7 @@ RUN(function () {
              * @type {object}
              * @static
              * @alias module:app.dapp_info
+             * @ignore declare docs in source
              */
             app.dapp_info = require("./dapp_info");
             /**
@@ -72,6 +74,7 @@ RUN(function () {
              * @type {module}
              * @static
              * @alias module:app.events
+             * @summery `new events.EventEmitter();`
              */
             app.events = events;
             app.nw = window.nw;
@@ -85,13 +88,17 @@ RUN(function () {
                 app: app,
                 /**
                  * @module imports.provable
-                 * [website](https://github.com/daywiss/provable)
+                 * @description Additional Lib
+                 * @private
+                 * @summary [website](https://github.com/daywiss/provable)
                  */   
                 provable: provable,
                 
                 /**
                  * @module imports.babel
-                 * [website](https://babeljs.io/)
+                 * @description Additional Lib
+                 * @private
+                 * @summary [website](https://babeljs.io/)
                  */   
                 babel:babel,
                 architect:architect

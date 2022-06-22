@@ -1,16 +1,11 @@
 module.exports = {
-  apps: [{
-    name: 'peersocial-build',
+  apps: [ {
+    name: 'docs-builder-watcher',
     script: 'run-build-and-wait.sh',
-    watch: './src/.',
-    ignore_watch: ["node_modules", "src/peersocial/server"],
-  }, {
-    name: 'peersocial',
-    script: 'server.js',
     watch: './src/.',
     ignore_watch: ["node_modules"],
     env: {
       GEN_HTTPS: true
     }
-  }, ]
+  }]
 };
