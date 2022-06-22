@@ -1,6 +1,7 @@
 {
   "files": [
     "src/peersocial/app.js",
-    "src/peersocial/dapp_info.js"
+    "src/peersocial/dapp_info.js",
+    "src/peersocial/state/plugin.js"
   ]
 }

@@ -20,47 +20,18 @@ define(function(require, exports, module) {
         document.cookie = _cookie;
     }
 
+     
+    
     function AppState() {
-
+        /**
+         * @type {EventEmitter}
+         * @alias module:app.state
+         * @description App state control
+         * @summery Controls State of the app. URL based event emitter     * 
+         */ 
         var _self = this;
         this.currentState = History.getState();
         this.lastState = false;
-
-        // window.onbeforeunload = function() {
-        //     return true;
-        // };
-
-        // window.addEventListener('unload', function(event) {
-        //     console.log('GOOD BYE!');
-        // });
-/*
-        const events = [
-            "pagehide", "pageshow",
-            "unload", "load"
-        ];
-
-        const eventLogger = event => {
-            switch (event.type) {
-                case "pagehide":
-                case "pageshow":
-                    let isPersisted = event.persisted ? "persisted" : "not persisted";
-                    console.log('Event:', event.type, '-', isPersisted);
-                    break;
-                default:
-                    console.log('Event:', event.type);
-                    break;
-            }
-        };
-
-        events.forEach(eventName =>
-            window.addEventListener(eventName, eventLogger)
-        );
-*/
-
-        // if (this.currentState.hash.split("?")[0] == '/') {
-        //     _self.pushState("/home", "Home");
-        //     this.currentState = History.getState();
-        // }
 
         History.Adapter.bind(window, 'statechange', function() { // Note: We are using statechange instead of popstate
             if (!_self.is_replaceState) {
@@ -103,24 +74,26 @@ define(function(require, exports, module) {
 
         function animate(timestamp) {
 
+            /**
+             * Triggered by `window.requestAnimationFrame`
+             * @event module:app.state.$hash#render
+             * @type {timestamp} 
+             */
             appState.$hash.emit("render", timestamp);
 
             window.requestAnimationFrame(animate);
         }
         window.requestAnimationFrame(animate);
-        // 	$("body").on('click', 'a', function(e) {
-        //       var urlPath = $(this).attr('href');
-        //       var title = $(this).text();
-        //       _self.pushState({urlPath: urlPath}, title, urlPath);
-        //       e.preventDefault();
-        //       return false; // prevents default click action of <a ...>
-        //   });
-
-        // _self.replaceState()
     }
 
     AppState.prototype = new EventEmitter();
 
+    /**
+     * @type {EventEmitter}
+     * @alias module:app.state.$hash
+     * @description App state page control
+     * @summery Controls State of the app. URL based event emitter  `state.$hash.on("/mypage",()=>{})`
+     */ 
     AppState.prototype.$hash = new EventEmitter();
 
     AppState.prototype.init = function() {
@@ -173,10 +146,19 @@ define(function(require, exports, module) {
 
         var _self = this;
         
+        /**
+         * Triggered before a page is rendered
+         * @event module:app.state.$hash#unload
+         * @type {object} 
+         */
         appState.$hash.emit('unload', appState.currentState, appState.lastState);
         
         appState.$hash.once("render", function() {
-
+            /**
+             * Triggered before a page is found
+             * @event module:app.state.$hash#200
+             * @type {object} 
+             */
             appState.$hash.emit('200', appState.currentState, appState.lastState);
 
             while (_self.currentState_destructors.length) {
@@ -195,12 +177,24 @@ define(function(require, exports, module) {
                     var _hash = "/" + $path.shift();
                     // if (_hash == "index.html") _hash = "home";
                     if (appState.$hash._events[_hash]) {
+                        /**
+                         * Triggered to load `/{pagename}`
+                         * @event module:app.state.$hash#/{pagename}
+                         * @property {array} path           -  remaining url string split with `/` 
+                         * @property {HistoryState} currentState   -  current History state
+                         * @property {HistoryState} lastState      -  last History state
+                         */
                         appState.$hash.emit(_hash, $path, appState.currentState, appState.lastState, function onDestroy(fn) {
                             if (typeof fn == "function") _self.currentState_destructors.push(fn);
                         });
 
                     }
                     else {
+                        /**
+                         * Triggered before a page is NOT found
+                         * @event module:app.state.$hash#400
+                         * @type {object} 
+                         */
                         appState.$hash.emit('404', appState.currentState, appState.lastState);
                     }
 
@@ -221,6 +215,9 @@ define(function(require, exports, module) {
         }
     );
 
+    /**
+     * @namespace module:app.state.query
+     */
     Object.defineProperty(
         AppState.prototype,
         'query', {
@@ -230,18 +227,23 @@ define(function(require, exports, module) {
         }
     );
 
-
-
     AppState.prototype.history = History;
-
+    
+    /**
+     * @alias module:app.state.reload
+     * @description reload current state
+     */ 
     AppState.prototype.reload = function() {
         this.emitCurrentState();
     };
 
+    /**
+     * @alias module:app.state.back
+     * @description go back 1 state
+     */ 
     AppState.prototype.back = function() {
         this.history.back();
     };
-
     var appState = new AppState();
 
 
