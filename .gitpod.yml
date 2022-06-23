@@ -12,7 +12,7 @@ tasks:
 ports:
   - name: Website
     port: 8766
-    onOpen: open-browser
+    onOpen: open-preview
 
 # image:
 #   file: .gitpod.Dockerfile
