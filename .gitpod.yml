@@ -4,9 +4,15 @@
 
 tasks:
   - init: npm install && npm run build && git update-index --assume-unchanged src/package.json
+  - name: Server
     command: npm run start
-  - name: npm run bash
+  - name: NPM-Bash
     command: npm run bash
+
+ports:
+  - name: Website
+    port: 8766
+    onOpen: open-browser
 
 # image:
 #   file: .gitpod.Dockerfile
