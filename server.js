@@ -3,4 +3,4 @@ if (typeof define == "undefined"){
     require("amd-loader");
 }
 
-require("./src/peersocial/server").start();
+module.exports = require("./src/peersocial/server").start();

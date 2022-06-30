@@ -1,5 +1,6 @@
 // define(function($require, exports, module) {
 
+var editPackageJson = require("edit-package-json");
 var fs = require('fs');
 var path = require("path");
 var http = require('http');
@@ -13,6 +14,8 @@ var Gun = require('gun');
 require('gun/axe'); // is there a GUN BUG with this?
 // require('gun/lib/webrtc');
 require("gun/sea");
+
+
 
 var express = require('express');
 var cookieParser = require('cookie-parser');
@@ -142,6 +145,27 @@ function appPlugin(options, imports, register) {
     })
     express_app.__dirname = path.join(__dirname, '../../../build');
     express_app.__dirname_join = path.join.bind(null, express_app.__dirname);
+
+    express_app.get("/package.json",function(req, res){
+        var out = fs.readFileSync(express_app.__dirname_join('package.json'), "utf8");
+        var plugins = []
+
+        if(options.plugins)
+            plugins = [].concat(options.plugins);
+        
+        plugins = [].concat(plugins, JSON.parse(out).plugins)
+
+        out = editPackageJson.set(out, "plugins", plugins)
+        res.setHeader('Content-Type', 'application/json');
+        res.send(out);
+    })
+    
+    if(options.expose)
+        for(var expose of options.expose){
+            
+            express_app.use(expose[1], express.static(expose[0], casheControl));
+        }
+
     express_app.use(express.static(express_app.__dirname, casheControl));
     express_app.use("/gun", express.static(require('path').dirname(require.resolve("gun")), casheControl));
     // express_app.use(Gun.serve);
