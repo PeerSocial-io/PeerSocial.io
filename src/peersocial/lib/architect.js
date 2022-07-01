@@ -274,8 +274,16 @@ define(function ($require, exports, module) {
             exports.resolveConfig(additionalConfig, function (err, additionalConfig) {
                 if (err) return callback(err);
 
+                var ap = [];
+                for(var plugin of additionalConfig){
+                    if(plugin.provides)
+                        ap = [].concat(ap, plugin.provides)
+                }
                 app.once(ready ? "ready-additional" : "ready", function (app) {
-                    callback(null, app);
+                    for(var i in ap){
+                        ap[i] = app.services[ap[i]]
+                    }
+                    callback(null, app, ap);
                 }); // What about error state?
 
                 // Check the config - hopefully this works

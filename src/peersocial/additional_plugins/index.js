@@ -54,6 +54,7 @@ define(function (require, exports, module) {
     var additional_plugins;
     register(null, {
       plugins: additional_plugins = {
+        Plugin:Plugin, 
         load: function (packagePath) {
           var config = loadAppPlugin([]);
           architect(config, function (err, app) {

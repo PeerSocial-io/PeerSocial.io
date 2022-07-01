@@ -1,8 +1,8 @@
 {
   "name": "peersocial",
-  "version": "0.2022.630-172729",
+  "version": "0.2022.71-22353",
   "main": "./app/app.js",
-  "source_version": "857a4fc679f24d4ba4ef5efd96c225dcb3535cc7",
+  "source_version": "d3826ec8733b9fea0750abd974c245ec2c43aef0",
   "chromium-args": "--enable-experimental-web-platform-features",
   "window": {
     "show": false,
