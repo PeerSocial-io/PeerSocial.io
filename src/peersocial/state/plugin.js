@@ -18,9 +18,7 @@ define(function(require, exports, module) {
         _cookie += "; Path=/";
         // cookie += "; Domain=";
         document.cookie = _cookie;
-    }
-
-     
+    }     
     
     function AppState() {
         /**
@@ -176,6 +174,7 @@ define(function(require, exports, module) {
 
                     var _hash = "/" + $path.shift();
                     // if (_hash == "index.html") _hash = "home";
+                    if(_hash == "/" && appState.home) _hash = appState.home;                         
                     if (appState.$hash._events[_hash]) {
                         /**
                          * Triggered to load `/{pagename}`

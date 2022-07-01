@@ -68,8 +68,13 @@ define(function (require, exports, module) {
           }
         });
         navigator.serviceWorker.getRegistration(worker).then(async function (registration) {
-          var installed = false
-          if (!registration) {
+          var installed = !!registration;
+          if(imports.app.debug){
+            if(installed)
+              registration.unregister();
+            return;
+          }
+          if (!installed) {
             registration = await navigator.serviceWorker.register(worker);
             installed = true;
           }

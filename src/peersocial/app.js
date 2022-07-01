@@ -16,11 +16,11 @@ require("./config.js")(config);
 
 // config = config.concat(package_config);
 
-function RUN(fn,timeout){
-    if(!timeout)
+function RUN(fn, timeout) {
+    if (!timeout)
         fn();
     else
-        setTimeout(fn,timeout);
+        setTimeout(fn, timeout);
 }
 
 RUN(function () {
@@ -35,12 +35,12 @@ RUN(function () {
         appPlugin.provides = ["app", "provable", "babel", "architect"];
 
         var babel = require("@babel/standalone/babel.js");
-        
-        function appPlugin(options, imports, register) {         
+
+        function appPlugin(options, imports, register) {
             /**
              * @module app
              * @description App Instance
-             */   
+             */
             imports.app = new events.EventEmitter();
             var app = imports.app;
             app.hub = imports.hub;
@@ -91,17 +91,17 @@ RUN(function () {
                  * @description Additional Lib
                  * @private
                  * @summary [website](https://github.com/daywiss/provable)
-                 */   
+                 */
                 provable: provable,
-                
+
                 /**
                  * @module imports.babel
                  * @description Additional Lib
                  * @private
                  * @summary [website](https://babeljs.io/)
-                 */   
-                babel:babel,
-                architect:architect
+                 */
+                babel: babel,
+                architect: architect
             });
         }
 
@@ -119,12 +119,23 @@ RUN(function () {
             app.services.app[i] = app.services[i];
         }
 
-        app.services.app.emit("start");
-        
+
         architect.loadConfig("/package.json", function (err, package_config) {
-            app.loadAdditionalPlugins(package_config,function(){
-                app.services.app.emit("start-plugin");
-            })
+            var count = 0;
+            for (var i in package_config)
+                ++count;
+            if (count == 0)
+                app.services.app.emit("start");
+            else
+                app.loadAdditionalPlugins(package_config, function (err, $app, additionalPlugins) {
+
+                    for (var i in additionalPlugins) {
+                        if (additionalPlugins[i].init) additionalPlugins[i].init(app);
+                        app.services.app[i] = app.services[i];
+                    }
+
+                    app.services.app.emit("start");
+                })
 
         })
 
