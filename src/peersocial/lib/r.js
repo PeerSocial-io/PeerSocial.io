@@ -1880,7 +1880,7 @@ var requirejs, require, define, xpcUtil;
 
 				if(!skipExt){
 
-					if(checkExt == "json"){
+					if(checkExt == "json" || checkExt == "html"){
 						skipExt = true;
 					}
 
@@ -2424,7 +2424,23 @@ var requirejs, require, define, xpcUtil;
     function exec() {
         eval(arguments[0]);
     }
+	
+	require.jsEscape = function (content) {
+			return content.replace(/(['\\])/g, '\\$1')
+					.replace(/[\f]/g, "\\f")
+					.replace(/[\b]/g, "\\b")
+					.replace(/[\n]/g, "\\n")
+					.replace(/[\t]/g, "\\t")
+					.replace(/[\r]/g, "\\r")
+					.replace(/[\u2028]/g, "\\u2028")
+					.replace(/[\u2029]/g, "\\u2029");
+	},
 
+	require.makeTextWrapper = function(content){
+		return "define(function () { return '" +
+					content +
+		"';});\n"
+	}
 	require.makeDebuggerWrapper = function (contents, url) {
 return `(()=>{var exports,require = requirejs, module;
 ${contents}
@@ -2475,6 +2491,9 @@ ${contents}
 					response = await response.text();	
 
 					if(status == 200){
+						if(url.substr(-4) == "html")						
+							response = require.makeTextWrapper( require.jsEscape(response) );
+						else
 						if(url.substr(-4) == "json")
 							response = require.makeJSONWrapper(response);
 						else{

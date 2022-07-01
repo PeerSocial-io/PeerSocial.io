@@ -329,6 +329,7 @@ define(function ($require, exports, module) {
     // Only define Node-style usage using sync I/O if in node.
     if (typeof module === "object")(function () {
         var path = require('path');
+        var url = require('url');
         var dirname = path.dirname;
         var resolve = path.resolve;
         // var exists = require('fs').exists || require('path').exists;
@@ -379,7 +380,12 @@ define(function ($require, exports, module) {
                 }
                 // The plugin is a package on the disk.  We need to load it.
                 if (plugin.hasOwnProperty("packagePath") && !plugin.hasOwnProperty("setup")) {
-                    resolveModule(base, plugin.packagePath, function (err, defaults) {
+                    var $base = base;
+                    if(plugin.packagePath.indexOf("http") == 0){
+                        $base = plugin.packagePath + "/";
+                        plugin.packagePath = ".";
+                    }
+                    resolveModule($base, plugin.packagePath, function (err, defaults) {
                         if (err) return callback(err);
 
                         Object.keys(defaults).forEach(function (key) {
@@ -425,7 +431,10 @@ define(function ($require, exports, module) {
                                     resolvePackage(base, modulePath + ".js", next);
                                 } else if (packagePath) {
                                     // next(null, dirname(packagePath));
-                                    next(null, path.join(dirname(packagePath) , packageJson.main));
+                                    if(packagePath.indexOf("http") == 0){
+                                        next(null, url.parse(packagePath).protocol + "//" + url.parse(packagePath).hostname + path.join(dirname(url.parse(packagePath).path), packageJson.main));
+                                    }else
+                                        next(null, path.join(dirname(packagePath) , packageJson.main));
                                 } else {
                                     resolvePackage(base, modulePath, next);
                                 }
@@ -462,7 +471,11 @@ define(function ($require, exports, module) {
                 return callback(null, cache[packagePath]);
             }
             if (packagePath[0] === "." || packagePath[0] === "/") {
-                var newPath = resolve(base, packagePath);
+                var newPath;
+                if(base.indexOf("http") == 0)
+                    newPath = url.resolve(base, packagePath);
+                else
+                    newPath = resolve(base, packagePath);
                 // exists(newPath, function (exists) {
                 //     if (exists) {
                         // realpath(newPath, function (err, newPath) {
