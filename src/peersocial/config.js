@@ -17,6 +17,7 @@ module.exports = (config, server) => {
         config.push(require("./user/plugin"));
 
         //app
+        config.push(require("./terminal/plugin"));
         config.push(require("./welcome/plugin"));
         config.push(require("./messenger"));
         config.push(require("./profile/plugin"));
