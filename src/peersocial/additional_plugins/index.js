@@ -1,9 +1,16 @@
-define(function (require, exports, module) {
+// define(function (require, exports, module) {
   /* globals $ */
-  appPlugin.consumes = ["hub", "architect", "app"];
+  appPlugin.consumes = ["hub", "architect", "app", "terminal"];
   appPlugin.provides = ["plugins"];
 
   function appPlugin(options, imports, register) {
+
+    var terminal = imports.terminal;
+
+    terminal.on("load", function(args, term){
+      console.log(args, term)
+    })
+
     var architect = imports.architect;
 
 
@@ -78,5 +85,5 @@ define(function (require, exports, module) {
 
   }
 
-  return appPlugin;
-});
+  export default appPlugin;
+// });

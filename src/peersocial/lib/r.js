@@ -1143,6 +1143,8 @@ var requirejs, require, define, xpcUtil;
                                     //exports already set the defined value.
                                     exports = this.exports;
                                 }
+																if(exports.__esModule) 
+																	exports = exports.default;
                             }
 
                             if (err) {
@@ -2422,7 +2424,8 @@ var requirejs, require, define, xpcUtil;
 (function () {
     // Separate function to avoid eval pollution, same with arguments use.
     function exec() {
-        eval(arguments[0]);
+			var require = requirejs;
+			eval(arguments[0]);
     }
 	
 	require.jsEscape = function (content) {
@@ -2442,11 +2445,34 @@ var requirejs, require, define, xpcUtil;
 		"';});\n"
 	}
 	require.makeDebuggerWrapper = function (contents, url) {
-return `(()=>{var exports,require = requirejs, module;
-${contents}
-})();
-//# sourceURL=${url}`;
-    };
+		var wraper = [
+			`(()=>{var exports,require = requirejs, module;
+`,
+			contents,
+			`
+	})();
+//# sourceURL=${url}`
+		]
+
+		if (require.babel)
+			return require.babel.transform(contents, require.babel.opts || { 
+				sourceMaps: "inline",
+				sourceFileName: url,
+				"presets": [require.babel.availablePresets.env],
+				"plugins": [
+					[require.babel.availablePlugins.amd,
+						{
+							importInterop: "node"
+						}
+					]
+				],
+				// "targets": {
+				// 	"esmodules": false
+				// }
+			 }).code;
+		else
+			return wraper.join();
+	};
 	
 	// require.makeDefineWrapper = function (contents) {
     //     return `define(function(require, exports, module) {
