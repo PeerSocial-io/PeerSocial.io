@@ -17,7 +17,7 @@ define(function (require, exports, module) {
     var terminal_plugin = new EventEmitter();
     terminal_plugin.init = function () {
 
-      var isOpen = false;
+      var isOpen = (window.localStorage.termOpen ? window.localStorage.termOpen == 'false' : true) ;
 
       // var style = require("text!./xterm.css.html");
       var style = require("./xterm.css.html");
@@ -39,9 +39,26 @@ define(function (require, exports, module) {
       var fitAddon = new FitAddon();
       term.loadAddon(fitAddon);
 
+      var rl = new Readline();
+      term.loadAddon(rl);
+
       term.open(terminal[0]);
       fitAddon.fit();
-      terminal_container.hide();
+      clear();
+      toggle_terminal();
+
+      term.onData(send => {
+				if(send.charCodeAt(0) == 24){ //ctrl+x
+					clear();
+          setTimeout(readLine,10);
+					return;
+				}
+        if(send.charCodeAt(0) == 18){ //ctrl+r
+					terminal_plugin.emit("reload")
+					return;
+				}
+        else console.log(send.charCodeAt(0))
+			});
 
       var headers = [
         "Developer Console v0.0.1 \x1B[1;3;31mxterm.js\x1B[0m\r\n"
@@ -58,10 +75,6 @@ define(function (require, exports, module) {
         header();
       }
 
-      clear();
-
-      const rl = new Readline();
-      term.loadAddon(rl);
       rl.setCheckHandler((text) => {
         let trimmedText = text.trimEnd();
         if (trimmedText.endsWith("&&")) {
@@ -71,7 +84,7 @@ define(function (require, exports, module) {
       });
 
       function readLine() {
-        rl.read(">")
+        rl.read("PeerSocial.io >")
           .then(processLine);
       }
 
@@ -100,9 +113,10 @@ define(function (require, exports, module) {
           terminal_container.show();
           fitAddon.fit();
           term.focus();
-          readLine();
+          setTimeout(readLine,10);
 
         }
+        window.localStorage.termOpen = isOpen;
       }
 
       $(".navbar-brand[href='/']").on("click", (e) => {
@@ -121,7 +135,7 @@ define(function (require, exports, module) {
 
         if (e.key = "`") {
           pd = true;
-          console.log(e)
+          // console.log(e)
           toggle_terminal()
         }
 
@@ -130,6 +144,21 @@ define(function (require, exports, module) {
 
     }
 
+    terminal_plugin.help = {
+      "?": "Show Help",
+      "reload": "reload the app (ctrl+r)"
+    };
+    terminal_plugin.on("?", function(args, term){
+      for(var i in terminal_plugin.help){
+        term.writeln(i + " " + terminal_plugin.help[i]);
+      }
+    })
+
+    terminal_plugin.on("reload", function(args, term){
+      window.location = window.location.toString();
+    })
+
+    
     register(null, {
       terminal: terminal_plugin
     });

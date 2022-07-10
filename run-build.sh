@@ -29,6 +29,9 @@ BUILD_DIR=$BUILD_DIR SOURCE_VERSION=$SOURCE_VERSION npm run build-app
 rm -rf $BUILD_DIR/peersocial/additional_plugins
 ln -s ../../src/peersocial/additional_plugins $BUILD_DIR/peersocial/additional_plugins
 
+#link config
+rm -rf $BUILD_DIR/peersocial/config
+ln -s ../../src/peersocial/config $BUILD_DIR/peersocial/config
 
 #link service *worker  
 rm -rf $BUILD_DIR/peersocial/service
