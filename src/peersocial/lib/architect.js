@@ -2,10 +2,14 @@
 define(function ($require, exports, module) {
 
     var requirejs = $require("./r.min.js");
-    //var requirejs = $require("./r.js");
-    requirejs.babel = require("@babel/standalone/babel.js");
+    // var requirejs = $require("./r.js");
+    var babel = require("@babel/standalone/babel.js");
     var amdPreset = require("@babel/plugin-transform-modules-amd").default;
-    requirejs.babel.registerPlugin("amd", amdPreset);
+    var commonjsPreset = require("@babel/plugin-transform-modules-commonjs").default;
+    babel.registerPlugin("amd", amdPreset);
+    babel.registerPlugin("commonjs", commonjsPreset);
+
+    requirejs.config({babel:babel})
 
     if(!(typeof window == "undefined")){
         if(!window.require) window.require = requirejs;
