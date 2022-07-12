@@ -1143,8 +1143,6 @@ var requirejs, require, define, xpcUtil;
                                     //exports already set the defined value.
                                     exports = this.exports;
                                 }
-																if(exports.__esModule) 
-																	exports = exports.default;
                             }
 
                             if (err) {
@@ -1159,7 +1157,10 @@ var requirejs, require, define, xpcUtil;
                             exports = factory;
                         }
 
-                        this.exports = exports;
+												if (exports && exports.__esModule)
+													exports = exports.default;
+
+												this.exports = exports;
 
                         if (this.map.isDefine && !this.ignore) {
                             defined[id] = exports;
@@ -2388,9 +2389,9 @@ var requirejs, require, define, xpcUtil;
         }
     };
 
-    define.amd = {
-        jQuery: true
-    };
+    // define.amd = {
+    //     jQuery: true
+    // };
 
     /**
      * Executes the text. Normally just uses eval, but can be modified
@@ -2424,7 +2425,8 @@ var requirejs, require, define, xpcUtil;
 (function () {
     // Separate function to avoid eval pollution, same with arguments use.
     function exec() {
-			var require = requirejs;
+			var undefined;
+			const require = requirejs,exports = undefined,module = undefined;
 			eval(arguments[0]);
     }
 	
@@ -2444,7 +2446,7 @@ var requirejs, require, define, xpcUtil;
 					content +
 		"';});\n"
 	}
-	require.makeDebuggerWrapper = function (contents, url) {
+	require.makeDebuggerWrapper = function (contents, url, context) {
 		var wraper = [
 			`(()=>{var exports,require = requirejs, module;
 `,
@@ -2454,13 +2456,15 @@ var requirejs, require, define, xpcUtil;
 //# sourceURL=${url}`
 		]
 
-		if (require.babel)
-			return require.babel.transform(contents, require.babel.opts || { 
+		if (context.config.babel)
+			return `define(function (require, exports, module) {
+`+context.config.babel.transform(contents, context.config.babel.opts || { 
 				sourceMaps: "inline",
 				sourceFileName: url,
-				"presets": [require.babel.availablePresets.env],
+				"presets": [context.config.babel.availablePresets.env],
 				"plugins": [
-					[require.babel.availablePlugins.amd,
+					context.config.babel.availablePlugins.commonjs,
+					[context.config.babel.availablePlugins.amd,
 						{
 							importInterop: "node"
 						}
@@ -2469,7 +2473,8 @@ var requirejs, require, define, xpcUtil;
 				// "targets": {
 				// 	"esmodules": false
 				// }
-			 }).code;
+			 }).code + `
+});`;
 		else
 			return wraper.join();
 	};
@@ -2500,7 +2505,7 @@ var requirejs, require, define, xpcUtil;
 							if(url.substr(-4) == "json")
 								response = require.makeJSONWrapper(response);
 							else{
-								response = require.makeDebuggerWrapper(response, xhr.responseURL);
+								response = require.makeDebuggerWrapper(response, xhr.responseURL, context);
 							}
 						}else if(xhr.status == 404 || xhr.status == 302) response = "";
 		
@@ -2523,7 +2528,7 @@ var requirejs, require, define, xpcUtil;
 						if(url.substr(-4) == "json")
 							response = require.makeJSONWrapper(response);
 						else{
-							response = require.makeDebuggerWrapper(response, responseURL);
+							response = require.makeDebuggerWrapper(response, responseURL, context);
 						}
 					}else if(status == 404 || status == 302) response = "";
 	
