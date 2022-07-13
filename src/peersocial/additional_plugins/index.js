@@ -6,14 +6,30 @@ import require from "require";
 
 function appPlugin(options, imports, register) {
 
-  var terminal = imports.terminal;
+  const {
+    app,
+    terminal
+  } = imports;
 
-  terminal.on("load", function (args, term) {
+  terminal.on("load", function (args, term, pause) {
     console.log(args, term)
-    var module = args._[0]
-    require([module], function(mod){
-      console.log(module, mod)
-      term.writeln("loaded " + module + " "+ JSON.stringify(mod))
+    pause();
+    require(args._, function (mod) {
+      if(!mod) return pause(true);
+      // console.log(mod)
+      term.writeln("loaded " + typeof mod + " "+ JSON.stringify(args._) )
+      app.$app.loadAdditionalPlugins(
+        [mod],
+        function (err, $app, additionalPlugins) {
+          for (var i in additionalPlugins) {
+            if (additionalPlugins[i].init) additionalPlugins[i].init(app);
+            $app.services.app[i] = additionalPlugins[i];
+            $app.services.app.emit("plugin-loaded", i);
+            term.writeln("plugin applied " + i )
+          }
+          pause(true);
+        })
+
     });
   })
 

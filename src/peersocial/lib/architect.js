@@ -288,10 +288,12 @@ define(function ($require, exports, module) {
                         ap = [].concat(ap, plugin.provides)
                 }
                 app.once(ready ? "ready-additional" : "ready", function (app) {
+                    var $ap = {};
+
                     for(var i in ap){
-                        ap[i] = app.services[ap[i]]
+                        $ap[ap[i]] = app.services[ap[i]];
                     }
-                    callback(null, app, ap);
+                    callback(null, app, $ap);
                 }); // What about error state?
 
                 // Check the config - hopefully this works
