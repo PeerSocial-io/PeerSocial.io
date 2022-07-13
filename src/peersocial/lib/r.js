@@ -2456,15 +2456,21 @@ var requirejs, require, define, xpcUtil;
 //# sourceURL=${url}`
 		]
 
-		if (context.config.babel)
-			return `define(function (require, exports, module) {
-`+context.config.babel.transform(contents, context.config.babel.opts || { 
+		if (context.config.babel){
+			// debugger;
+			var output = context.config.babel.transform(contents, context.config.babel.opts || { 
 				sourceMaps: "inline",
 				sourceFileName: url,
-				"presets": [context.config.babel.availablePresets.env],
+				"presets": [],
 				"plugins": [
-					context.config.babel.availablePlugins.commonjs,
-					[context.config.babel.availablePlugins.amd,
+					[
+						context.config.babel.availablePlugins.amd,
+						{
+							importInterop: "node"
+						}
+					]
+					,[
+						context.config.babel.availablePlugins.commonjs,
 						{
 							importInterop: "node"
 						}
@@ -2473,9 +2479,10 @@ var requirejs, require, define, xpcUtil;
 				// "targets": {
 				// 	"esmodules": false
 				// }
-			 }).code + `
-});`;
-		else
+			 }).code ;
+			//  console.log(url,output)
+			 return output;
+			}else
 			return wraper.join();
 	};
 	

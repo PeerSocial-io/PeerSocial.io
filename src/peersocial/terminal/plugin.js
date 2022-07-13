@@ -57,7 +57,7 @@ define(function (require, exports, module) {
 					terminal_plugin.emit("reload")
 					return;
 				}
-        else console.log(send.charCodeAt(0))
+        // else console.log(send.charCodeAt(0))
 			});
 
       var headers = [
@@ -93,8 +93,21 @@ define(function (require, exports, module) {
         var cmd = args.shift();
         var argv = minimist(args);
         console.log(cmd, argv);
-        terminal_plugin.emit(cmd, argv, term);
-        setTimeout(readLine);
+        var pause = false, triggered = false;
+
+        terminal_plugin.emit(cmd, argv, term, function(unpause){
+          if(!unpause) return pause = true;
+          else {
+            if(!triggered)
+              readLine()
+            pause = false;
+          }
+        });
+        setTimeout(function(){
+          if(pause) return;
+          triggered = true;
+          readLine()
+        },100);
       }
 
       function toggle_terminal() {
