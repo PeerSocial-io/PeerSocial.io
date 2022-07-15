@@ -41,32 +41,36 @@ define(function(require, exports, module) {
             _self.emitCurrentState();
         });
 
+        this.navigate = function navigate(urlPath, title, done){
+            var $url = url.parse(urlPath, true);
+            
+            if (urlPath && urlPath.indexOf("/") == 0) {
+                
+                var $path = $url.pathname + ($url.hash || '');
+                $path = $path.split("/");
+                $path.shift();
+
+                var _hash = "/" + $path.shift();
+
+                if (appState.$hash._events[_hash]) {
+                    _self.pushState(urlPath, title, urlPath);
+                    (done ? done(true) : true);
+                    return true;
+                }
+            }
+            (done ? done() : false);
+            window.location = urlPath;
+            return false;
+        }
+
         $(document).on('DOMNodeInserted',async function(e) {
             $(e.target).find("a").click(function() {
                 var urlPath = $(this).attr('href');
-                var $url = url.parse(urlPath, true);
                 var title = $(this).text();
-                if (urlPath && urlPath.indexOf("/") == 0) {
-                    //var _hash = urlPath.split("?")[0].split("~").shift().substring(1);
-
-                    var $path = $url.pathname + ($url.hash || '');
-                    $path = $path.split("/");
-                    $path.shift();
-
-                    var _hash = "/" + $path.shift();
-
-                    if (appState.$hash._events[_hash]) {
-                        _self.pushState(urlPath, title, urlPath);
+                return !_self.navigate(urlPath,title, function(navigated){
+                    if(navigated)
                         e.preventDefault();
-                        return false; // prevents default click action of <a ...>
-                    }
-                }
-                else if (urlPath && urlPath.indexOf("#") > -1) {
-                    //urlPath = "/"+urlPath.substring(urlPath.indexOf("#")+1);
-                    //_self.pushState(urlPath, title, urlPath);
-                }
-                // else
-                //     return false; // cancel click
+                })
             });
         });
 
@@ -246,13 +250,20 @@ define(function(require, exports, module) {
     var appState = new AppState();
 
 
-    appPlugin.consumes = ["app"];
+    appPlugin.consumes = ["app", "terminal"];
     appPlugin.provides = ["state"];
 
     /* global History */
     return appPlugin;
 
     function appPlugin(options, imports, register) {
+
+        imports.terminal.on("state",(args,term,pause)=>{
+            if(args.navigate){
+                appState.navigate(args.navigate)
+            }
+        })
+
         imports.app.on("start", () => {
             setTimeout(function() {
 
