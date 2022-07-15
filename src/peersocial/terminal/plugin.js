@@ -1,6 +1,17 @@
 define(function (require, exports, module) {
-
+  
   /* globals $ */
+  (function($) {
+    $.each(['show', 'hide'], function(i, ev) {
+      var el = $.fn[ev];
+      $.fn[ev] = function() {
+        var e = el.apply(this, arguments);
+        this.trigger("on"+ev);
+        return e;
+      };
+    });
+  })(jQuery);
+
   appPlugin.consumes = ["app"];
   appPlugin.provides = ["terminal"];
 
@@ -14,6 +25,8 @@ define(function (require, exports, module) {
     var Readline = require('xterm-readline').Readline;
     var EventEmitter = imports.app.events.EventEmitter;
 
+    var terminal_container;
+
     var terminal_plugin = new EventEmitter();
     terminal_plugin.init = function () {
 
@@ -24,7 +37,7 @@ define(function (require, exports, module) {
       $("head").append(style);
 
       var term = new Terminal();
-      var terminal_container = $("<div/>");
+      terminal_container = $("<div/>");
       var terminal = $("<div/>");
       terminal_container.append(terminal)
 
@@ -40,12 +53,15 @@ define(function (require, exports, module) {
       term.loadAddon(fitAddon);
 
       var rl = new Readline();
-      term.loadAddon(rl);
-
+      term.loadAddon(rl);      
       term.open(terminal[0]);
-      fitAddon.fit();
-      clear();
-      toggle_terminal();
+
+      setTimeout(function(){
+        clear();
+        fitAddon.fit();
+        toggle_terminal();
+      },50);
+      
 
       term.onData(send => {
 				if(send.charCodeAt(0) == 24){ //ctrl+x
@@ -112,24 +128,13 @@ define(function (require, exports, module) {
 
       function toggle_terminal() {
         if (isOpen) {
-          isOpen = false;
           terminal_container.hide();
         } else {
-          isOpen = true;
-
-          terminal.css("position", "fixed")
-          terminal.css("left", 0)
-          terminal.css("right", 0)
-          terminal.css("top", $(".navbar")[0].offsetHeight)
-          terminal.css("bottom", 0)
-
+          
           terminal_container.show();
-          fitAddon.fit();
-          term.focus();
-          setTimeout(readLine,10);
+          
 
         }
-        window.localStorage.termOpen = isOpen;
       }
 
       $(".navbar-brand[href='/']").on("click", (e) => {
@@ -155,20 +160,44 @@ define(function (require, exports, module) {
         if (pd) e.preventDefault()
       })
 
+      terminal_container.on("onhide",function(){
+        isOpen = false;
+        window.localStorage.termOpen = isOpen;
+      })
+
+      terminal_container.on("onshow",function(){
+        isOpen = true;
+        window.localStorage.termOpen = isOpen;
+
+        
+        terminal.css("position", "fixed")
+        terminal.css("left", 0)
+        terminal.css("right", 0)
+        terminal.css("top", $(".navbar")[0].offsetHeight)
+        terminal.css("bottom", 0)
+
+        fitAddon.fit();
+        term.focus();
+        setTimeout(readLine,10);
+      })
+
     }
 
-    terminal_plugin.help = {
-      "?": "Show Help",
-      "reload": "reload the app (ctrl+r)"
-    };
+    terminal_plugin.help = { "?": "Show Help" };
     terminal_plugin.on("?", function(args, term){
       for(var i in terminal_plugin.help){
         term.writeln(i + " " + terminal_plugin.help[i]);
       }
     })
 
+    terminal_plugin.help["reload"] = "reload the app (ctrl+r)";
     terminal_plugin.on("reload", function(args, term){
       window.location = window.location.toString();
+    })
+
+    terminal_plugin.help["exit"] = "closes terminal";
+    terminal_plugin.on("exit", function(args, term){
+      terminal_container.hide();
     })
 
     

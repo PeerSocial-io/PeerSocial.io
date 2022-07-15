@@ -1,7 +1,7 @@
 "use strict";
 define(function ($require, exports, module) {
 
-  var requirejs = $require("./r.js");
+  var requirejs = $require("./require.js");
   var babel = require("@babel/standalone/babel.js");
   var amdPreset = require("@babel/plugin-transform-modules-amd").default;
   var commonjsPreset = require("@babel/plugin-transform-modules-commonjs").default;
