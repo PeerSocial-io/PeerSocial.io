@@ -20,7 +20,7 @@ cd ..
 BUILD_DIR=$BUILD_DIR sh ./build_gun.sh
 
 #minifiy r.js
-npm exec -c "minify ./src/peersocial/lib/r.js >  ./src/peersocial/lib/r.min.js"
+# npm exec -c "minify ./src/peersocial/lib/r.js >  ./src/peersocial/lib/r.min.js"
 
 #build app
 BUILD_DIR=$BUILD_DIR SOURCE_VERSION=$SOURCE_VERSION npm run build-app
