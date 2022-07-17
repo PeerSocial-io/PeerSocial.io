@@ -97,7 +97,7 @@
             config.push(appPlugin);
         })();
 
-        architect(config, function (err, app) {
+        architect(config, async function (err, app) {
             if (err) return console.error(err.message);
 
             app.services.app.$app = app;
@@ -106,7 +106,12 @@
                 window.$app = app.services.app; //so we can access it in devConsole
 
             for (var i in app.services) {
-                if (app.services[i].init) app.services[i].init(app);
+                if (app.services[i].init) 
+                    var initResult = app.services[i].init(app);
+                
+                if(initResult instanceof Promise)
+                    await initResult;
+
                 app.services.app[i] = app.services[i];
             }
 
@@ -118,10 +123,15 @@
                 if (count == 0)
                     app.services.app.emit("start");
                 else
-                    app.loadAdditionalPlugins(package_config, function (err, $app, additionalPlugins) {
+                    app.loadAdditionalPlugins(package_config, async function (err, $app, additionalPlugins) {
 
                         for (var i in additionalPlugins) {
-                            if (additionalPlugins[i].init) additionalPlugins[i].init(app);
+                            if (additionalPlugins[i].init) 
+                                var initResult = additionalPlugins[i].init(app);
+                                
+                            if(initResult instanceof Promise)
+                                await initResult;
+
                             app.services.app[i] = app.services[i];
                         }
 

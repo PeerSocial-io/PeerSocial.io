@@ -28,8 +28,22 @@ define(function(require, exports, module) {
          * @summery Controls State of the app. URL based event emitter     * 
          */ 
         var _self = this;
+        this.started = false;
         this.currentState = History.getState();
         this.lastState = false;
+
+        var $home;
+        Object.defineProperty(_self, 'home', {
+            set(home) {
+                $home = home;
+                if(_self.started && _self.currentState.data.urlPath == "/")
+                    _self.reload();
+            },
+            get() {
+            return $home;
+            }
+        });
+
 
         History.Adapter.bind(window, 'statechange', function() { // Note: We are using statechange instead of popstate
             if (!_self.is_replaceState) {
@@ -270,6 +284,7 @@ define(function(require, exports, module) {
                 // appState.emitCurrentState();
 
                 // if(!appState.currentState.data.urlPath)
+                appState.started = true;
                 appState.replaceState();
 
             }, 100);
