@@ -1,26 +1,15 @@
-var architect = require("./lib/architect");
-var events = require("events");
-
-require("./lib/native.history.js");
-
-var provable = require("./lib/provable.min");
-window.jQuery = require("./lib/jquery");
-window.$ = window.jQuery;
-
 (function (requirejs) {
+    var architect = require("./lib/architect");
     architect.requirejs = requirejs;
+    var events = require("events");
 
-    // config = config.concat(package_config);
+    require("./lib/native.history.js");
 
-    // function RUN(fn, timeout) {
-    //     if (!timeout)
-    //         fn();
-    //     else
-    //         setTimeout(fn, timeout);
-    // }
+    var provable = require("./lib/provable.min");
+    window.jQuery = require("./lib/jquery");
+    window.$ = window.jQuery;
 
-    // RUN(function () {
-    var PeerSocialIO = function (config) {
+    var start = function (config) {
 
         if (!config || !(config instanceof Array))
             config = [];
@@ -144,31 +133,11 @@ window.$ = window.jQuery;
         });
     }
 
-
     var babel = require("@babel/standalone/babel.js");
     var amdPreset = require("@babel/plugin-transform-modules-amd").default;
     var commonjsPreset = require("@babel/plugin-transform-modules-commonjs").default;
     babel.registerPlugin("amd", amdPreset);
     babel.registerPlugin("commonjs", commonjsPreset);
-
-    // requirejs.config({
-    //     babel: babel
-    // })
-
-    // if (!(typeof window == "undefined")) {
-    //     if (!window.require) window.require = requirejs;
-    // } else {
-    //     requirejs.nodeRequire = $require;
-    //     requirejs.config({
-    //         nodeRequire: $require
-    //     });
-    //     if (!(typeof global == "undefined")) {
-    //         global.requirejs = requirejs;
-    //     }
-    //     if (!(typeof globalThis == "undefined")) {
-    //         globalThis.requirejs = requirejs;
-    //     }
-    // }
 
     requirejs(["/app/app.js"],function(config){
         
@@ -176,15 +145,7 @@ window.$ = window.jQuery;
             babel: babel
         })
 
-        PeerSocialIO(config)
+        start(config)
     })
-})(require("./lib/require"));
 
-// if (typeof window == "object") {
-//     if (!window.PeerSocial)
-//         window.PeerSocial = {
-//             io: PeerSocialIO
-//         };
-// } else
-//     module.exports = PeerSocialIO;
-// }, 0)
+})(require("./lib/require"));
