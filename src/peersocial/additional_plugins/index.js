@@ -11,7 +11,8 @@ function appPlugin(options, imports, register) {
   var savedPlugins = window.sessionStorage.savedPlugins;
   if(savedPlugins)
     savedPlugins = JSON.parse(window.sessionStorage.savedPlugins)
-  
+  else savedPlugins = []
+
   var terminal = app.terminal;
   var loadedPlugins = {};
   if (terminal) {
@@ -63,6 +64,9 @@ function appPlugin(options, imports, register) {
         }
         window.sessionStorage.savedPlugins = JSON.stringify(pluginsList);
         savedPlugins = pluginsList;
+        for(var i in savedPlugins){
+          term.writeln(savedPlugins[i])
+        } 
         return;
       }
 
@@ -114,11 +118,16 @@ function appPlugin(options, imports, register) {
       if (!mods[0]) return done(true);
       app.$app.loadAdditionalPlugins(
         mods,
-        function (err, $app, additionalPlugins) {
+        async function (err, $app, additionalPlugins) {
           if(err) return done(err);          
           var url = plugins[0], plugins_list = [];
           for (var i in additionalPlugins) {
-            if (additionalPlugins[i].init) additionalPlugins[i].init(app);
+            if (additionalPlugins[i].init) 
+              var initResult = additionalPlugins[i].init(app);
+            
+            if(initResult instanceof Promise)
+              await initResult;
+
             $app.services.app[i] = additionalPlugins[i];
             $app.services.app.emit("plugin-loaded", i);
             terminal.term.writeln("plugin applied " + i)
@@ -180,8 +189,19 @@ function appPlugin(options, imports, register) {
   register(null, {
     plugins: additional_plugins = {
       init:function(){
-        loadPlugins(savedPlugins, function(didntLoad, url, plugins_list){
-            loadedPlugins[url] = plugins_list;
+        return new Promise((resolve)=>{
+          var DEBUG = typeof location != "undefined" && window.location.href.match(/debug=[123]/) ? {} : false;
+          if(DEBUG){
+            DEBUG[1] = typeof location != "undefined" && window.location.href.match(/debug=[1]/) ? true : false;
+            DEBUG[2] = typeof location != "undefined" && window.location.href.match(/debug=[2]/) ? true : false;
+            DEBUG[3] = typeof location != "undefined" && window.location.href.match(/debug=[3]/) ? true : false;
+          }
+          if(savedPlugins.length && !(DEBUG[2] || DEBUG[3]))
+            loadPlugins(savedPlugins, function(didntLoad, url, plugins_list){
+              loadedPlugins[url] = plugins_list;
+              resolve();
+            });
+          else resolve();
         });
       },
       Plugin: Plugin,
