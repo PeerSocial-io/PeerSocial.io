@@ -1,31 +1,8 @@
 "use strict";
 define(function ($require, exports, module) {
 
-  var requirejs = $require("./require.js");
-  var babel = require("@babel/standalone/babel.js");
-  var amdPreset = require("@babel/plugin-transform-modules-amd").default;
-  var commonjsPreset = require("@babel/plugin-transform-modules-commonjs").default;
-  babel.registerPlugin("amd", amdPreset);
-  babel.registerPlugin("commonjs", commonjsPreset);
-
-  requirejs.config({
-    babel: babel
-  })
-
-  if (!(typeof window == "undefined")) {
-    if (!window.require) window.require = requirejs;
-  } else {
-    requirejs.nodeRequire = $require;
-    requirejs.config({
-      nodeRequire: $require
-    });
-    if (!(typeof global == "undefined")) {
-      global.requirejs = requirejs;
-    }
-    if (!(typeof globalThis == "undefined")) {
-      globalThis.requirejs = requirejs;
-    }
-  }
+  // var requirejs = require("./require.js");
+  var requirejs;
 
   /**
    * 
@@ -86,6 +63,16 @@ define(function ($require, exports, module) {
   var exports = createApp;
   exports.createApp = createApp;
   exports.Architect = Architect;
+
+  Object.defineProperty(exports, 'requirejs', {
+    set(require) {
+      requirejs = require
+    },
+    get() {
+      if(!requirejs) requirejs = require("./require.js")
+      return requirejs;
+    }
+  });
 
   // Check a plugin config list for bad dependencies and throw on error
   function checkConfig(config, lookup) {
@@ -356,7 +343,7 @@ define(function ($require, exports, module) {
     function loadConfig(configPath, callback) {
       var isJSON = (configPath.toString().substr(-4) == "json");
       //isJSON ? "text!" + configPath : 
-      requirejs([configPath], function (config) {
+      exports.requirejs([configPath], function (config) {
         // if (isJSON) config = JSON.parse(config).plugins;
         var base = dirname(configPath);
 
@@ -407,7 +394,7 @@ define(function ($require, exports, module) {
             plugin.packagePath = defaults.packagePath;
             if (!plugin.setup)
               try {
-                plugin.setup = requirejs(plugin.packagePath);
+                plugin.setup = exports.requirejs(plugin.packagePath);
               } catch (e) {
                 return callback(e);
               }
@@ -432,7 +419,7 @@ define(function ($require, exports, module) {
         var metadata = {};
         if (!err) {
           try {
-            packagePath && requirejs([packagePath], function (packageJson) {
+            packagePath && exports.requirejs([packagePath], function (packageJson) {
 
               metadata = packageJson.plugin || {};
 
@@ -452,7 +439,7 @@ define(function ($require, exports, module) {
               })(function (err, modulePath) {
                 if (err) return callback(err);
 
-                requirejs([modulePath], function (module) {
+                exports.requirejs([modulePath], function (module) {
 
                   metadata.provides = module.provides || metadata.provides || [];
                   metadata.consumes = module.consumes || metadata.consumes || [];

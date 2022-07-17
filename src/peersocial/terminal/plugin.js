@@ -181,6 +181,7 @@ define(function (require, exports, module) {
         setTimeout(readLine,10);
       })
 
+      terminal_plugin.term = term;
     }
 
     terminal_plugin.help = { "?": "Show Help" };
