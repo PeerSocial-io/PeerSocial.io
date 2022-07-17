@@ -1,37 +1,133 @@
-// define(function (require, exports, module) {
 /* globals $ */
-appPlugin.consumes = ["hub", "architect", "app", "terminal"];
+appPlugin.consumes = ["hub", "architect", "app"];
 appPlugin.provides = ["plugins"];
-import require from "require";
 
 function appPlugin(options, imports, register) {
 
   const {
-    app,
-    terminal
+    app
   } = imports;
 
-  terminal.on("load", function (args, term, pause) {
-    console.log(args, term)
-    pause();
-    require(args._, function (mod) {
-      if(!mod) return pause(true);
-      // console.log(mod)
-      term.writeln("loaded " + typeof mod + " "+ JSON.stringify(args._) )
+  var savedPlugins = window.sessionStorage.savedPlugins;
+  if(savedPlugins)
+    savedPlugins = JSON.parse(window.sessionStorage.savedPlugins)
+  
+  var terminal = app.terminal;
+  var loadedPlugins = {};
+  if (terminal) {
+    terminal.help["plugin"] = "initialize plugin into app";
+    terminal.on("plugin", function (args, term, pause) {
+
+      var args_help = {};
+
+      args_help["--github"] = "loads plugin from github. ex --github=PeerSocial-io/PeerCode/master/examples/calculator/plugin.js";
+      if (args.github) {
+        console.log(args, term)
+        pause();
+        var githubProvider = 'https://raw.githubusercontent.com/';
+        var pluginUrl = githubProvider + args.github;
+        loadPlugins([pluginUrl], function(didntLoad, url, plugins_list){
+          loadedPlugins[url] = plugins_list;
+          return pause(true);
+        })
+        return;
+      }
+
+      args_help["--load"] = "plugin1 plugin2 ...";
+      if (args.load) {
+        console.log(args, term)
+        pause();
+        loadPlugins(args._, function(didntLoad){
+          return pause(true);
+        })        
+        return;
+      }
+
+      args_help["--load-saved"] = "loads saved plugins";
+      if (args["load-saved"]) {
+        for(var i in savedPlugins){
+          term.writeln(i + " " + savedPlugins[i])
+        }  
+        loadPlugins(savedPlugins, function(didntLoad, url, plugins_list){
+            loadedPlugins[url] = plugins_list;
+            pause(true);
+        });
+        return;
+      }      
+
+      args_help["--save"] = "save loaded plugins";
+      if (args.save) {
+        var pluginsList = [];
+        for(var i in loadedPlugins){
+          pluginsList.push(i)
+        }
+        window.sessionStorage.savedPlugins = JSON.stringify(pluginsList);
+        savedPlugins = pluginsList;
+        return;
+      }
+
+      args_help["--reset"] = "reset saved plugins";
+      if (args.reset) {
+        var pluginsList = [];
+        window.sessionStorage.savedPlugins = JSON.stringify(pluginsList);
+        savedPlugins = pluginsList;
+        return;
+      }
+
+      args_help["--list"] = "list loaded plugins";
+      if (args.list) {
+        for(var i in loadedPlugins){
+          term.writeln(i + " :  "+JSON.stringify(loadedPlugins[i]))
+        }
+        return;
+      }
+
+      args_help["--list-saved"] = "list saved plugins";
+      if (args["list-saved"]) {
+        for(var i in savedPlugins){
+          term.writeln(savedPlugins[i])
+        }  
+        return;
+      }
+
+      args_help["--url"] = "shows full url to path ex. --url=$URL";
+      if (args.url) {
+        var context = require.s.newContext("contextName");
+        // debugger;
+        term.writeln(require.toUrl(args.url))
+        return;
+      }
+
+      for (var i in args_help) {
+        term.writeln(i + " " + args_help[i])
+      }
+
+    })
+  }
+
+
+  function loadPlugins(plugins, done){
+    for(var i in plugins){
+      plugins[i] = require.toUrl(plugins[i]);
+    }
+    require(plugins, function (...mods) {
+      if (!mods[0]) return done(true);
       app.$app.loadAdditionalPlugins(
-        [mod],
+        mods,
         function (err, $app, additionalPlugins) {
+          if(err) return done(err);          
+          var url = plugins[0], plugins_list = [];
           for (var i in additionalPlugins) {
             if (additionalPlugins[i].init) additionalPlugins[i].init(app);
             $app.services.app[i] = additionalPlugins[i];
             $app.services.app.emit("plugin-loaded", i);
-            term.writeln("plugin applied " + i )
+            terminal.term.writeln("plugin applied " + i)
+            plugins_list.push(i);
           }
-          pause(true);
+          done(null, url, plugins_list);
         })
-
     });
-  })
+  }
 
   var architect = imports.architect;
 
@@ -83,6 +179,11 @@ function appPlugin(options, imports, register) {
   var additional_plugins;
   register(null, {
     plugins: additional_plugins = {
+      init:function(){
+        loadPlugins(savedPlugins, function(didntLoad, url, plugins_list){
+            loadedPlugins[url] = plugins_list;
+        });
+      },
       Plugin: Plugin,
       load: function (packagePath) {
         var config = loadAppPlugin([]);
@@ -108,4 +209,3 @@ function appPlugin(options, imports, register) {
 }
 
 export default appPlugin;
-// });

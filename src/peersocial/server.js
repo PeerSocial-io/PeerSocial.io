@@ -22,8 +22,6 @@ var server = module.exports = {
 
             ];
 
-            require("./config.js")(config, true);
-
             (function () {
                 appPlugin.provides = ["app"];
                 appPlugin.consumes = ["hub"];
