@@ -1,5 +1,9 @@
 # [PeerSocial.io](https://www.peersocial.io/)
 
+PeerSocial.io is the perfect platform for developers who want to decentralize social interactions. Our decentralized platform makes it easy for developers to create innovative social apps that are more secure and user-friendly. With PeerSocial.io, you can build the next big thing in social media! 
+
+It is the ultimate social media platform for developers! We offer a decentralized infrastructure so you can build the most immersive social experiences possible. Our platform is secure, scalable, and easy to use- perfect for any project!
+
 [![Version](https://img.shields.io/badge/dynamic/json?label=version&query=version&url=https://www.peersocial.io/package.json)](https://github.com/PeerSocial-io/PeerSocial.io)
 [![Github last commit](https://img.shields.io/github/last-commit/PeerSocial-io/PeerSocial.io)](https://github.com/PeerSocial-io/PeerSocial.io/commits)
 [![Github build](https://img.shields.io/github/workflow/status/PeerSocial-io/PeerSocial.io/Build)](https://github.com/PeerSocial-io/PeerSocial.io/actions/workflows/build.yml)
